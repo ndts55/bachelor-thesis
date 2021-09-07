@@ -1,0 +1,20 @@
+\chapter{Introduction}
+
+% coordinating processes?
+% - processes that need to achieve one goal together
+% - accessing shared data
+% - ensure correct (distributed) computation
+% - reliable distributed coordination
+In distributed computing, it is often necessary for coordinating processes to reach consensus, i.e., agree on the value of some data that are needed during computation.
+These processes agree on the same values to ensure correct computation, which necessitates a correct consensus algorithm.
+Thus, proving the correctness of consensus algorithms is important.
+
+Due to the presence of faulty processes consensus algorithms are designed to be fault-tolerant.
+To achieve fault-tolerance these algorithms must satisfy the following properties: termination, integrity, and agreement\cite{dist_sys}.
+
+Proving these properties can be complicated.
+Dynamic analysis tools lead to big state-spaces so static analysis is preferable.
+Multiparty Session Types are particularly interesting since session typing can ensure absence of communication errors and deadlocks, and protocol conformance\cite{mpstbd}.
+However, to properly model unreliable communication between processes a fault-tolerant extension to Multiparty Session Types is necessary.
+
+\citeauthor{ftmpst} developed such an extension.

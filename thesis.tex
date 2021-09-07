@@ -1,0 +1,49 @@
+\documentclass[
+    english,
+    ruledheaders=section,
+    class=report,
+    thesis={type=bachelor},
+    accentcolor=1b,
+    custommargins=true,
+    marginpar=false,
+    parskip=half-,
+    fontsize=11pt,
+    pdfa=false,
+]{tudapub}
+
+\usepackage[main=english]{babel}
+\usepackage{biblatex}
+\addbibresource{thesis.bib}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{multicol}
+\usepackage{mathtools}
+
+\begin{document}
+\title{Analyzing Paxos with Fault-Tolerant Multiparty Session Types}
+% \subtitle{}
+\author[N. D. Torres]{Nicolas Daniel Torres}
+\department{inf}
+\institute{Institut}
+\group{Arbeitsgruppe}
+% \birthplace{Geburtsort}
+\reviewer{Prof. Dr. Kirstin Peters}
+\submissiondate{\today}
+\examdate{\today}
+\maketitle
+\tableofcontents
+
+\IMRADlabel{introduction}
+\include{introduction.tex}
+
+\IMRADlabel{methods}
+\include{methods.tex}
+
+\IMRADlabel{results}
+\include{results.tex}
+
+\IMRADlabel{discussion}
+\include{discussion.tex}
+
+\end{document}

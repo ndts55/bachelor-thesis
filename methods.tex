@@ -1,0 +1,155 @@
+\chapter{Model and Analysis}
+
+\section{Technical Preliminaries}
+First, we define the sorts, some additional notation, and use them to define the global type.
+Afterwards we define some sets and functions to create the processes.
+
+\subsection{Sorts}
+The sorts utilize type variables, which represent mathematical variables that range over types.
+
+\newcommand{\Maybe}[1]{\operatorname{Maybe}\; #1}
+\newcommand{\Just}[1]{\operatorname{Just}\; #1}
+\newcommand{\Nothing}[0]{\operatorname{Nothing}}
+\newcommand{\Or}[0]{\; | \;}
+\newcommand{\Promise}[1]{\operatorname{Promise}\; #1}
+\newcommand{\Proposal}[1]{\operatorname{Proposal}\; #1}
+\newcommand{\ProposalC}[2]{\operatorname{Proposal}\; #1\; #2}
+\newcommand{\Nack}[1]{\operatorname{Nack}\; #1}
+\newcommand{\Value}[0]{\operatorname{Value}}
+
+$\Maybe{a} = \Just{a} \Or \Nothing$
+
+$\Value =$ Set of values.
+
+$\Promise{a} = \Promise{(\Maybe{(\Proposal{a})})} \Or \Nack{\mathbb{N}}$
+
+$\Proposal{a} = \ProposalC{\mathbb{N}}{a}$
+
+\subsection{Notation}
+TODO im Grunde einfach von Peters et al klauen.
+
+\subsection{Global Type}
+\newcommand{\dotforall}[1]{\bigodot_{#1}\;}
+\newcommand{\usendg}[4]{#1 \to_u #2 : #3 \left\langle #4 \right\rangle}
+\newcommand{\wsendg}[3]{#1 \to_w #2 : #3}
+
+Since each proposer has its own session the global type can be defined for one proposer.
+A quorum of acceptors $A_Q$ is assumed.
+
+The last phase of Paxos contains no inter-process communication, so it is not modeled in the global type.
+
+TODO: global type for outer session where proposers reliably send sessions to acceptors.
+
+$G_{p, A_Q} = (\mu X) \dotforall{a \in A_Q} \usendg{p}{a}{l1a}{\mathbb{N}} . \dotforall{a \in A_Q} \usendg{a}{p}{l1b}{\Promise{\Value}} .\\
+\hspace*{0.5em}\wsendg{p}{A_Q}{accept.(\dotforall{a \in A_Q} \usendg{p}{a}{l2a}{\Proposal{\Value}}).end \oplus restart.X}$
+
+We can distinguish the individual steps of the Paxos algorithm by the labels $l1a$, $l1b$, and $l2a$.
+
+In the first two steps the proposer sends its proposal number to each acceptor in $A_Q$ and then listens for their responses.
+In step 2a the proposer decides whether to send an accept message or restart the algorithm.
+This decision is broadcast to all acceptors in $A_Q$.
+
+\subsection{Functions and Sets}
+\newcommand{\Bool}[0]{\operatorname{Bool}}
+\newcommand{\prNumber}[2]{\operatorname{prNumber}\left( #1, #2 \right)}
+\newcommand{\promValue}[1]{\operatorname{promValue}\left(#1\right)}
+\newcommand{\anyNack}[1]{\operatorname{anyNack}\left(#1\right)}
+\newcommand{\promCount}[1]{\operatorname{promCount}\left(#1\right)}
+\newcommand{\greaterThan}[2]{\operatorname{gt}\left(#1, #2\right)}
+\newcommand{\greaterEqual}[2]{\operatorname{ge}\left(#1, #2\right)}
+\newcommand{\nFromPr}[1]{\operatorname{nFromPr}\left(#1 \right)}
+
+$\Bool = \{ true, false \}$
+
+$\operatorname{prNumber} : \mathbb{N} \times \mathbb{N} \to \mathbb{N}$ returns a proposal number when given two natural numbers.
+
+$\operatorname{promValue} : [\Promise{a}] \to a$ if none of the promises in the given list contain a value a new value is returned.
+A promise contains a value if it is of the form $\Promise{(\Just{v})}$.
+$v$ is the value.
+
+$\operatorname{anyNack} : [\Promise{a}] \to \Bool\\
+\anyNack{[]} = false\\
+\anyNack{(\Nack{\_}: \_)} = true\\
+\anyNack{(\_:xs)} = \anyNack{xs}$
+
+$\operatorname{promCount} : [\Promise{a}] \to \mathbb{N}\\
+\promCount{[]} = 0\\
+\promCount{(\Promise{\_}:xs)} = 1 + \promCount{xs}\\
+\promCount{(\_:xs)} = \promCount{xs}$
+
+$\operatorname{gt}: a \to \Maybe{a} \to \Bool\\
+\greaterThan{\_}{\Nothing} = true\\
+\greaterThan{a}{\Just{b}} = a > b$
+
+$\operatorname{ge}: a \to \Maybe{a} \to \Bool\\
+\greaterEqual{\_}{\Nothing} = true\\
+\greaterEqual{a}{\Just{b}} = a \ge b$
+
+$\operatorname{nFromPr} : \Proposal{a} \to \mathbb{N}\\
+\nFromPr{\ProposalC{n}{\_}} = n$
+
+\subsection{Processes}
+\newcommand{\Sys}[3]{\operatorname{Sys}\left(#1, #2, #3\right)}
+\newcommand{\Pp}[5]{\operatorname{P^p}\left(#1, #2, #3, #4, #5\right)}
+\newcommand{\Pa}[5]{\operatorname{P^a}\left(#1, #2, #3, #4, #5\right)}
+\newcommand{\Ppinit}[5]{\operatorname{P^p_{init}}\left(#1, #2, #3, #4, #5\right)}
+\newcommand{\PaTwo}[0]{\operatorname{P^a_2}}
+
+\subsubsection{System Initialization}
+\newcommand{\genAq}[3]{\operatorname{genA_Q}\left(#1, #2, #3\right)}
+\newcommand{\sendinitp}[3]{\overline{#1}\left[#2\right]\left(#3\right)}
+\newcommand{\recvinitp}[3]{#1\left[#2\right]\left(#3\right)}
+\newcommand{\parallelfor}[1]{\Pi_{#1}\;}
+\newcommand{\sendsession}[2]{#1!\left\langle\left\langle #2 \right\rangle\right\rangle}
+\newcommand{\recvsession}[2]{#1?\left(\left( #2 \right)\right)}
+\newcommand{\rsendp}[4]{#1\left[#2, #3\right]!_r \left\langle #4 \right\rangle}
+\newcommand{\rrecvp}[4]{#1\left[#2, #3\right]?_r \left\langle #4 \right\rangle}
+
+% Idea: Simply pick the appropriate session from the session list.
+$\Sys{pc}{ac}{\overrightarrow{V}} = \sendinitp{a}{1 \dots pc + ac}{s_1, \dots , s_{pc}}\\
+\Or \parallelfor{1 \le i \le pc} \recvinitp{a}{i}{\tilde{s}} . \Pp{s_i}{i}{\genAq{i}{ac}{pc}}{i}{[]}\\
+\Or \parallelfor{pc < j \le pc + ac} \recvinitp{a}{j}{\tilde{s}} .
+\left( \parallelfor{s \in \tilde{s}} \Pa{j}{s}{pc}{\overrightarrow{V}_{j,n}}{\overrightarrow{V}_{j,pr}} \right)$
+
+% Idea: Proposers create their own session which they send to A_Q. Acceptors repeatedly receive sessions and use the to run the algorithm.
+$\Sys{pc}{ac}{\overrightarrow{V}} = \sendinitp{a}{1 \dots pc + ac}{t}\\
+\Or \parallelfor{1 \le i \le pc} \recvinitp{a}{i}{t} . \Ppinit{t}{i}{\genAq{i}{ac}{pc}}{i}{[]}\\
+\Or \parallelfor{pc < j \le pc + ac} \recvinitp{a}{j}{t} . \left( \parallelfor{1 \le i \le pc} \rrecvp{t}{i}{j}{s} . \Pa{j}{s}{pc}{\overrightarrow{V}_{j,n}}{\overrightarrow{V}_{j,pr}} \right)$
+
+$\Ppinit{t}{p}{A_Q}{n}{\overrightarrow{V}} = (\mu s) \dotforall{a \in A_Q} \rsendp{t}{p}{a}{s} . \Pp{s}{p}{A_Q}{n}{\overrightarrow{V}}$
+
+\subsubsection{Proposer}
+\newcommand{\usendp}[5]{#1\left[#2, #3\right]!_u #4 \left\langle #5 \right\rangle}
+\newcommand{\urecvp}[6]{#1\left[#2, #3\right]?_u #4 \left\langle #5 \right\rangle \left(#6\right)}
+\newcommand{\ceil}[1]{\Big\lceil #1 \Big\rceil}
+\newcommand{\wsendp}[5]{#1\left[#2, #3\right]!_w #4.#5}
+\newcommand{\wrecvp}[4]{#1\left[#2, #3\right]?_w #4}
+\newcommand{\If}[1]{\operatorname{if}\; #1}
+\newcommand{\Then}[1]{\operatorname{then}\; #1}
+\newcommand{\Else}[1]{\operatorname{else}\; #1}
+\newcommand{\update}[2]{\operatorname{update} \left(#1, #2\right)}
+
+$\Pp{s}{p}{A_Q}{n}{\overrightarrow{V}} = \left(\dotforall{a \in A_Q} \usendp{s}{p}{a}{l1a}{\prNumber{n}{p}}\right) .\\
+\hspace*{0.5em}\left(\dotforall{a \in A_Q} \urecvp{s}{p}{a}{l1b}{\perp}{v_i}\right) .\\
+\hspace*{0.5em}\If{\anyNack{\overrightarrow{V}} \text{ or } \promCount{\overrightarrow{V}} < \ceil{\frac{|A_Q|}{2}}}\\
+\hspace*{1em}\Then{\wsendp{s}{p}{A_Q}{restart}{P^p(p, A_Q, n+1, V)}}\\
+\hspace*{1em}\Else{\\\hspace*{1.5em}\wsendp{s}{p}{A_Q}{accept}{\dotforall{a \in A_Q} \usendp{s}{p}{a}{l2a}{\ProposalC{\prNumber{n}{p}}{\promValue{\overrightarrow{V}}}}.\\\hspace*{1.5em}end}}$
+
+\subsubsection{Acceptor}
+% \Pa{a}{\tilde{s}}{pc}{n}{pr}
+$\Pa{a}{\tilde{s}}{pc}{n}{pr} = \left(\mu X \right) \urecvp{s}{i}{a}{l1a}{\perp}{n'} .\\
+\hspace*{0.5em}\If{n' = \perp}\\
+\hspace*{1em}\Then{\PaTwo}\\
+\hspace*{1em}\Else{\\
+\hspace*{1.5em}\If{\greaterThan{n'}{n}}\\
+\hspace*{1.5em}\Then{\update{n}{n'}.\usendp{s}{a}{i}{l1b}{\Promise{pr}}.\PaTwo}\\
+\hspace*{1.5em}\Else{\usendp{s}{a}{i}{l1b}{\Nack{n}}.\PaTwo}}$
+
+$\PaTwo = \wrecvp{s}{i}{a}{accept . \urecvp{s}{i}{a}{l2a}{\perp}{pr'} .\\
+\hspace*{1em}\If{pr' = \perp}\\
+\hspace*{1.5em}\Then{X}\\
+\hspace*{1.5em}\Else{\\
+\hspace*{2em}\If{\greaterEqual{\nFromPr{pr'}}{n}}\\
+\hspace*{2.5em}\Then{\update{pr}{pr'} . \update{n}{\nFromPr{pr'}}.X}\\
+\hspace*{2.5em}\Else{X}}\\
+\hspace*{0.5em} restart.X}$
