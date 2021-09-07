@@ -21,7 +21,7 @@ $\Maybe{a} = \Just{a} \Or \Nothing$
 
 $\Value =$ Set of values.
 
-$\Promise{a} = \Promise{(\Maybe{(\Proposal{a})})} \Or \Nack{\mathbb{N}}$
+$\Promise{a} = \Promise{\left(\Maybe{\left(\Proposal{a}\right)}\right)} \Or \Nack{\mathbb{N}}$
 
 $\Proposal{a} = \ProposalC{\mathbb{N}}{a}$
 
@@ -37,13 +37,17 @@ TODO im Grunde einfach von Peters et al klauen.
 \newcommand{\Restart}[0]{\mathnormal{Restart}}
 \newcommand{\Abort}[0]{\mathnormal{Abort}}
 
+\newcommand{\Mu}[1]{\left(\mu #1\right)}
+
+\newcommand{\Paren}[1]{\left(#1\right)}
+
 Since each proposer has its own session the global type can be defined for one proposer.
 A quorum of acceptors $A_Q$ is assumed.
 
 The last phase of Paxos contains no inter-process communication, so it is not modeled in the global type.
 
-$G_{p, A_Q} = (\mu X) \DotForall{a \in A_Q} \SendUnreliableG{p}{a}{l1a}{\mathbb{N}} . \DotForall{a \in A_Q} \SendUnreliableG{a}{p}{l1b}{\Promise{\Value}} .\\
-\hspace*{0.5em}\SendWeaklyG{p}{A_Q}{\Accept.(\DotForall{a \in A_Q} \SendUnreliableG{p}{a}{l2a}{\Proposal{\Value}}).end\\
+$G_{p, A_Q} = \Mu{X} \DotForall{a \in A_Q} \SendUnreliableG{p}{a}{l1a}{\mathbb{N}} . \DotForall{a \in A_Q} \SendUnreliableG{a}{p}{l1b}{\Promise{\Value}} .\\
+\hspace*{0.5em}\SendWeaklyG{p}{A_Q}{\Accept.\Paren{\DotForall{a \in A_Q} \SendUnreliableG{p}{a}{l2a}{\Proposal{\Value}}}.end\\
 \hspace*{1em}\oplus \Restart.X\\
 \hspace*{1em}\oplus \Abort.end}$
 
@@ -74,13 +78,13 @@ $v$ is the value.
 
 $\operatorname{anyNack} : [\Promise{a}] \to \Bool\\
 \anyNack{[]} = false\\
-\anyNack{(\Nack{\_}: \_)} = true\\
-\anyNack{(\_:xs)} = \anyNack{xs}$
+\anyNack{\Paren{\Nack{\_}: \_}} = true\\
+\anyNack{\Paren{\_:xs}} = \anyNack{xs}$
 
 $\operatorname{promCount} : [\Promise{a}] \to \mathbb{N}\\
 \promCount{[]} = 0\\
-\promCount{(\Promise{\_}:xs)} = 1 + \promCount{xs}\\
-\promCount{(\_:xs)} = \promCount{xs}$
+\promCount{\Paren{\Promise{\_}:xs}} = 1 + \promCount{xs}\\
+\promCount{\Paren{\_:xs}} = \promCount{xs}$
 
 $\operatorname{gt}: a \to \Maybe{a} \to \Bool\\
 \greaterThan{\_}{\Nothing} = true\\
@@ -129,14 +133,14 @@ $\PaInit{j}{pc}{n}{pr} = \ParallelFor{1 \le i \le pc} \SessionAccept{b_i}{j}{s} 
 \newcommand{\Else}[1]{\operatorname{else}\; #1}
 \newcommand{\update}[2]{\operatorname{update} \left(#1, #2\right)}
 
-$\Pp = (\mu X) \left(\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l1a}{\prNumber{n}{i}}\right) .\\
+$\Pp = \Mu{X} \left(\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l1a}{\prNumber{n}{i}}\right) .\\
 \hspace*{0.5em}\left(\DotForall{j \in A_Q} \ReceiveUnreliableP{s}{j}{i}{l1b}{\perp}{v_j}\right) .\\
 \hspace*{0.5em}\If{\anyNack{\overrightarrow{V}} \text{ or } \promCount{\overrightarrow{V}} < \ceil{\frac{|A_Q|}{2}}}\\
 \hspace*{1em}\Then{\SendWeaklyP{s}{i}{A_Q}{restart}{\update{n}{n + 1} . X}}\\
 \hspace*{1em}\Else{\\\hspace*{1.5em}\SendWeaklyP{s}{i}{A_Q}{accept}{\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l2a}{\ProposalC{\prNumber{n}{i}}{\promValue{\overrightarrow{V}}}}.\\\hspace*{1.5em}end}}$
 
 \subsubsection{Acceptor}
-$\Pa = \left(\mu X \right) \ReceiveUnreliableP{s}{i}{j}{l1a}{\perp}{n'} .\\
+$\Pa = \Mu{X} \ReceiveUnreliableP{s}{i}{j}{l1a}{\perp}{n'} .\\
 \hspace*{0.5em}\If{n' = \perp}\\
 \hspace*{1em}\Then{\PaCont}\\
 \hspace*{1em}\Else{\\
