@@ -29,19 +29,23 @@ $\Proposal{a} = \ProposalC{\mathbb{N}}{a}$
 TODO im Grunde einfach von Peters et al klauen.
 
 \subsection{Global Type}
-\newcommand{\dotforall}[1]{\bigodot_{#1}\;}
-\newcommand{\usendg}[4]{#1 \to_u #2 : #3 \left\langle #4 \right\rangle}
-\newcommand{\wsendg}[3]{#1 \to_w #2 : #3}
+\newcommand{\DotForall}[1]{\bigodot_{#1}\;}
+\newcommand{\SendUnreliableG}[4]{#1 \to_u #2 : #3 \left\langle #4 \right\rangle}
+\newcommand{\SendWeaklyG}[3]{#1 \to_w #2 : #3}
+
+\newcommand{\Accept}[0]{\mathnormal{Accept}}
+\newcommand{\Restart}[0]{\mathnormal{Restart}}
+\newcommand{\Abort}[0]{\mathnormal{Abort}}
 
 Since each proposer has its own session the global type can be defined for one proposer.
 A quorum of acceptors $A_Q$ is assumed.
 
 The last phase of Paxos contains no inter-process communication, so it is not modeled in the global type.
 
-TODO: global type for outer session where proposers reliably send sessions to acceptors.
-
-$G_{p, A_Q} = (\mu X) \dotforall{a \in A_Q} \usendg{p}{a}{l1a}{\mathbb{N}} . \dotforall{a \in A_Q} \usendg{a}{p}{l1b}{\Promise{\Value}} .\\
-\hspace*{0.5em}\wsendg{p}{A_Q}{accept.(\dotforall{a \in A_Q} \usendg{p}{a}{l2a}{\Proposal{\Value}}).end \oplus restart.X}$
+$G_{p, A_Q} = (\mu X) \DotForall{a \in A_Q} \SendUnreliableG{p}{a}{l1a}{\mathbb{N}} . \DotForall{a \in A_Q} \SendUnreliableG{a}{p}{l1b}{\Promise{\Value}} .\\
+\hspace*{0.5em}\SendWeaklyG{p}{A_Q}{\Accept.(\DotForall{a \in A_Q} \SendUnreliableG{p}{a}{l2a}{\Proposal{\Value}}).end\\
+\hspace*{1em}\oplus \Restart.X\\
+\hspace*{1em}\oplus \Abort.end}$
 
 We can distinguish the individual steps of the Paxos algorithm by the labels $l1a$, $l1b$, and $l2a$.
 
@@ -58,6 +62,7 @@ This decision is broadcast to all acceptors in $A_Q$.
 \newcommand{\greaterThan}[2]{\operatorname{gt}\left(#1, #2\right)}
 \newcommand{\greaterEqual}[2]{\operatorname{ge}\left(#1, #2\right)}
 \newcommand{\nFromPr}[1]{\operatorname{nFromPr}\left(#1 \right)}
+\newcommand{\genAq}[3]{\operatorname{genA_Q}\left(#1, #2, #3\right)}
 
 $\Bool = \{ true, false \}$
 
@@ -88,68 +93,63 @@ $\operatorname{ge}: a \to \Maybe{a} \to \Bool\\
 $\operatorname{nFromPr} : \Proposal{a} \to \mathbb{N}\\
 \nFromPr{\ProposalC{n}{\_}} = n$
 
+$\genAq{i}{ac}{pc}$ returns a set $A_Q$ with $A_Q \subseteq A = \{pc + 1, \dots, pc + ac\}$ and $|A_Q| > \frac{|A|}{2}$.
+
 \subsection{Processes}
 \newcommand{\Sys}[3]{\operatorname{Sys}\left(#1, #2, #3\right)}
-\newcommand{\Pp}[5]{\operatorname{P^p}\left(#1, #2, #3, #4, #5\right)}
-\newcommand{\Pa}[5]{\operatorname{P^a}\left(#1, #2, #3, #4, #5\right)}
-\newcommand{\Ppinit}[5]{\operatorname{P^p_{init}}\left(#1, #2, #3, #4, #5\right)}
-\newcommand{\PaTwo}[0]{\operatorname{P^a_2}}
+\newcommand{\Pa}[0]{\operatorname{P^a}}
+\newcommand{\Pp}[0]{\operatorname{P^p}}
+\newcommand{\PaCont}[0]{\operatorname{P^a_{cont}}}
+
+\newcommand{\PpInit}[4]{\operatorname{P^p_{init}}\left(#1, #2, #3, #4\right)}
+\newcommand{\PaInit}[4]{\operatorname{P^a_{init}}\left(#1, #2, #3, #4\right)}
 
 \subsubsection{System Initialization}
-\newcommand{\genAq}[3]{\operatorname{genA_Q}\left(#1, #2, #3\right)}
-\newcommand{\sendinitp}[3]{\overline{#1}\left[#2\right]\left(#3\right)}
-\newcommand{\recvinitp}[3]{#1\left[#2\right]\left(#3\right)}
-\newcommand{\parallelfor}[1]{\Pi_{#1}\;}
-\newcommand{\sendsession}[2]{#1!\left\langle\left\langle #2 \right\rangle\right\rangle}
-\newcommand{\recvsession}[2]{#1?\left(\left( #2 \right)\right)}
-\newcommand{\rsendp}[4]{#1\left[#2, #3\right]!_r \left\langle #4 \right\rangle}
-\newcommand{\rrecvp}[4]{#1\left[#2, #3\right]?_r \left\langle #4 \right\rangle}
+\newcommand{\SessionRequest}[3]{\overline{#1}\left[#2\right]\left(#3\right)}
+\newcommand{\SessionAccept}[3]{#1\left[#2\right]\left(#3\right)}
+\newcommand{\ParallelFor}[1]{\Pi_{#1}\;}
 
-% Idea: Simply pick the appropriate session from the session list.
-$\Sys{pc}{ac}{\overrightarrow{V}} = \sendinitp{a}{1 \dots pc + ac}{s_1, \dots , s_{pc}}\\
-\Or \parallelfor{1 \le i \le pc} \recvinitp{a}{i}{\tilde{s}} . \Pp{s_i}{i}{\genAq{i}{ac}{pc}}{i}{[]}\\
-\Or \parallelfor{pc < j \le pc + ac} \recvinitp{a}{j}{\tilde{s}} .
-\left( \parallelfor{s \in \tilde{s}} \Pa{j}{s}{pc}{\overrightarrow{V}_{j,n}}{\overrightarrow{V}_{j,pr}} \right)$
+% Idea: One shared-point per Proposer over which the session is initialized.
+$\Sys{pc}{ac}{\overrightarrow{V}} = \SessionRequest{a}{1}{t} . \PpInit{1}{\genAq{1}{ac}{pc}}{1}{[]}\\
+\Or \SessionAccept{a}{1}{t} . \ParallelFor{2 \le i \le pc} \PpInit{i}{\genAq{i}{pc}{ac}}{i}{[]} \\
+\Or \ParallelFor{pc < j \le pc + ac} \PaInit{j}{pc}{\overrightarrow{V}_{j,n}}{\overrightarrow{V}_{j,pr}}$
 
-% Idea: Proposers create their own session which they send to A_Q. Acceptors repeatedly receive sessions and use the to run the algorithm.
-$\Sys{pc}{ac}{\overrightarrow{V}} = \sendinitp{a}{1 \dots pc + ac}{t}\\
-\Or \parallelfor{1 \le i \le pc} \recvinitp{a}{i}{t} . \Ppinit{t}{i}{\genAq{i}{ac}{pc}}{i}{[]}\\
-\Or \parallelfor{pc < j \le pc + ac} \recvinitp{a}{j}{t} . \left( \parallelfor{1 \le i \le pc} \rrecvp{t}{i}{j}{s} . \Pa{j}{s}{pc}{\overrightarrow{V}_{j,n}}{\overrightarrow{V}_{j,pr}} \right)$
+$\PpInit{i}{A_Q}{n}{\overrightarrow{V}} = \SessionRequest{b_i}{a_1, \dots, a_{|A_Q|}}{s} . \Pp$
 
-$\Ppinit{t}{p}{A_Q}{n}{\overrightarrow{V}} = (\mu s) \dotforall{a \in A_Q} \rsendp{t}{p}{a}{s} . \Pp{s}{p}{A_Q}{n}{\overrightarrow{V}}$
+$\PaInit{j}{pc}{n}{pr} = \ParallelFor{1 \le i \le pc} \SessionAccept{b_i}{j}{s} . \Pa$
 
 \subsubsection{Proposer}
-\newcommand{\usendp}[5]{#1\left[#2, #3\right]!_u #4 \left\langle #5 \right\rangle}
-\newcommand{\urecvp}[6]{#1\left[#2, #3\right]?_u #4 \left\langle #5 \right\rangle \left(#6\right)}
+\newcommand{\SendUnreliableP}[5]{#1\left[#2, #3\right]!_u #4 \left\langle #5 \right\rangle}
+\newcommand{\ReceiveUnreliableP}[6]{#1\left[#2, #3\right]?_u #4 \left\langle #5 \right\rangle \left(#6\right)}
 \newcommand{\ceil}[1]{\Big\lceil #1 \Big\rceil}
-\newcommand{\wsendp}[5]{#1\left[#2, #3\right]!_w #4.#5}
-\newcommand{\wrecvp}[4]{#1\left[#2, #3\right]?_w #4}
+\newcommand{\SendWeaklyP}[5]{#1\left[#2, #3\right]!_w #4.#5}
+\newcommand{\ReceiveWeaklyP}[4]{#1\left[#2, #3\right]?_w #4}
 \newcommand{\If}[1]{\operatorname{if}\; #1}
 \newcommand{\Then}[1]{\operatorname{then}\; #1}
 \newcommand{\Else}[1]{\operatorname{else}\; #1}
 \newcommand{\update}[2]{\operatorname{update} \left(#1, #2\right)}
 
-$\Pp{s}{p}{A_Q}{n}{\overrightarrow{V}} = \left(\dotforall{a \in A_Q} \usendp{s}{p}{a}{l1a}{\prNumber{n}{p}}\right) .\\
-\hspace*{0.5em}\left(\dotforall{a \in A_Q} \urecvp{s}{p}{a}{l1b}{\perp}{v_i}\right) .\\
+$\Pp = (\mu X) \left(\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l1a}{\prNumber{n}{i}}\right) .\\
+\hspace*{0.5em}\left(\DotForall{j \in A_Q} \ReceiveUnreliableP{s}{j}{i}{l1b}{\perp}{v_j}\right) .\\
 \hspace*{0.5em}\If{\anyNack{\overrightarrow{V}} \text{ or } \promCount{\overrightarrow{V}} < \ceil{\frac{|A_Q|}{2}}}\\
-\hspace*{1em}\Then{\wsendp{s}{p}{A_Q}{restart}{P^p(p, A_Q, n+1, V)}}\\
-\hspace*{1em}\Else{\\\hspace*{1.5em}\wsendp{s}{p}{A_Q}{accept}{\dotforall{a \in A_Q} \usendp{s}{p}{a}{l2a}{\ProposalC{\prNumber{n}{p}}{\promValue{\overrightarrow{V}}}}.\\\hspace*{1.5em}end}}$
+\hspace*{1em}\Then{\SendWeaklyP{s}{i}{A_Q}{restart}{\update{n}{n + 1} . X}}\\
+\hspace*{1em}\Else{\\\hspace*{1.5em}\SendWeaklyP{s}{i}{A_Q}{accept}{\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l2a}{\ProposalC{\prNumber{n}{i}}{\promValue{\overrightarrow{V}}}}.\\\hspace*{1.5em}end}}$
 
 \subsubsection{Acceptor}
-% \Pa{a}{\tilde{s}}{pc}{n}{pr}
-$\Pa{a}{\tilde{s}}{pc}{n}{pr} = \left(\mu X \right) \urecvp{s}{i}{a}{l1a}{\perp}{n'} .\\
+$\Pa = \left(\mu X \right) \ReceiveUnreliableP{s}{i}{j}{l1a}{\perp}{n'} .\\
 \hspace*{0.5em}\If{n' = \perp}\\
-\hspace*{1em}\Then{\PaTwo}\\
+\hspace*{1em}\Then{\PaCont}\\
 \hspace*{1em}\Else{\\
 \hspace*{1.5em}\If{\greaterThan{n'}{n}}\\
-\hspace*{1.5em}\Then{\update{n}{n'}.\usendp{s}{a}{i}{l1b}{\Promise{pr}}.\PaTwo}\\
-\hspace*{1.5em}\Else{\usendp{s}{a}{i}{l1b}{\Nack{n}}.\PaTwo}}$
+\hspace*{1.5em}\Then{\update{n}{n'}.\SendUnreliableP{s}{j}{i}{l1b}{\Promise{pr}}.\PaCont}\\
+\hspace*{1.5em}\Else{\SendUnreliableP{s}{j}{i}{l1b}{\Nack{n}}.\PaCont}}$
 
-$\PaTwo = \wrecvp{s}{i}{a}{accept . \urecvp{s}{i}{a}{l2a}{\perp}{pr'} .\\
+$\PaCont = \ReceiveWeaklyP{s}{i}{j}{\Accept . \ReceiveUnreliableP{s}{i}{j}{l2a}{\perp}{pr'} .\\
 \hspace*{1em}\If{pr' = \perp}\\
 \hspace*{1.5em}\Then{X}\\
 \hspace*{1.5em}\Else{\\
 \hspace*{2em}\If{\greaterEqual{\nFromPr{pr'}}{n}}\\
 \hspace*{2.5em}\Then{\update{pr}{pr'} . \update{n}{\nFromPr{pr'}}.X}\\
 \hspace*{2.5em}\Else{X}}\\
-\hspace*{0.5em} restart.X}$
+\hspace*{0.5em} \oplus \Restart.X\\
+\hspace*{0.5em} \oplus \Abort.end}$
