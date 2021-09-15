@@ -51,7 +51,7 @@ $G_{p, A_Q} = \Mu{X} \DotForall{a \in A_Q} \SendUnreliableG{p}{a}{l1a}{\mathbb{N
 \hspace*{1em}\oplus \Restart.X\\
 \hspace*{1em}\oplus \Abort.end}$
 
-We can distinguish the individual steps of the Paxos algorithm by the labels $l1a$, $l1b$, and $l2a$.
+We can distinguish the individual phases of the Paxos algorithm by the labels $l1a$, $l1b$, and $l2a$.
 
 In the first two steps the proposer sends its proposal number to each acceptor in $A_Q$ and then listens for their responses.
 In step 2a the proposer decides whether to send an accept message or restart the algorithm.
@@ -114,13 +114,18 @@ $\genAq{i}{ac}{pc}$ returns a set $A_Q$ with $A_Q \subseteq A = \{pc + 1, \dots,
 \newcommand{\ParallelFor}[1]{\Pi_{#1}\;}
 
 % Idea: One shared-point per Proposer over which the session is initialized.
-$\Sys{pc}{ac}{\overrightarrow{V}} = \SessionRequest{a}{1}{t} . \PpInit{1}{\genAq{1}{ac}{pc}}{1}{[]}\\
-\Or \SessionAccept{a}{1}{t} . \ParallelFor{2 \le i \le pc} \PpInit{i}{\genAq{i}{pc}{ac}}{i}{[]} \\
+$\Sys{pc}{ac}{\overrightarrow{V}} = \SessionRequest{a}{2}{t} . \PpInit{pc}{\genAq{pc}{ac}{pc}}{pc}{[]}\\
+\Or \SessionAccept{a}{1}{t} . \ParallelFor{1 \le i < pc} \PpInit{i}{\genAq{i}{pc}{ac}}{i}{[]} \\
 \Or \ParallelFor{pc < j \le pc + ac} \PaInit{j}{pc}{\overrightarrow{V}_{j,n}}{\overrightarrow{V}_{j,pr}}$
 
-$\PpInit{i}{A_Q}{n}{\overrightarrow{V}} = \SessionRequest{b_i}{a_1, \dots, a_{|A_Q|}}{s} . \Pp$
+$\PpInit{i}{A_Q}{n}{\overrightarrow{V}} = \SessionRequest{b_i}{a_1, \dots, a_{|A_Q|}, i}{s} . \Pp$
 
 $\PaInit{j}{pc}{n}{pr} = \ParallelFor{1 \le i \le pc} \SessionAccept{b_i}{j}{s} . \Pa$
+
+$\Sys{pc}{ac}{\overrightarrow{V}}$, $\PpInit{i}{A_Q}{n}{\overrightarrow{V}}$, and $\PaInit{j}{pc}{n}{pr}$ describe the system initialization.
+$pc$ and $ac$ are the number of proposers and acceptors respectively.
+$\overrightarrow{V}$ is the initial knowledge vector where $\overrightarrow{V}_{j, n}$ is the initial highest promised $n$ for an acceptor $j$, if available, and $\overrightarrow{V}_{j, pr}$ is the initial proposal that was accepted, if available.
+$n$ is of type $\Maybe{\mathbb{N}}$ and $pr$ is of type $\Maybe{\Proposal{\Value}}$ thus both can be $\Nothing$.
 
 \subsubsection{Proposer}
 \newcommand{\SendUnreliableP}[5]{#1\left[#2, #3\right]!_u #4 \left\langle #5 \right\rangle}
@@ -153,7 +158,7 @@ $\PaCont = \ReceiveWeaklyP{s}{i}{j}{\Accept . \ReceiveUnreliableP{s}{i}{j}{l2a}{
 \hspace*{1.5em}\Then{X}\\
 \hspace*{1.5em}\Else{\\
 \hspace*{2em}\If{\greaterEqual{\nFromPr{pr'}}{n}}\\
-\hspace*{2.5em}\Then{\update{pr}{pr'} . \update{n}{\nFromPr{pr'}}.X}\\
+\hspace*{2.5em}\Then{\update{pr}{pr'} . \update{n}{\Just{\nFromPr{pr'}}}.X}\\
 \hspace*{2.5em}\Else{X}}\\
 \hspace*{0.5em} \oplus \Restart.X\\
 \hspace*{0.5em} \oplus \Abort.end}$
