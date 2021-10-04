@@ -1,12 +1,9 @@
 \chapter{Model and Analysis}
-
-\section{Technical Preliminaries}
-First, we define the sorts, some additional notation, and use them to define the global type.
-Afterwards we define some sets and functions to create the processes.
+First, we specify some sorts with which we can then define the global type.
+Afterwards, we define the processes for the proposer and the acceptor.
+Finally, we will study an example run of the model.
 
 \subsection{Sorts}
-The sorts utilize type variables, which represent mathematical variables that range over types.
-
 \newcommand{\Maybe}[1]{\operatorname{Maybe}\; #1}
 \newcommand{\Just}[1]{\operatorname{Just}\; #1}
 \newcommand{\Nothing}[0]{\operatorname{Nothing}}
@@ -17,16 +14,18 @@ The sorts utilize type variables, which represent mathematical variables that ra
 \newcommand{\Nack}[1]{\operatorname{Nack}\; #1}
 \newcommand{\Value}[0]{\operatorname{Value}}
 
-$\Maybe{a} = \Just{a} \Or \Nothing$
+\newcommand{\Sort}[1]{\left\{#1\right\}}
+\newcommand{\Paren}[1]{\left(#1\right)}
+
+We assume the following sorts.
+
+$\Maybe{a} = \Sort{\Just{a}, \Nothing}$
 
 $\Value =$ Set of values.
 
-$\Promise{a} = \Promise{\left(\Maybe{\left(\Proposal{a}\right)}\right)} \Or \Nack{\mathbb{N}}$
+$\Promise{a} = \Sort{\Promise{\Paren{\Maybe{\Paren{\Proposal{a}}}}}, \Nack{\mathbb{N}}}$
 
-$\Proposal{a} = \ProposalC{\mathbb{N}}{a}$
-
-\subsection{Notation}
-TODO im Grunde einfach von Peters et al klauen.
+$\Proposal{a} = \Sort{\ProposalC{\mathbb{N}}{a}}$
 
 \subsection{Global Type}
 \newcommand{\DotForall}[1]{\bigodot_{#1}\;}
@@ -39,9 +38,7 @@ TODO im Grunde einfach von Peters et al klauen.
 
 \newcommand{\Mu}[1]{\left(\mu #1\right)}
 
-\newcommand{\Paren}[1]{\left(#1\right)}
-
-Since each proposer has its own session the global type can be defined for one proposer.
+Since each proposer initiates its own session the global type can be defined for one proposer.
 A quorum of acceptors $A_Q$ is assumed.
 
 The last phase of Paxos contains no inter-process communication, so it is not modeled in the global type.
@@ -53,9 +50,10 @@ $G_{p, A_Q} = \Mu{X} \DotForall{a \in A_Q} \SendUnreliableG{p}{a}{l1a}{\mathbb{N
 
 We can distinguish the individual phases of the Paxos algorithm by the labels $l1a$, $l1b$, and $l2a$.
 
-In the first two steps the proposer sends its proposal number to each acceptor in $A_Q$ and then listens for their responses.
-In step 2a the proposer decides whether to send an accept message or restart the algorithm.
+In the first two steps, $1a$ and $1b$, the proposer sends its proposal number to each acceptor in $A_Q$ and listens for their responses.
+In step 2a the proposer decides whether to send an $\Accept$ or $\Restart$ message to restart the algorithm.
 This decision is broadcast to all acceptors in $A_Q$.
+Should the proposer crash the algorithm ends for this particular proposer and quorum of acceptors.
 
 \subsection{Functions and Sets}
 \newcommand{\Bool}[0]{\operatorname{Bool}}
@@ -97,16 +95,16 @@ $\operatorname{ge}: a \to \Maybe{a} \to \Bool\\
 $\operatorname{nFromPr} : \Proposal{a} \to \mathbb{N}\\
 \nFromPr{\ProposalC{n}{\_}} = n$
 
-$\genAq{i}{ac}{pc}$ returns a set $A_Q$ with $A_Q \subseteq A = \{pc + 1, \dots, pc + ac\}$ and $|A_Q| > \frac{|A|}{2}$.
+$\genAq{i}{ac}{pc}$ returns a set $A_Q$ with $A_Q \subseteq A = \{1, \dots, ac\}$ and $|A_Q| > \frac{|A|}{2}$.
 
 \subsection{Processes}
-\newcommand{\Sys}[3]{\operatorname{Sys}\left(#1, #2, #3\right)}
+\newcommand{\Sys}[2]{\operatorname{Sys}\left(#1, #2\right)}
 \newcommand{\Pa}[0]{\operatorname{P^a}}
 \newcommand{\Pp}[0]{\operatorname{P^p}}
 \newcommand{\PaCont}[0]{\operatorname{P^a_{cont}}}
 
 \newcommand{\PpInit}[4]{\operatorname{P^p_{init}}\left(#1, #2, #3, #4\right)}
-\newcommand{\PaInit}[4]{\operatorname{P^a_{init}}\left(#1, #2, #3, #4\right)}
+\newcommand{\PaInit}[6]{\operatorname{P^a_{init}}\left(#1, #2, #3, #4, #5, #6\right)}
 
 \subsubsection{System Initialization}
 \newcommand{\SessionRequest}[3]{\overline{#1}\left[#2\right]\left(#3\right)}
@@ -114,18 +112,33 @@ $\genAq{i}{ac}{pc}$ returns a set $A_Q$ with $A_Q \subseteq A = \{pc + 1, \dots,
 \newcommand{\ParallelFor}[1]{\Pi_{#1}\;}
 
 % Idea: One shared-point per Proposer over which the session is initialized.
-$\Sys{pc}{ac}{\overrightarrow{V}} = \SessionRequest{a}{2}{t} . \PpInit{pc}{\genAq{pc}{ac}{pc}}{pc}{[]}\\
-\Or \SessionAccept{a}{1}{t} . \ParallelFor{1 \le i < pc} \PpInit{i}{\genAq{i}{pc}{ac}}{i}{[]} \\
-\Or \ParallelFor{pc < j \le pc + ac} \PaInit{j}{pc}{\overrightarrow{V}_{j,n}}{\overrightarrow{V}_{j,pr}}$
+$\Sys{ac}{pc} = \SessionRequest{a}{2}{t} . \PpInit{ac + 1}{\genAq{ac + pc}{ac}{pc}}{ac + pc}{[]}\\
+\Or \SessionAccept{a}{1}{t} . \ParallelFor{ac < i < ac + pc} \PpInit{ac + 1}{\genAq{i}{ac}{pc}}{i}{[]} \\
+\Or \ParallelFor{1 \le j \le ac} \PaInit{j}{ac + 1}{ac}{pc}{n_j}{pr_j}$
 
-$\PpInit{i}{A_Q}{n}{\overrightarrow{V}} = \SessionRequest{b_i}{a_1, \dots, a_{|A_Q|}, i}{s} . \Pp$
+$\PpInit{i}{A_Q}{n}{\overrightarrow{V}} = \SessionRequest{b_n}{i}{s} . \Pp$
 
-$\PaInit{j}{pc}{n}{pr} = \ParallelFor{1 \le i \le pc} \SessionAccept{b_i}{j}{s} . \Pa$
+$\PaInit{j}{i}{ac}{pc}{n}{pr} = \ParallelFor{ac < k \le ac + pc} \SessionAccept{b_k}{j}{s} . \Pa$
 
-$\Sys{pc}{ac}{\overrightarrow{V}}$, $\PpInit{i}{A_Q}{n}{\overrightarrow{V}}$, and $\PaInit{j}{pc}{n}{pr}$ describe the system initialization.
-$pc$ and $ac$ are the number of proposers and acceptors respectively.
-$\overrightarrow{V}$ is the initial knowledge vector where $\overrightarrow{V}_{j, n}$ is the initial highest promised $n$ for an acceptor $j$, if available, and $\overrightarrow{V}_{j, pr}$ is the initial proposal that was accepted, if available.
-$n$ is of type $\Maybe{\mathbb{N}}$ and $pr$ is of type $\Maybe{\Proposal{\Value}}$ thus both can be $\Nothing$.
+$\Sys{ac}{pc}$, $\PpInit{i}{A_Q}{n}{\overrightarrow{V}}$, and $\PaInit{j}{i}{ac}{pc}{n}{pr}$ describe the system initialization.
+$ac$ and $pc$ are the number of acceptors and proposers respectively.
+
+An outer session is created through shared-point $a$.
+This outer session is not strictly necessary but was left in to allow for easier extension of the model.
+The acceptors are initialized using indices from 1 to $ac$ and the proposers are initialized using indices from $ac + 1$ to $ac + pc$.
+
+$\PpInit{i}{A_Q}{n}{\overrightarrow{V}}$ is initialized with the proposer's role in its own session $i$, which is always $ac + 1$, a quorum of acceptors $A_Q$, an index $n$, and a vector $\overrightarrow{V}$.
+Each proposer has the same role $i = ac + 1$ but uses a different shared-point $b_n$ according to its index $n$.
+$\overrightarrow{V}$ is used in the proposer to collect and evaluate the responses from the acceptors.
+It is always initialized with an empty list $[]$.
+Shared-point $b_n$ is used to initiate a session.
+Afterwards, the process behaves like $\Pp$.
+
+$\PaInit{j}{i}{ac}{pc}{n}{pr}$ is initialized with the acceptor's index $j$, the proposer index $i$, which is always $ac + 1$, $ac$, $pc$, initial knowledge for the highest promised proposal number $n$, if available, and initial knowledge for the most recently accepted proposal $pr$, if available.
+$n$ is of type $\Maybe{\mathbb{N}}$ and $pr$ is of type $\Maybe{\Paren{\Proposal{\Value}}}$ thus both can be $\Nothing$.
+Each of the proposers' session requests are accepted in a separate subprocess.
+These subprocesses run parallel to each other but still access the same values for $n$ and $pr$.
+Afterwards, each subprocess behaves like $\Pa$.
 
 \subsubsection{Proposer}
 \newcommand{\SendUnreliableP}[5]{#1\left[#2, #3\right]!_u #4 \left\langle #5 \right\rangle}
@@ -138,11 +151,11 @@ $n$ is of type $\Maybe{\mathbb{N}}$ and $pr$ is of type $\Maybe{\Proposal{\Value
 \newcommand{\Else}[1]{\operatorname{else}\; #1}
 \newcommand{\update}[2]{\operatorname{update} \left(#1, #2\right)}
 
-$\Pp = \Mu{X} \left(\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l1a}{\prNumber{n}{i}}\right) .\\
+$\Pp = \Mu{X} \update{n}{n + 1} . \left(\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l1a}{\prNumber{n}{i}}\right) .\\
 \hspace*{0.5em}\left(\DotForall{j \in A_Q} \ReceiveUnreliableP{s}{j}{i}{l1b}{\perp}{v_j}\right) .\\
 \hspace*{0.5em}\If{\anyNack{\overrightarrow{V}} \text{ or } \promCount{\overrightarrow{V}} < \ceil{\frac{|A_Q|}{2}}}\\
-\hspace*{1em}\Then{\SendWeaklyP{s}{i}{A_Q}{restart}{\update{n}{n + 1} . X}}\\
-\hspace*{1em}\Else{\\\hspace*{1.5em}\SendWeaklyP{s}{i}{A_Q}{accept}{\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l2a}{\ProposalC{\prNumber{n}{i}}{\promValue{\overrightarrow{V}}}}.\\\hspace*{1.5em}end}}$
+\hspace*{1em}\Then{\SendWeaklyP{s}{i}{A_Q}{\Restart}{X}}\\
+\hspace*{1em}\Else{\\\hspace*{1.5em}\SendWeaklyP{s}{i}{A_Q}{\Accept}{\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l2a}{\ProposalC{\prNumber{n}{i}}{\promValue{\overrightarrow{V}}}}.\\\hspace*{1.5em}end}}$
 
 \subsubsection{Acceptor}
 $\Pa = \Mu{X} \ReceiveUnreliableP{s}{i}{j}{l1a}{\perp}{n'} .\\
@@ -162,3 +175,18 @@ $\PaCont = \ReceiveWeaklyP{s}{i}{j}{\Accept . \ReceiveUnreliableP{s}{i}{j}{l2a}{
 \hspace*{2.5em}\Else{X}}\\
 \hspace*{0.5em} \oplus \Restart.X\\
 \hspace*{0.5em} \oplus \Abort.end}$
+
+\section{Example}
+\newcommand{\Nu}[1]{\left(\nu #1\right)}
+
+$ac = 3\; pc = 2$
+
+$\Sys{3}{2} =
+\SessionAccept{a}{1}{t}.\ParallelFor{3 < i < 5} \PpInit{4}{\genAq{i}{3}{2}}{i}{[]}\\
+\Or \SessionRequest{a}{2}{t}.\PpInit{4}{\genAq{5}{3}{2}}{5}{[]}\\
+\Or \ParallelFor{1 \le j \le 3} \PaInit{j}{4}{3}{2}{n_j}{pr_j}\\
+\longmapsto (\operatorname{Init})\\
+\Nu{t}\big (
+\PpInit{4}{A_{Q,1}}{4}{[]} \Or \PpInit{4}{A_{Q,2}}{5}{[]}\\
+\Or \PaInit{1}{4}{3}{2}{n_1}{pr_1} \Or \PaInit{2}{4}{3}{2}{n_2}{pr_2} \Or \PaInit{3}{4}{3}{2}{n_3}{pr_3}
+\big )$
