@@ -795,7 +795,7 @@ $=\\
 % A3: n=10, pr=Proposal 10 abc
 $\longmapsto (WSel + WBran)\\
 \NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l2a}{\ProposalC{\prNumber{6}{4}}{\promValue{\VectorV}}}.\SendUnreliableP{s}{4}{2}{l2a}{\ProposalC{\prNumber{6}{4}}{\promValue{\VectorV}}}.end\\
+\Mu{X} \SendUnreliableP{s}{4}{1}{l2a}{\ProposalC{\prNumber{6}{4}}{\promValue{\VectorV}}}.\\\SendUnreliableP{s}{4}{2}{l2a}{\ProposalC{\prNumber{6}{4}}{\promValue{\VectorV}}}.end\\
 \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l2a}{\perp}{pr'}.\If{\dots}\\
 \Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l2a}{\perp}{pr'}.\If{\dots}
@@ -829,11 +829,11 @@ $\longmapsto (USend + UGet, USend + UGet)\\
 % A3: n=10, pr=Proposal 10 abc
 $=\\
 \NuChannels \big (
-\Or \Mu{X} \If{\greaterEqual{15}{\Just{15}}} \Then{\update{pr}{\ProposalC{15}{abc}}.\update{n}{15}.X} \Else{\dots}\\
-\Or \Paren{
-    \Mu{X} \If{\greaterEqual{15}{\Just{15}}} \Then{\update{pr}{\ProposalC{15}{abc}}.\update{n}{15}.X} \Else{\dots}
+\Or \Mu{X} \If{\greaterEqual{15}{\Just{15}}}\\\hspace*{1em}\Then{\update{pr}{\ProposalC{15}{abc}}.\update{n}{15}.X} \Else{\dots}\\
+\Or (
+    \Mu{X} \If{\greaterEqual{15}{\Just{15}}}\\\hspace*{1em}\Then{\update{pr}{\ProposalC{15}{abc}}.\update{n}{15}.X} \Else{\dots}
     \Or \Mu{X} X
-}\\
+)\\
 \Or \Mu{X} X\\
 \Or \InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
