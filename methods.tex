@@ -3,7 +3,7 @@ First, we specify some sorts with which we can then define the global type.
 Afterwards, we define the processes for the proposer and the acceptor.
 Finally, we will study an example run of the model.
 
-\subsection{Sorts}
+\section{Sorts}
 \newcommand{\Maybe}[1]{\operatorname{Maybe}\; #1}
 \newcommand{\Just}[1]{\operatorname{Just}\; #1}
 \newcommand{\Nothing}[0]{\operatorname{Nothing}}
@@ -14,20 +14,20 @@ Finally, we will study an example run of the model.
 \newcommand{\Nack}[1]{\operatorname{Nack}\; #1}
 \newcommand{\Value}[0]{\operatorname{Value}}
 
-\newcommand{\Sort}[1]{\left\{#1\right\}}
+\newcommand{\Curly}[1]{\left\{#1\right\}}
 \newcommand{\Paren}[1]{\left(#1\right)}
 
 We assume the following sorts.
 
-$\Maybe{a} = \Sort{\Just{a}, \Nothing}$
+$\Maybe{a} = \Curly{\Just{a}, \Nothing}$
 
 $\Value =$ Set of values.
 
-$\Promise{a} = \Sort{\Promise{\Paren{\Maybe{\Paren{\Proposal{a}}}}}, \Nack{\mathbb{N}}}$
+$\Promise{a} = \Curly{\Promise{\Paren{\Maybe{\Paren{\Proposal{a}}}}}, \Nack{\mathbb{N}}}$
 
-$\Proposal{a} = \Sort{\ProposalC{\mathbb{N}}{a}}$
+$\Proposal{a} = \Curly{\ProposalC{\mathbb{N}}{a}}$
 
-\subsection{Global Type}
+\section{Global Type}
 \newcommand{\DotForall}[1]{\bigodot_{#1}\;}
 \newcommand{\SendUnreliableG}[4]{#1 \to_u #2 : #3 \left\langle #4 \right\rangle}
 \newcommand{\SendWeaklyG}[3]{#1 \to_w #2 : #3}
@@ -55,36 +55,43 @@ In step 2a the proposer decides whether to send an $\Accept$ or $\Restart$ messa
 This decision is broadcast to all acceptors in $A_Q$.
 Should the proposer crash the algorithm ends for this particular proposer and quorum of acceptors.
 
-\subsection{Functions and Sets}
+\section{Functions and Sets}
 \newcommand{\Bool}[0]{\operatorname{Bool}}
 \newcommand{\True}[0]{\operatorname{true}}
 \newcommand{\False}[0]{\operatorname{false}}
-\newcommand{\prNumber}[2]{\operatorname{prNumber}\left( #1, #2 \right)}
-\newcommand{\promValue}[1]{\operatorname{promValue}\left(#1\right)}
+\newcommand{\prNumber}[2]{\operatorname{proposalNumber}\left( #1, #2 \right)}
+\newcommand{\promValue}[1]{\operatorname{promiseValue}\left(#1\right)}
 \newcommand{\anyNack}[1]{\operatorname{anyNack}\left(#1\right)}
-\newcommand{\promCount}[1]{\operatorname{promCount}\left(#1\right)}
+\newcommand{\promCount}[1]{\operatorname{promiseCount}\left(#1\right)}
 \newcommand{\greaterThan}[2]{\operatorname{gt}\left(#1, #2\right)}
 \newcommand{\greaterEqual}[2]{\operatorname{ge}\left(#1, #2\right)}
-\newcommand{\nFromPr}[1]{\operatorname{nFromPr}\left(#1 \right)}
+\newcommand{\nFromPr}[1]{\operatorname{nFromProposal}\left(#1 \right)}
 \newcommand{\genAq}[3]{\operatorname{genA_Q}\left(#1, #2, #3\right)}
 
-$\Bool = \Sort{\True, \False}$
+$\Bool = \Curly{\True, \False}$
 
-$\operatorname{prNumber} : \mathbb{N} \times \mathbb{N} \to \mathbb{N}$ returns a proposal number when given two natural numbers.
+$\operatorname{proposalNumber} : \mathbb{N} \times \mathbb{N} \to \mathbb{N}$
 
-$\operatorname{promValue} : [\Promise{a}] \to a$ if none of the promises in the given list contain a value a new value is returned.
-A promise contains a value if it is of the form $\Promise{(\Just{v})}$.
-$v$ is the value.
+$\prNumber{a}{b}$ returns a proposal number when given two natural numbers.
+
+$\operatorname{promiseValue} : [\Promise{a}] \to a$
+
+$\promValue{ps}$ returns a new value if none of the promises in $ps$ contain a value. Otherwise, the best value is returned. Usually, that means the value with the highest associated proposal number.
+A promise contains a value $v$ if it is of the form $\Promise{(\Just{v})}$.
 
 $\operatorname{anyNack} : [\Promise{a}] \to \Bool\\
 \anyNack{[]} = false\\
 \anyNack{\Paren{\Nack{\_}: \_}} = true\\
 \anyNack{\Paren{\_:xs}} = \anyNack{xs}$
 
-$\operatorname{promCount} : [\Promise{a}] \to \mathbb{N}\\
+$\anyNack{ps}$ returns $\True$ if the list contains a promise of the form $\Nack{n}$. Otherwise, it returns $\False$.
+
+$\operatorname{promiseCount} : [\Promise{a}] \to \mathbb{N}\\
 \promCount{[]} = 0\\
 \promCount{\Paren{\Promise{\_}:xs}} = 1 + \promCount{xs}\\
 \promCount{\Paren{\_:xs}} = \promCount{xs}$
+
+$\promCount{ps}$ calculates the number of promises in $ps$ of the form $\Promise{m}$.
 
 $\operatorname{gt}: a \to \Maybe{a} \to \Bool\\
 \greaterThan{\_}{\Nothing} = true\\
@@ -94,12 +101,16 @@ $\operatorname{ge}: a \to \Maybe{a} \to \Bool\\
 \greaterEqual{\_}{\Nothing} = true\\
 \greaterEqual{a}{\Just{b}} = a \ge b$
 
-$\operatorname{nFromPr} : \Proposal{a} \to \mathbb{N}\\
+$\operatorname{nFromProposal} : \Proposal{a} \to \mathbb{N}\\
 \nFromPr{\ProposalC{n}{\_}} = n$
 
-$\genAq{i}{ac}{pc}$ returns a set $A_Q$ with $A_Q \subseteq A = \{1, \dots, ac\}$ and $|A_Q| > \frac{|A|}{2}$.
+$\nFromPr{p}$ returns the proposal number $n$ inside proposal $p$, which has the form $\ProposalC{n}{pr}$.
 
-\subsection{Processes}
+$\operatorname{genA_Q} : \mathbb{N} \times \mathbb{N} \times \mathbb{N} \to \mathbb{N}$
+
+$\genAq{i}{ac}{pc}$ returns a randomly selected set $A_Q$ with $A_Q \subseteq A = \Curly{1, \dots, ac}$ and $|A_Q| > \frac{|A|}{2}$.
+
+\section{Processes}
 \newcommand{\Sys}[2]{\operatorname{Sys}\left(#1, #2\right)}
 \newcommand{\Pa}[0]{\operatorname{P^a}}
 \newcommand{\Pp}[0]{\operatorname{P^p}}
@@ -108,7 +119,7 @@ $\genAq{i}{ac}{pc}$ returns a set $A_Q$ with $A_Q \subseteq A = \{1, \dots, ac\}
 \newcommand{\PpInit}[5]{\operatorname{P^p_{init}}\left(#1, #2, #3, #4, #5\right)}
 \newcommand{\PaInit}[6]{\operatorname{P^a_{init}}\left(#1, #2, #3, #4, #5, #6\right)}
 
-\subsubsection{System Initialization}
+\subsection{System Initialization}
 \newcommand{\SessionRequest}[3]{\overline{#1}\left[#2\right]\left(#3\right)}
 \newcommand{\SessionAccept}[3]{#1\left[#2\right]\left(#3\right)}
 \newcommand{\ParallelFor}[1]{\Pi_{#1}\;}
@@ -143,7 +154,7 @@ Each of the proposers' session requests are accepted in a separate subprocess.
 These subprocesses run parallel to each other but still access the same values for $n$ and $pr$.
 Afterwards, each subprocess behaves like $\Pa$.
 
-\subsubsection{Proposer}
+\subsection{Proposer}
 \newcommand{\SendUnreliableP}[5]{#1\left[#2, #3\right]!_u #4 \left\langle #5 \right\rangle}
 \newcommand{\ReceiveUnreliableP}[6]{#1\left[#2, #3\right]?_u #4 \left\langle #5 \right\rangle \left(#6\right)}
 \newcommand{\ceil}[1]{\Big\lceil #1 \Big\rceil}
@@ -161,7 +172,7 @@ $\Pp = \Mu{X} \update{n}{n + 1} . \left(\DotForall{j \in A_Q} \SendUnreliableP{s
 \hspace*{1em}\Then{\SendWeaklyP{s}{i}{A_Q}{\Restart}{X}}\\
 \hspace*{1em}\Else{\\\hspace*{1.5em}\SendWeaklyP{s}{i}{A_Q}{\Accept}{\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l2a}{\ProposalC{\prNumber{n}{i}}{\promValue{\VectorV}}}.\\\hspace*{1.5em}end}}$
 
-\subsubsection{Acceptor}
+\subsection{Acceptor}
 $\Pa = \Mu{X} \ReceiveUnreliableP{s}{i}{j}{l1a}{\perp}{n'} .\\
 \hspace*{0.5em}\If{n' = \perp}\\
 \hspace*{1em}\Then{\PaCont}\\
@@ -186,7 +197,7 @@ $\PaCont = \ReceiveWeaklyP{s}{i}{j}{\Accept . \ReceiveUnreliableP{s}{i}{j}{l2a}{
 \newcommand{\InnerSessionQueues}[1]{\ParallelFor{1 \le k,l \le 4, k \neq l} #1_{k\to l}:[]}
 \newcommand{\NuChannels}[0]{\Nu{t}\Nu{s}\Nu{r}}
 
-$ac = 3\; pc = 2$
+$ac = 3\; pc = 2\; V=\Curly{\operatorname{abc}}$
 
 $\Sys{3}{2} =
 \SessionAccept{a}{1}{t}.\ParallelFor{3 < i < 5} \PpInit{4}{\genAq{i}{3}{2}}{i}{i}{[]}\\
@@ -416,7 +427,7 @@ $\longmapsto (USend + UGet)\\
 $\longmapsto (USend + UGet)\\
 \NuChannels \big (
 \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \If{\False \tOr 2 < 1} \Then{\dots} \Else{\SendWeaklyP{r}{4}{\Sort{2,3}}{\Accept}{\dots}}\\
+\Or \Mu{X} \If{\False \tOr 2 < 1} \Then{\dots} \Else{\SendWeaklyP{r}{4}{\Curly{2,3}}{\Accept}{\dots}}\\
 \Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\BeginPaCont}
@@ -437,7 +448,7 @@ $\longmapsto (USend + UGet)\\
 $=\\
 \NuChannels \big (
 \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \SendWeaklyP{r}{4}{\Sort{2,3}}{\Accept}{\SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}}\dots\\
+\Or \Mu{X} \SendWeaklyP{r}{4}{\Curly{2,3}}{\Accept}{\SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}}\dots\\
 \Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\BeginPaCont}
@@ -645,7 +656,7 @@ $=\\
 
 $\longmapsto (USend + UGet, USend + UGet)\\
 \NuChannels \big (
-\Mu{X} \If{\True \tOr 1 < 1} \Then{\SendWeaklyP{s}{4}{\Sort{1,2}}{\Restart}{X}} \Else{\dots}\\
+\Mu{X} \If{\True \tOr 1 < 1} \Then{\SendWeaklyP{s}{4}{\Curly{1,2}}{\Restart}{X}} \Else{\dots}\\
 \Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
 \Or \Paren{
     \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}
@@ -662,7 +673,7 @@ $\longmapsto (USend + UGet, USend + UGet)\\
 
 $=\\
 \NuChannels \big (
-\Mu{X} \SendWeaklyP{s}{4}{\Sort{1,2}}{\Restart}{X}\\
+\Mu{X} \SendWeaklyP{s}{4}{\Curly{1,2}}{\Restart}{X}\\
 \Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
 \Or \Paren{
     \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}
@@ -761,7 +772,7 @@ $=\\
 % A3: n=10, pr=Proposal 10 abc
 $\longmapsto (USend + UGet, USend + UGet)\\
 \NuChannels \big (
-\Mu{X} \If{\False \tOr 2 < 1} \Then{\dots} \Else{\SendWeaklyP{s}{4}{\Sort{1,2}}{\Accept}{\dots}}\\
+\Mu{X} \If{\False \tOr 2 < 1} \Then{\dots} \Else{\SendWeaklyP{s}{4}{\Curly{1,2}}{\Accept}{\dots}}\\
 \Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
 \Or \Paren{
     \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}
@@ -778,7 +789,7 @@ $\longmapsto (USend + UGet, USend + UGet)\\
 % A3: n=10, pr=Proposal 10 abc
 $=\\
 \NuChannels \big (
-\Mu{X} \SendWeaklyP{s}{4}{\Sort{1,2}}{\Accept}{\dots}\\
+\Mu{X} \SendWeaklyP{s}{4}{\Curly{1,2}}{\Accept}{\dots}\\
 \Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
 \Or \Paren{
     \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}
