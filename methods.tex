@@ -67,6 +67,7 @@ Should the proposer crash the algorithm ends for this particular proposer and qu
 \newcommand{\greaterEqual}[2]{\operatorname{ge}\left(#1, #2\right)}
 \newcommand{\nFromPr}[1]{\operatorname{nFromProposal}\left(#1 \right)}
 \newcommand{\genAq}[3]{\operatorname{genA_Q}\left(#1, #2, #3\right)}
+\newcommand{\update}[2]{\operatorname{update} \left(#1, #2\right)}
 
 $\Bool = \Curly{\True, \False}$
 
@@ -109,6 +110,8 @@ $\nFromPr{p}$ returns the proposal number $n$ inside proposal $p$, which has the
 $\operatorname{genA_Q} : \mathbb{N} \times \mathbb{N} \times \mathbb{N} \to \mathbb{N}$
 
 $\genAq{i}{ac}{pc}$ returns a randomly selected set $A_Q$ with $A_Q \subseteq A = \Curly{1, \dots, ac}$ and $|A_Q| > \frac{|A|}{2}$.
+
+$\update{n}{m}$ mutates the value inside $n$ to equal the value of $m$.
 
 \section{Processes}
 \newcommand{\Sys}[2]{\operatorname{Sys}\left(#1, #2\right)}
@@ -163,14 +166,19 @@ Afterwards, each subprocess behaves like $\Pa$.
 \newcommand{\If}[1]{\operatorname{if}\; #1}
 \newcommand{\Then}[1]{\operatorname{then}\; #1}
 \newcommand{\Else}[1]{\operatorname{else}\; #1}
-\newcommand{\update}[2]{\operatorname{update} \left(#1, #2\right)}
 \newcommand{\tOr}[0]{\text{ or }}
 
-$\Pp = \Mu{X} \update{n}{n + 1} . \left(\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l1a}{\prNumber{n}{m}}\right) .\\
+$\Pp = \Mu{X} \update{n}{n + 1} .\\
+\hspace*{0.5em}\left(\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l1a}{\prNumber{n}{m}}\right) .\\
 \hspace*{0.5em}\left(\DotForall{j \in A_Q} \ReceiveUnreliableP{s}{j}{i}{l1b}{\perp}{v_j}\right) .\\
 \hspace*{0.5em}\If{\anyNack{\VectorV} \tOr \promCount{\VectorV} < \ceil{\frac{|A_Q|}{2}}}\\
 \hspace*{1em}\Then{\SendWeaklyP{s}{i}{A_Q}{\Restart}{X}}\\
-\hspace*{1em}\Else{\\\hspace*{1.5em}\SendWeaklyP{s}{i}{A_Q}{\Accept}{\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l2a}{\ProposalC{\prNumber{n}{i}}{\promValue{\VectorV}}}.\\\hspace*{1.5em}end}}$
+\hspace*{1em}\Else{\\\hspace*{1.5em}\SendWeaklyP{s}{i}{A_Q}{\Accept}{\\\hspace*{1.5em}\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l2a}{\ProposalC{\prNumber{n}{m}}{\promValue{\VectorV}}}.\\\hspace*{1.5em}end}}$
+
+At the start of the recursion $n$ is incremented to make sure every run of the recursion uses a different $n$ and thus a different proposal number.
+The proposal number is sent to every acceptor in $A_Q$ and their replies are gathered in $\VectorV$ through $v_j$.
+If any of the acceptors responded with $\Nack{x}$ or less than half of the acceptors responded with $\Promise{y}$ the proposer restarts the algorithm.
+Otherwise, the proposer sends its proposal to the acceptors and terminates.
 
 \subsection{Acceptor}
 $\Pa = \Mu{X} \ReceiveUnreliableP{s}{i}{j}{l1a}{\perp}{n'} .\\
