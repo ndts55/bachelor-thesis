@@ -230,6 +230,24 @@ The acceptor updates $n$ and $pr$ if the proposal number in $pr'$ is greater or 
 Then the subprocess terminates.
 If the acceptor does not receive a proposal or the proposal number of $pr'$ is less than $n$ the subprocess terminates without updating $n$ or $pr$.
 
+\section{Failure Patterns}
+\newcommand{\FPuget}[4]{\operatorname{FP_{uget}}\left(#1, #2, #3, #4\right)}
+\newcommand{\FPuskip}[4]{\operatorname{FP_{uskip}}\left(#1, #2, #3, #4\right)}
+\newcommand{\FPml}[4]{\operatorname{FP_{ml}}\left(#1, #2, #3, #4\right)}
+\newcommand{\FPwskip}[3]{\operatorname{FP_{wskip}}\left(#1, #2, #3\right)}
+\newcommand{\FPcrash}[1]{\operatorname{FP_{crash}}\left(#1\right)}
+% TODO: define failure patterns
+$\FPuget{s}{r_1}{r_2}{l}$
+
+$\FPuskip{s}{r_1}{r_2}{l}$
+
+$\FPml{s}{r_1}{r_2}{l}$
+
+$\FPwskip{s}{r_1}{r_2}$
+
+$\FPcrash{P}$
+
+
 \section{Example}
 \newcommand{\Nu}[1]{\left(\nu #1\right)}
 \newcommand{\OuterSessionQueues}[0]{\ParallelFor{1 \le k,l \le 2, k \neq l} t_{k\to l}:[]}
