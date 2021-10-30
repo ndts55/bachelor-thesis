@@ -172,13 +172,14 @@ Afterwards, each subprocess behaves like $\Pa$.
 $\Pp = \Mu{X} \update{n}{n + 1} .\\
 \hspace*{0.5em}\left(\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l1a}{\prNumber{n}{m}}\right) .\\
 \hspace*{0.5em}\left(\DotForall{j \in A_Q} \ReceiveUnreliableP{s}{j}{i}{l1b}{\perp}{v_j}\right) .\\
-\hspace*{0.5em}\If{\anyNack{\VectorV} \tOr \promCount{\VectorV} < \ceil{\frac{|A_Q|}{2}}}\\
+\hspace*{0.5em}\If{\anyNack{\VectorV} \tOr \promCount{\VectorV} < \ceil{\frac{i}{2}}}\\
 \hspace*{1em}\Then{\SendWeaklyP{s}{i}{A_Q}{\Restart}{X}}\\
 \hspace*{1em}\Else{\\\hspace*{1.5em}\SendWeaklyP{s}{i}{A_Q}{\Accept}{\\\hspace*{1.5em}\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l2a}{\ProposalC{\prNumber{n}{m}}{\promValue{\VectorV}}}.\\\hspace*{1.5em}end}}$
 
 At the start of the recursion $n$ is incremented to make sure every run of the recursion uses a different $n$ and thus a different proposal number.
 The proposal number is sent to every acceptor in $A_Q$ and their replies are gathered in $\VectorV$ through $v_j$.
-If any of the acceptors responded with $\Nack{x}$ or less than half of the acceptors responded with $\Promise{y}$ the proposer restarts the algorithm.
+Because $i = ac + 1$, the minimum number of acceptors needed to form a majority is $\ceil{\frac{i}{2}} = \ceil{\frac{ac + 1}{2}}$.
+If any $\Nack{x}$ was received or the number of $\Promise{y}$ received is less than that needed for the smallest majority the proposer restarts the algorithm.
 Otherwise, the proposer sends its proposal to the acceptors and terminates.
 
 \subsection{Acceptor}
@@ -231,21 +232,28 @@ Then the subprocess terminates.
 If the acceptor does not receive a proposal or the proposal number of $pr'$ is less than $n$ the subprocess terminates without updating $n$ or $pr$.
 
 \section{Failure Patterns}
-\newcommand{\FPuget}[4]{\operatorname{FP_{uget}}\left(#1, #2, #3, #4\right)}
-\newcommand{\FPuskip}[4]{\operatorname{FP_{uskip}}\left(#1, #2, #3, #4\right)}
-\newcommand{\FPml}[4]{\operatorname{FP_{ml}}\left(#1, #2, #3, #4\right)}
-\newcommand{\FPwskip}[3]{\operatorname{FP_{wskip}}\left(#1, #2, #3\right)}
-\newcommand{\FPcrash}[1]{\operatorname{FP_{crash}}\left(#1\right)}
-% TODO: define failure patterns
-$\FPuget{s}{r_1}{r_2}{l}$
+\newcommand{\FPuget}[0]{\operatorname{FP_{uget}}}
+\newcommand{\FPuskip}[0]{\operatorname{FP_{uskip}}}
+\newcommand{\FPml}[0]{\operatorname{FP_{ml}}}
+\newcommand{\FPwskip}[0]{\operatorname{FP_{wskip}}}
+\newcommand{\FPcrash}[0]{\operatorname{FP_{crash}}}
+% TODO define failure patterns
+% we don't need to reject outdated messages
+% thus fpuget = true
+In Paxos there is no need to reject outdated messages so $\FPuget$ is implemented with a constant $\True$.
 
-$\FPuskip{s}{r_1}{r_2}{l}$
+$\FPuskip$
+% TODO ask KP about it
+% eventually weak? eventually strong?
 
-$\FPml{s}{r_1}{r_2}{l}$
+$\FPwskip$
+% only iff corresponding proposer crashed? eventually weak? eventually strong?
 
-$\FPwskip{s}{r_1}{r_2}$
+$\FPml$
+% same as uskip
 
-$\FPcrash{P}$
+$\FPcrash$
+% a majority of acceptors still needs to be correct -> n > 2f
 
 
 \section{Example}
