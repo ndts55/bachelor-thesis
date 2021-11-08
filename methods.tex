@@ -4,6 +4,9 @@ Afterwards, we define the processes for the proposer and the acceptor.
 Finally, we will study an example run of the model.
 
 \section{Sorts}
+\newcommand{\Bool}[0]{\operatorname{Bool}}
+\newcommand{\True}[0]{\operatorname{true}}
+\newcommand{\False}[0]{\operatorname{false}}
 \newcommand{\Maybe}[1]{\operatorname{Maybe}\; #1}
 \newcommand{\Just}[1]{\operatorname{Just}\; #1}
 \newcommand{\Nothing}[0]{\operatorname{Nothing}}
@@ -20,6 +23,8 @@ Finally, we will study an example run of the model.
 We assume the following sorts.
 
 $\Maybe{a} = \Curly{\Just{a}, \Nothing}$
+
+$\Bool = \Curly{\True, \False}$
 
 $\Value =$ Set of values.
 
@@ -55,21 +60,18 @@ In step 2a the proposer decides whether to send an $\Accept$ or $\Restart$ messa
 This decision is broadcast to all acceptors in $A_Q$.
 Should the proposer crash the algorithm ends for this particular proposer and quorum of acceptors.
 
-\section{Functions and Sets}
-\newcommand{\Bool}[0]{\operatorname{Bool}}
-\newcommand{\True}[0]{\operatorname{true}}
-\newcommand{\False}[0]{\operatorname{false}}
+\section{Functions}
+We define some functions which we use in the next section to define the processes.
+
 \newcommand{\prNumber}[2]{\operatorname{proposalNumber}\left( #1, #2 \right)}
 \newcommand{\promValue}[1]{\operatorname{promiseValue}\left(#1\right)}
 \newcommand{\anyNack}[1]{\operatorname{anyNack}\left(#1\right)}
-\newcommand{\promCount}[1]{\operatorname{promiseCount}\left(#1\right)}
+\newcommand{\promiseCount}[1]{\operatorname{promiseCount}\left(#1\right)}
 \newcommand{\greaterThan}[2]{\operatorname{gt}\left(#1, #2\right)}
 \newcommand{\greaterEqual}[2]{\operatorname{ge}\left(#1, #2\right)}
-\newcommand{\nFromPr}[1]{\operatorname{nFromProposal}\left(#1 \right)}
+\newcommand{\nFromProposal}[1]{\operatorname{nFromProposal}\left(#1 \right)}
 \newcommand{\genAq}[3]{\operatorname{genA_Q}\left(#1, #2, #3\right)}
 \newcommand{\update}[2]{\operatorname{update} \left(#1, #2\right)}
-
-$\Bool = \Curly{\True, \False}$
 
 $\operatorname{proposalNumber} : \mathbb{N} \times \mathbb{N} \to \mathbb{N}$
 
@@ -85,14 +87,15 @@ $\operatorname{anyNack} : [\Promise{a}] \to \Bool\\
 \anyNack{\Paren{\Nack{\_}: \_}} = true\\
 \anyNack{\Paren{\_:xs}} = \anyNack{xs}$
 
-$\anyNack{ps}$ returns $\True$ if the list contains a promise of the form $\Nack{n}$. Otherwise, it returns $\False$.
+$\anyNack{ps}$ returns $\True$ if the list contains at least one promise of the form $\Nack{n}$.
+Otherwise, it returns $\False$.
 
 $\operatorname{promiseCount} : [\Promise{a}] \to \mathbb{N}\\
-\promCount{[]} = 0\\
-\promCount{\Paren{\Promise{\_}:xs}} = 1 + \promCount{xs}\\
-\promCount{\Paren{\_:xs}} = \promCount{xs}$
+\promiseCount{[]} = 0\\
+\promiseCount{\Paren{\Promise{\_}:xs}} = 1 + \promiseCount{xs}\\
+\promiseCount{\Paren{\_:xs}} = \promiseCount{xs}$
 
-$\promCount{ps}$ calculates the number of promises in $ps$ of the form $\Promise{m}$.
+$\promiseCount{ps}$ takes a list of promises $ps$ and calculates the number of promises in that list of that have the form $\Promise{m}$.
 
 $\operatorname{gt}: a \to \Maybe{a} \to \Bool\\
 \greaterThan{\_}{\Nothing} = true\\
@@ -103,15 +106,15 @@ $\operatorname{ge}: a \to \Maybe{a} \to \Bool\\
 \greaterEqual{a}{\Just{b}} = a \ge b$
 
 $\operatorname{nFromProposal} : \Proposal{a} \to \mathbb{N}\\
-\nFromPr{\ProposalC{n}{\_}} = n$
+\nFromProposal{\ProposalC{n}{\_}} = n$
 
-$\nFromPr{p}$ returns the proposal number $n$ inside proposal $p$, which has the form $\ProposalC{n}{pr}$.
+$\nFromProposal{p}$ retrieves the proposal number $n$ inside proposal $p$, which has the form $\ProposalC{n}{pr}$.
 
 $\operatorname{genA_Q} : \mathbb{N} \times \mathbb{N} \times \mathbb{N} \to \mathbb{N}$
 
 $\genAq{i}{ac}{pc}$ returns a randomly selected set $A_Q$ with $A_Q \subseteq A = \Curly{1, \dots, ac}$ and $|A_Q| > \frac{|A|}{2}$.
 
-$\update{n}{m}$ mutates the value inside $n$ to equal the value of $m$.
+$\update{n}{m}$ replaces the value inside $n$ with the value in $m$.
 
 \section{Processes}
 \newcommand{\Sys}[2]{\operatorname{Sys}\left(#1, #2\right)}
@@ -172,7 +175,7 @@ Afterwards, each subprocess behaves like $\Pa$.
 $\Pp = \Mu{X} \update{n}{n + 1} .\\
 \hspace*{0.5em}\left(\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l1a}{\prNumber{n}{m}}\right) .\\
 \hspace*{0.5em}\left(\DotForall{j \in A_Q} \ReceiveUnreliableP{s}{j}{i}{l1b}{\perp}{v_j}\right) .\\
-\hspace*{0.5em}\If{\anyNack{\VectorV} \tOr \promCount{\VectorV} < \ceil{\frac{i}{2}}}\\
+\hspace*{0.5em}\If{\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < \ceil{\frac{i}{2}}}\\
 \hspace*{1em}\Then{\SendWeaklyP{s}{i}{A_Q}{\Restart}{X}}\\
 \hspace*{1em}\Else{\\\hspace*{1.5em}\SendWeaklyP{s}{i}{A_Q}{\Accept}{\\\hspace*{1.5em}\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l2a}{\ProposalC{\prNumber{n}{m}}{\promValue{\VectorV}}}.\\\hspace*{1.5em}end}}$
 
@@ -195,8 +198,8 @@ $\PaCont = \ReceiveWeaklyP{s}{i}{j}{\Accept . \ReceiveUnreliableP{s}{i}{j}{l2a}{
 \hspace*{1em}\If{pr' = \perp}\\
 \hspace*{1.5em}\Then{end}\\
 \hspace*{1.5em}\Else{\\
-\hspace*{2em}\If{\greaterEqual{\nFromPr{pr'}}{n}}\\
-\hspace*{2.5em}\Then{\update{pr}{pr'} . \update{n}{\Just{\nFromPr{pr'}}}.end}\\
+\hspace*{2em}\If{\greaterEqual{\nFromProposal{pr'}}{n}}\\
+\hspace*{2.5em}\Then{\update{pr}{pr'} . \update{n}{\Just{\nFromProposal{pr'}}}.end}\\
 \hspace*{2.5em}\Else{end}}\\
 \hspace*{0.5em} \oplus \Restart.X\\
 \hspace*{0.5em} \oplus \Abort.end}$
@@ -243,8 +246,7 @@ If the acceptor does not receive a proposal or the proposal number of $pr'$ is l
 In Paxos there is no need to reject outdated messages so $\FPuget$ is implemented with a constant $\True$.
 
 $\FPuskip$
-% TODO ask KP about it
-% eventually weak? eventually strong?
+% eventually strong
 
 $\FPwskip$
 % only iff corresponding proposer crashed? eventually weak? eventually strong?
@@ -471,7 +473,7 @@ $=\\
 $\longmapsto (USend + UGet)\\
 \NuChannels \big (
 \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}.\If{\anyNack{\VectorV} \tOr \promCount{\VectorV} < 1} \Then{\dots}\\
+\Or \Mu{X} \ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}.\If{\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < 1} \Then{\dots}\\
 \Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\BeginPaCont}
