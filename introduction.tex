@@ -1,24 +1,25 @@
 \chapter{Introduction}
+In distributed systems components on different computers coordinate and communicate via message passing to achieve a common goal.
+Sometimes, to achieve this goal, the individual components need to reach consensus, i.e., agree on the value of some data using a consensus algorithm.
+For example in state machine replication or when deciding which database transactions should be committed in what order.
+For such a distributed system to behave correctly the consensus algorithm needs to be correct.
+Thus, analyzing consensus algorithms is important.
 
-% coordinating processes?
-% - processes that need to achieve one goal together
-% - accessing shared data
-% - ensure correct (distributed) computation
-% - reliable distributed coordination
-In distributed computing, it is often necessary for coordinating processes to reach consensus, i.e., agree on the value of some data that are needed during computation.
-% avoid using 'necessitates'
-These processes agree on the same values to ensure correct computation, which necessitates a correct consensus algorithm.
-Thus, proving the correctness of consensus algorithms is important.
-To achieve consensus these algorithms must satisfy the following properties: termination, validity, and agreement \cite{dist_sys}.
-
-Due to the presence of faulty processes consensus algorithms are designed to be fault-tolerant.
-
+To achieve consensus, consensus algorithms must satisfy the following properties: termination, validity, and agreement \cite{dist_sys}.
 Proving these properties can be complicated.
 Model checking tools lead to big state-spaces so static analysis is preferable.
-Multiparty Session Types are particularly interesting since session typing can ensure the absence of communication errors and deadlocks, and protocol conformance \cite{mpstbd}.
-However, to properly model unreliable communication between processes a fault-tolerant extension to Multiparty Session Types is necessary.
+For static analysis Multiparty Session Types are particularly interesting because session typing can ensure protocol conformance and the absence of communication errors and deadlocks \cite{mpstbd}.
 
-\citeauthor{ftmpst} developed such an extension.
+Due to the presence of faulty processes and unreliable communication consensus algorithms are designed to be fault-tolerant.
+% to better analyze we can't disregard fault-tolerance
+% so we need a fault-tolerant extension to MPST
+Modelling fault-tolerance is not possible using Multiparty Session Types, thus a fault-tolerant extension is necessary.
+\citeauthor{ftmpst} developed such an extension called Fault-Tolerant Multiparty Session Types.
+
+In this work we will use Fault-Tolerant Multiparty Session Types to analyze the consensus algorithm Paxos, as described in \cite{lamport2001paxos}.
+
+% TODO talk about Paxos, overview of what it is and what it does
+% TODO give outline of the following chapters
 
 % \section{Task}
 % \IMRADlabel{methods}
