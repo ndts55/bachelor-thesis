@@ -255,7 +255,7 @@ Thus, $\FPml$ is also implemented with a failure detector in $\EventuallyWeak$.
 For the weakly reliable broadcast in phase $2a$, the failure pattern $\FPwskip$ returns $\True$ if, and only if, the corresponding proposer crashed or otherwise terminated.
 
 For Paxos to work a majority of acceptors needs to be alive.
-That means that the number of failed acceptors $f$ needs to satisfy $n > 2f$ where $n$ is the total number of acceptors, except in one case where there are 3 acceptors.
+That means that the number of failed acceptors $f$ needs to satisfy $n > 2f$ where $n$ is the total number of acceptors, except in one case where there are 2 acceptors.
 Then, at most one acceptor may crash \cite{lower_bounds}.
 $\FPcrash$ returns $\True$ if, and only if, at least one more acceptor may crash, i.e. $n > 2(f + 1)$ is satisfied.
 
