@@ -235,727 +235,731 @@ Then the subprocess terminates.
 If the acceptor does not receive a proposal or the proposal number of $pr'$ is less than $n$ the subprocess terminates without updating $n$ or $pr$.
 
 \section{Failure Patterns}
-\newcommand{\FPuget}[0]{\operatorname{FP_{uget}}}
-\newcommand{\FPuskip}[0]{\operatorname{FP_{uskip}}}
-\newcommand{\FPml}[0]{\operatorname{FP_{ml}}}
-\newcommand{\FPwskip}[0]{\operatorname{FP_{wskip}}}
-\newcommand{\FPcrash}[0]{\operatorname{FP_{crash}}}
-% TODO define failure patterns
-% we don't need to reject outdated messages
-% thus fpuget = true
+\newcommand{\FPuget}[0]{\mathtt{FP_{uget}}}
+\newcommand{\FPuskip}[0]{\mathtt{FP_{uskip}}}
+\newcommand{\FPml}[0]{\mathtt{FP_{ml}}}
+\newcommand{\FPwskip}[0]{\mathtt{FP_{wskip}}}
+\newcommand{\FPcrash}[0]{\mathtt{FP_{crash}}}
+\newcommand{\EventuallyWeak}[0]{\Diamond\mathscr{W}}
+Chandra and Toueg introduce a class of failure detectors $\EventuallyWeak$, which is called \emph{eventually weak} in \cite{failure_detectors}.
+Failure detectors in $\EventuallyWeak$ satisfy the following properties: (1) eventually every process that crashes is permanently suspected by some correct process and (2) eventually some correct process is never suspected by any correct process.
+
+In all three phases modeled in the global type it is possible to suspect senders.
+In phases $1a$ and $2a$, with labels $l1a$ and $l2a$ respectively, the acceptors may suspect some proposers.
+The proposers may suspect some acceptors in phase $1b$ with label $l1b$.
+Accordingly, $\FPuskip$ is implemented with a failure detector in $\EventuallyWeak$ for phases $1a$, $1b$, and $2a$.
+
+Similarly, message loss is possible in all phases modeled in the global type.
+Thus, $\FPml$ is also implemented with a failure detector in $\EventuallyWeak$.
+
+For the weakly reliable broadcast in phase $2a$, the failure pattern $\FPwskip$ returns $\True$ if, and only if, the corresponding proposer crashed or otherwise terminated.
+
+For Paxos to work a majority of acceptors needs to be alive.
+That means that the number of failed acceptors $f$ needs to satisfy $n > 2f$ where $n$ is the total number of acceptors, except in one case where there are 3 acceptors.
+Then, at most one acceptor may crash \cite{lower_bounds}.
+$\FPcrash$ returns $\True$ if, and only if, at least one more acceptor may crash, i.e. $n > 2(f + 1)$ is satisfied.
+
 In Paxos there is no need to reject outdated messages so $\FPuget$ is implemented with a constant $\True$.
 
-$\FPuskip$
-% eventually strong
 
-$\FPwskip$
-% only iff corresponding proposer crashed? eventually weak? eventually strong?
+% \section{Example}
+% \newcommand{\Nu}[1]{\left(\nu #1\right)}
+% \newcommand{\OuterSessionQueues}[0]{\ParallelFor{1 \le k,l \le 2, k \neq l} t_{k\to l}:[]}
+% \newcommand{\InnerSessionQueues}[1]{\ParallelFor{1 \le k,l \le 4, k \neq l} #1_{k\to l}:[]}
+% \newcommand{\NuChannels}[0]{\Nu{t}\Nu{s}\Nu{r}}
 
-$\FPml$
-% same as uskip
+% $ac = 3\; pc = 2\; V=\Curly{\operatorname{abc}, \operatorname{def}}$
 
-$\FPcrash$
-% a majority of acceptors still needs to be correct -> n > 2f
+% $\Sys{3}{2} =
+% \SessionAccept{a}{1}{t}.\ParallelFor{3 < i < 5} \PpInit{4}{\genAq{i}{3}{2}}{i}{i}{[]}\\
+% \Or \SessionRequest{a}{2}{t}.\PpInit{4}{\genAq{5}{3}{2}}{5}{5}{[]}\\
+% \Or \ParallelFor{1 \le j \le 3} \PaInit{j}{4}{3}{2}{n_j}{pr_j}\\
+% \longmapsto (\operatorname{Init})\\
+% \Nu{t}\big (
+% \PpInit{4}{A_{Q,1}}{4}{4}{[]} \Or \PpInit{4}{A_{Q,2}}{5}{5}{[]}\\
+% \Or \PaInit{1}{4}{3}{2}{n_1}{pr_1} \Or \PaInit{2}{4}{3}{2}{n_2}{pr_2} \Or \PaInit{3}{4}{3}{2}{n_3}{pr_3}\\
+% \Or \OuterSessionQueues
+% \big )$
 
+% $=\\
+% % Is this step really necessary?
+% \Nu{t}\big (
+% \SessionRequest{b_4}{4}{s}.\Pp \Or \SessionRequest{b_5}{4}{r}.\Pp\\
+% \Or \ParallelFor{3 < n \le 5} \SessionAccept{b_n}{1}{s} . \Pa\\
+% \Or \ParallelFor{3 < n \le 5} \SessionAccept{b_n}{2}{s} . \Pa\\
+% \Or \ParallelFor{3 < n \le 5} \SessionAccept{b_n}{3}{s} . \Pa\\
+% \Or \OuterSessionQueues
+% \big )\\
+% =\\
+% \Nu{t}\big (
+% \SessionRequest{b_4}{4}{s}.\Pp \Or \SessionRequest{b_5}{4}{r}.\Pp\\
+% \Or \Paren{\SessionAccept{b_4}{1}{s}.\Pa \Or \SessionAccept{b_5}{1}{r}.\Pa}\\
+% \Or \Paren{\SessionAccept{b_4}{2}{s}.\Pa \Or \SessionAccept{b_5}{2}{r}.\Pa}\\
+% \Or \Paren{\SessionAccept{b_4}{3}{s}.\Pa \Or \SessionAccept{b_5}{3}{r}.\Pa}\\
+% \Or \OuterSessionQueues
+% \big )$
 
-\section{Example}
-\newcommand{\Nu}[1]{\left(\nu #1\right)}
-\newcommand{\OuterSessionQueues}[0]{\ParallelFor{1 \le k,l \le 2, k \neq l} t_{k\to l}:[]}
-\newcommand{\InnerSessionQueues}[1]{\ParallelFor{1 \le k,l \le 4, k \neq l} #1_{k\to l}:[]}
-\newcommand{\NuChannels}[0]{\Nu{t}\Nu{s}\Nu{r}}
+% $\longmapsto (Init)\\
+% \NuChannels\big (
+% \Mu{X} \update{n}{5} . \Paren{\DotForall{j\in \{1,2\}} \SendUnreliableP{s}{4}{j}{l1a}{\prNumber{n}{4}}}\dots\\
+% \Or \Mu{X} \update{n}{6} . \Paren{\DotForall{j\in \{2,3\}} \SendUnreliableP{r}{4}{j}{l1a}{\prNumber{n}{5}}}\dots\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$ac = 3\; pc = 2\; V=\Curly{\operatorname{abc}}$
+% $=\\
+% \NuChannels\big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Or \Mu{X} \SendUnreliableP{r}{4}{2}{l1a}{\prNumber{6}{5}}.\SendUnreliableP{r}{4}{3}{l1a}{\prNumber{6}{5}}\dots\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$\Sys{3}{2} =
-\SessionAccept{a}{1}{t}.\ParallelFor{3 < i < 5} \PpInit{4}{\genAq{i}{3}{2}}{i}{i}{[]}\\
-\Or \SessionRequest{a}{2}{t}.\PpInit{4}{\genAq{5}{3}{2}}{5}{5}{[]}\\
-\Or \ParallelFor{1 \le j \le 3} \PaInit{j}{4}{3}{2}{n_j}{pr_j}\\
-\longmapsto (\operatorname{Init})\\
-\Nu{t}\big (
-\PpInit{4}{A_{Q,1}}{4}{4}{[]} \Or \PpInit{4}{A_{Q,2}}{5}{5}{[]}\\
-\Or \PaInit{1}{4}{3}{2}{n_1}{pr_1} \Or \PaInit{2}{4}{3}{2}{n_2}{pr_2} \Or \PaInit{3}{4}{3}{2}{n_3}{pr_3}\\
-\Or \OuterSessionQueues
-\big )$
+% $\longmapsto (USend + UGet)\\
+% \NuChannels \big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Or \Mu{X} \SendUnreliableP{r}{4}{3}{l1a}{\prNumber{6}{5}}.\ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}\dots\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \If{10 = \perp} \Then{\PaCont} \Else{\dots}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$=\\
-% Is this step really necessary?
-\Nu{t}\big (
-\SessionRequest{b_4}{4}{s}.\Pp \Or \SessionRequest{b_5}{4}{r}.\Pp\\
-\Or \ParallelFor{3 < n \le 5} \SessionAccept{b_n}{1}{s} . \Pa\\
-\Or \ParallelFor{3 < n \le 5} \SessionAccept{b_n}{2}{s} . \Pa\\
-\Or \ParallelFor{3 < n \le 5} \SessionAccept{b_n}{3}{s} . \Pa\\
-\Or \OuterSessionQueues
-\big )\\
-=\\
-\Nu{t}\big (
-\SessionRequest{b_4}{4}{s}.\Pp \Or \SessionRequest{b_5}{4}{r}.\Pp\\
-\Or \Paren{\SessionAccept{b_4}{1}{s}.\Pa \Or \SessionAccept{b_5}{1}{r}.\Pa}\\
-\Or \Paren{\SessionAccept{b_4}{2}{s}.\Pa \Or \SessionAccept{b_5}{2}{r}.\Pa}\\
-\Or \Paren{\SessionAccept{b_4}{3}{s}.\Pa \Or \SessionAccept{b_5}{3}{r}.\Pa}\\
-\Or \OuterSessionQueues
-\big )$
+% $=\\
+% \NuChannels \big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Or \Mu{X} \SendUnreliableP{r}{4}{3}{l1a}{\prNumber{6}{5}}.\ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}\dots\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \If{\greaterThan{10}{\Nothing}} \Then{\update{n}{n'}\dots} \Else{\dots}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$\longmapsto (Init)\\
-\NuChannels\big (
-\Mu{X} \update{n}{5} . \Paren{\DotForall{j\in \{1,2\}} \SendUnreliableP{s}{4}{j}{l1a}{\prNumber{n}{4}}}\dots\\
-\Or \Mu{X} \update{n}{6} . \Paren{\DotForall{j\in \{2,3\}} \SendUnreliableP{r}{4}{j}{l1a}{\prNumber{n}{5}}}\dots\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveUnreliableP{r}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% % A1: n=Nothing, pr=Nothing
+% % A2: n=10, pr=Nothing
+% % A3: n=Nothing, pr=Nothing
+% $=\\
+% \NuChannels \big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Or \Mu{X} \SendUnreliableP{r}{4}{3}{l1a}{\prNumber{6}{5}}.\ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}\dots\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \SendUnreliableP{r}{2}{4}{l1b}{\Promise{\Nothing}}.\PaCont
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$=\\
-\NuChannels\big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \SendUnreliableP{r}{4}{2}{l1a}{\prNumber{6}{5}}.\SendUnreliableP{r}{4}{3}{l1a}{\prNumber{6}{5}}\dots\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveUnreliableP{r}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% % A1: n=Nothing, pr=Nothing
+% % A2: n=10, pr=Nothing
+% % A3: n=10, pr=Nothing
+% $\longmapsto (USend + UGet)\\
+% \NuChannels \big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}.\ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}\dots\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \SendUnreliableP{r}{2}{4}{l1b}{\Promise{\Nothing}}.\PaCont
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \SendUnreliableP{r}{3}{4}{l1b}{\Promise{\Nothing}}.\PaCont
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$\longmapsto (USend + UGet)\\
-\NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \SendUnreliableP{r}{4}{3}{l1a}{\prNumber{6}{5}}.\ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}\dots\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \If{10 = \perp} \Then{\PaCont} \Else{\dots}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% $\longmapsto (USkip)\\
+% \NuChannels \big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}.\ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}\dots\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \If{\perp = \perp} \Then{\PaCont} \Else{\dots}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \SendUnreliableP{r}{2}{4}{l1b}{\Promise{\Nothing}}.\PaCont
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \SendUnreliableP{r}{3}{4}{l1b}{\Promise{\Nothing}}.\PaCont
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$=\\
-\NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \SendUnreliableP{r}{4}{3}{l1a}{\prNumber{6}{5}}.\ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}\dots\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \If{\greaterThan{10}{\Nothing}} \Then{\update{n}{n'}\dots} \Else{\dots}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% $=\\
+% \NuChannels \big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}.\ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}\dots\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\Accept \dots \oplus \Restart .X \oplus \Abort .end}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \SendUnreliableP{r}{2}{4}{l1b}{\Promise{\Nothing}}.\PaCont
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \SendUnreliableP{r}{3}{4}{l1b}{\Promise{\Nothing}}.\PaCont
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-% A1: n=Nothing, pr=Nothing
-% A2: n=10, pr=Nothing
-% A3: n=Nothing, pr=Nothing
-$=\\
-\NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \SendUnreliableP{r}{4}{3}{l1a}{\prNumber{6}{5}}.\ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}\dots\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \SendUnreliableP{r}{2}{4}{l1b}{\Promise{\Nothing}}.\PaCont
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% \newcommand{\BeginPaCont}[0]{\Accept \dots \oplus \Restart .X \oplus \Abort .end}
+% $\longmapsto (USend + UGet)\\
+% \NuChannels \big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Or \Mu{X} \ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}.\If{\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < 1} \Then{\dots}\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\BeginPaCont}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{2}{\BeginPaCont}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \SendUnreliableP{r}{3}{4}{l1b}{\Promise{\Nothing}}.\PaCont
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-% A1: n=Nothing, pr=Nothing
-% A2: n=10, pr=Nothing
-% A3: n=10, pr=Nothing
-$\longmapsto (USend + UGet)\\
-\NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}.\ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}\dots\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \SendUnreliableP{r}{2}{4}{l1b}{\Promise{\Nothing}}.\PaCont
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \SendUnreliableP{r}{3}{4}{l1b}{\Promise{\Nothing}}.\PaCont
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% $\longmapsto (USend + UGet)\\
+% \NuChannels \big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Or \Mu{X} \If{\False \tOr 2 < 1} \Then{\dots} \Else{\SendWeaklyP{r}{4}{\Curly{2,3}}{\Accept}{\dots}}\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\BeginPaCont}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{2}{\BeginPaCont}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont}
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$\longmapsto (USkip)\\
-\NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}.\ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}\dots\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \If{\perp = \perp} \Then{\PaCont} \Else{\dots}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \SendUnreliableP{r}{2}{4}{l1b}{\Promise{\Nothing}}.\PaCont
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \SendUnreliableP{r}{3}{4}{l1b}{\Promise{\Nothing}}.\PaCont
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% $=\\
+% \NuChannels \big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Or \Mu{X} \SendWeaklyP{r}{4}{\Curly{2,3}}{\Accept}{\SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}}\dots\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\BeginPaCont}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{2}{\BeginPaCont}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont}
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$=\\
-\NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}.\ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}\dots\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\Accept \dots \oplus \Restart .X \oplus \Abort .end}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \SendUnreliableP{r}{2}{4}{l1b}{\Promise{\Nothing}}.\PaCont
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \SendUnreliableP{r}{3}{4}{l1b}{\Promise{\Nothing}}.\PaCont
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% $\longmapsto (WSel + WBran)\\
+% \NuChannels \big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Or \Mu{X} \SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}.\\\hspace*{1em}\SendUnreliableP{r}{4}{3}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}\dots\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\BeginPaCont}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{2}{l2a}{\perp}{pr'}.\If{\dots}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{l2a}{\perp}{pr'}.\If{\dots}
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-\newcommand{\BeginPaCont}[0]{\Accept \dots \oplus \Restart .X \oplus \Abort .end}
-$\longmapsto (USend + UGet)\\
-\NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}.\If{\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < 1} \Then{\dots}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\BeginPaCont}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveWeaklyP{r}{4}{2}{\BeginPaCont}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \SendUnreliableP{r}{3}{4}{l1b}{\Promise{\Nothing}}.\PaCont
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% $\longmapsto (WSkip)\\
+% \NuChannels \big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Or \Mu{X} \SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}.\\\hspace*{1em}\SendUnreliableP{r}{4}{3}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}\dots\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} end
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{2}{l2a}{\perp}{pr'}.\If{\dots}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{l2a}{\perp}{pr'}.\If{\dots}
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$\longmapsto (USend + UGet)\\
-\NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \If{\False \tOr 2 < 1} \Then{\dots} \Else{\SendWeaklyP{r}{4}{\Curly{2,3}}{\Accept}{\dots}}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\BeginPaCont}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveWeaklyP{r}{4}{2}{\BeginPaCont}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont}
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% \newcommand{\ABC}[0]{\operatorname{abc}}
 
-$=\\
-\NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \SendWeaklyP{r}{4}{\Curly{2,3}}{\Accept}{\SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}}\dots\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\BeginPaCont}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveWeaklyP{r}{4}{2}{\BeginPaCont}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont}
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% $\longmapsto (USend + UGet)\\
+% \NuChannels \big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Or \Mu{X} \SendUnreliableP{r}{4}{3}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}.end\\
+% \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \If{\ProposalC{10}{\ABC} = \perp} \Then{X} \Else{\dots}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{l2a}{\perp}{pr'}.\If{\dots}
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$\longmapsto (WSel + WBran)\\
-\NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}.\\\hspace*{1em}\SendUnreliableP{r}{4}{3}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}\dots\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\BeginPaCont}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveUnreliableP{r}{4}{2}{l2a}{\perp}{pr'}.\If{\dots}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{l2a}{\perp}{pr'}.\If{\dots}
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% $\longmapsto (USend + UGet)\\
+% \NuChannels \big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Or \Mu{X} end\\
+% \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \If{\ProposalC{10}{\ABC} = \perp} \Then{X} \Else{\dots}
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} \If{\ProposalC{10}{\ABC} = \perp} \Then{X} \Else{\dots}
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$\longmapsto (WSkip)\\
-\NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}.\\\hspace*{1em}\SendUnreliableP{r}{4}{3}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}\dots\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} end
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveUnreliableP{r}{4}{2}{l2a}{\perp}{pr'}.\If{\dots}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{l2a}{\perp}{pr'}.\If{\dots}
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% $=\\
+% \NuChannels \big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}\\
+% \Or (
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \\\hspace*{1em}\Or \Mu{X} \If{\greaterEqual{10}{10}} \Then{\update{pr}{pr'}.\update{n}{\Just{10}}.X} \Else{\dots}
+% )\\
+% \Or (
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+%     \\\hspace*{1em}\Or \Mu{X} \If{\greaterEqual{10}{10}} \Then{\update{pr}{pr'}.\update{n}{\Just{10}}.X} \Else{\dots}
+% )\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-\newcommand{\ABC}[0]{\operatorname{abc}}
+% % A1: n=Nothing, pr=Nothing
+% % A2: n=10, pr=Proposal 10 abc
+% % A3: n=10, pr=Proposal 10 abc
+% $=\\
+% \NuChannels \big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} X
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} X
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$\longmapsto (USend + UGet)\\
-\NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \SendUnreliableP{r}{4}{3}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}.end\\
-\Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \If{\ProposalC{10}{\ABC} = \perp} \Then{X} \Else{\dots}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{l2a}{\perp}{pr'}.\If{\dots}
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% $=\\
+% \NuChannels \big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} X
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} X
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$\longmapsto (USend + UGet)\\
-\NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} end\\
-\Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \If{\ProposalC{10}{\ABC} = \perp} \Then{X} \Else{\dots}
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} \If{\ProposalC{10}{\ABC} = \perp} \Then{X} \Else{\dots}
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% $\longmapsto (USend + UGet, USend + UGet, USkip)\\
+% \NuChannels \big (
+% \Mu{X} \ReceiveUnreliableP{s}{1}{4}{l1b}{\perp}{v_1}.\ReceiveUnreliableP{s}{2}{4}{l1b}{\perp}{v_2}\dots\\
+% \Or \Mu{X} \If{5 = \perp} \Then{\PaCont} \Else{\dots}\\
+% \Or \Paren{
+%     \Mu{X} \If{5 = \perp} \Then{\PaCont} \Else{\dots}
+%     \Or \Mu{X} X
+% }\\
+% \Or \Paren{
+%     \Mu{X} \If{\perp = \perp} \Then{\PaCont} \Else{\dots}
+%     \Or \Mu{X} X
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$=\\
-\NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}\\
-\Or (
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \\\hspace*{1em}\Or \Mu{X} \If{\greaterEqual{10}{10}} \Then{\update{pr}{pr'}.\update{n}{\Just{10}}.X} \Else{\dots}
-)\\
-\Or (
-    \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-    \\\hspace*{1em}\Or \Mu{X} \If{\greaterEqual{10}{10}} \Then{\update{pr}{pr'}.\update{n}{\Just{10}}.X} \Else{\dots}
-)\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% $=\\
+% \NuChannels \big (
+% \Mu{X} \ReceiveUnreliableP{s}{1}{4}{l1b}{\perp}{v_1}.\ReceiveUnreliableP{s}{2}{4}{l1b}{\perp}{v_2}\dots\\
+% \Or \Mu{X} \If{\greaterThan{5}{\Nothing}} \Then{\update{n}{5}\dots}\Else{\dots}\\
+% \Or \Paren{
+%     \Mu{X} \If{\greaterThan{5}{\Just{10}}} \Then{\dots} \Else{\SendUnreliableP{s}{2}{4}{l1b}{\Nack{10}}.\PaCont}
+%     \Or \Mu{X} X
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont}
+%     \Or \Mu{X} X
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-% A1: n=Nothing, pr=Nothing
-% A2: n=10, pr=Proposal 10 abc
-% A3: n=10, pr=Proposal 10 abc
-$=\\
-\NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} X
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} X
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% % A1: n=5, pr=Nothing
+% % A2: n=10, pr=Proposal 10 abc
+% % A3: n=10, pr=Proposal 10 abc
+% $=\\
+% \NuChannels \big (
+% \Mu{X} \ReceiveUnreliableP{s}{1}{4}{l1b}{\perp}{v_1}.\ReceiveUnreliableP{s}{2}{4}{l1b}{\perp}{v_2}\dots\\
+% \Or \Mu{X} \SendUnreliableP{s}{1}{4}{l1b}{\Promise{\Nothing}}.\PaCont\\
+% \Or \Paren{
+%     \Mu{X} \SendUnreliableP{s}{2}{4}{l1b}{\Nack{10}}.\PaCont
+%     \Or \Mu{X} X
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont}
+%     \Or \Mu{X} X
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$=\\
-\NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-\Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} X
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} X
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% $\longmapsto (USend + UGet, USend + UGet)\\
+% \NuChannels \big (
+% \Mu{X} \If{\True \tOr 1 < 1} \Then{\SendWeaklyP{s}{4}{\Curly{1,2}}{\Restart}{X}} \Else{\dots}\\
+% \Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}
+%     \Or \Mu{X} X
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont}
+%     \Or \Mu{X} X
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$\longmapsto (USend + UGet, USend + UGet, USkip)\\
-\NuChannels \big (
-\Mu{X} \ReceiveUnreliableP{s}{1}{4}{l1b}{\perp}{v_1}.\ReceiveUnreliableP{s}{2}{4}{l1b}{\perp}{v_2}\dots\\
-\Or \Mu{X} \If{5 = \perp} \Then{\PaCont} \Else{\dots}\\
-\Or \Paren{
-    \Mu{X} \If{5 = \perp} \Then{\PaCont} \Else{\dots}
-    \Or \Mu{X} X
-}\\
-\Or \Paren{
-    \Mu{X} \If{\perp = \perp} \Then{\PaCont} \Else{\dots}
-    \Or \Mu{X} X
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% $=\\
+% \NuChannels \big (
+% \Mu{X} \SendWeaklyP{s}{4}{\Curly{1,2}}{\Restart}{X}\\
+% \Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}
+%     \Or \Mu{X} X
+% }\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont}
+%     \Or \Mu{X} X
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$=\\
-\NuChannels \big (
-\Mu{X} \ReceiveUnreliableP{s}{1}{4}{l1b}{\perp}{v_1}.\ReceiveUnreliableP{s}{2}{4}{l1b}{\perp}{v_2}\dots\\
-\Or \Mu{X} \If{\greaterThan{5}{\Nothing}} \Then{\update{n}{5}\dots}\Else{\dots}\\
-\Or \Paren{
-    \Mu{X} \If{\greaterThan{5}{\Just{10}}} \Then{\dots} \Else{\SendUnreliableP{s}{2}{4}{l1b}{\Nack{10}}.\PaCont}
-    \Or \Mu{X} X
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont}
-    \Or \Mu{X} X
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% $\longmapsto (WSel + WBran, WSkip)\\
+% \NuChannels \big (
+% \Mu{X} X\\
+% \Or \Mu{X} X\\
+% \Or \Paren{
+%     \Mu{X} X
+%     \Or \Mu{X} X
+% }\\
+% \Or \Paren{
+%     \Mu{X} end
+%     \Or \Mu{X} X
+% }\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-% A1: n=5, pr=Nothing
-% A2: n=10, pr=Proposal 10 abc
-% A3: n=10, pr=Proposal 10 abc
-$=\\
-\NuChannels \big (
-\Mu{X} \ReceiveUnreliableP{s}{1}{4}{l1b}{\perp}{v_1}.\ReceiveUnreliableP{s}{2}{4}{l1b}{\perp}{v_2}\dots\\
-\Or \Mu{X} \SendUnreliableP{s}{1}{4}{l1b}{\Promise{\Nothing}}.\PaCont\\
-\Or \Paren{
-    \Mu{X} \SendUnreliableP{s}{2}{4}{l1b}{\Nack{10}}.\PaCont
-    \Or \Mu{X} X
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont}
-    \Or \Mu{X} X
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% $=\\
+% \NuChannels \big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{6}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{6}{4}}\dots\\
+% \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
+%     \Or \Mu{X} X
+% }\\
+% \Or \Mu{X} X\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$\longmapsto (USend + UGet, USend + UGet)\\
-\NuChannels \big (
-\Mu{X} \If{\True \tOr 1 < 1} \Then{\SendWeaklyP{s}{4}{\Curly{1,2}}{\Restart}{X}} \Else{\dots}\\
-\Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
-\Or \Paren{
-    \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}
-    \Or \Mu{X} X
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont}
-    \Or \Mu{X} X
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% $\longmapsto (USend + UGet, USend + UGet)\\
+% \NuChannels \big (
+% \Mu{X} \ReceiveUnreliableP{s}{1}{4}{l1b}{\perp}{v_1}.\ReceiveUnreliableP{s}{2}{4}{l1b}{\perp}{v_2}.\If{\dots}\\
+% \Or \Mu{X} \If{15 = \perp} \Then{\PaCont} \Else{\dots}\\
+% \Or \Paren{
+%     \Mu{X} \If{15 = \perp} \Then{\PaCont} \Else{\dots}
+%     \Or \Mu{X} X
+% }\\
+% \Or \Mu{X} X\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$=\\
-\NuChannels \big (
-\Mu{X} \SendWeaklyP{s}{4}{\Curly{1,2}}{\Restart}{X}\\
-\Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
-\Or \Paren{
-    \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}
-    \Or \Mu{X} X
-}\\
-\Or \Paren{
-    \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont}
-    \Or \Mu{X} X
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% % A1: n=5, pr=Nothing
+% % A2: n=10, pr=Proposal 10 abc
+% % A3: n=10, pr=Proposal 10 abc
+% $=\\
+% \NuChannels \big (
+% \Mu{X} \ReceiveUnreliableP{s}{1}{4}{l1b}{\perp}{v_1}.\ReceiveUnreliableP{s}{2}{4}{l1b}{\perp}{v_2}.\If{\dots}\\
+% \Or \Mu{X} \If{\greaterThan{15}{\Just{5}}} \Then{\update{n}{15}\dots} \Else{\dots}\\
+% \Or \Paren{
+%     \Mu{X} \If{\greaterThan{15}{\Just{10}}} \Then{\update{n}{15}\dots} \Else{\dots}
+%     \Or \Mu{X} X
+% }\\
+% \Or \Mu{X} X\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$\longmapsto (WSel + WBran, WSkip)\\
-\NuChannels \big (
-\Mu{X} X\\
-\Or \Mu{X} X\\
-\Or \Paren{
-    \Mu{X} X
-    \Or \Mu{X} X
-}\\
-\Or \Paren{
-    \Mu{X} end
-    \Or \Mu{X} X
-}\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% % A1: n=15, pr=Nothing
+% % A2: n=15, pr=Proposal 10 abc
+% % A3: n=10, pr=Proposal 10 abc
+% $=\\
+% \NuChannels \big (
+% \Mu{X} \ReceiveUnreliableP{s}{1}{4}{l1b}{\perp}{v_1}.\ReceiveUnreliableP{s}{2}{4}{l1b}{\perp}{v_2}.\If{\dots}\\
+% \Or \Mu{X} \SendUnreliableP{s}{1}{4}{l1b}{\Promise{\Nothing}}.\PaCont\\
+% \Or \Paren{
+%     \Mu{X} \SendUnreliableP{s}{2}{4}{l1b}{\Promise{\ProposalC{10}{abc}}}.\PaCont
+%     \Or \Mu{X} X
+% }\\
+% \Or \Mu{X} X\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$=\\
-\NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{6}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{6}{4}}\dots\\
-\Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
-    \Or \Mu{X} X
-}\\
-\Or \Mu{X} X\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% % A1: n=15, pr=Nothing
+% % A2: n=15, pr=Proposal 10 abc
+% % A3: n=10, pr=Proposal 10 abc
+% $\longmapsto (USend + UGet, USend + UGet)\\
+% \NuChannels \big (
+% \Mu{X} \If{\False \tOr 2 < 1} \Then{\dots} \Else{\SendWeaklyP{s}{4}{\Curly{1,2}}{\Accept}{\dots}}\\
+% \Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}
+%     \Or \Mu{X} X
+% }\\
+% \Or \Mu{X} X\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-$\longmapsto (USend + UGet, USend + UGet)\\
-\NuChannels \big (
-\Mu{X} \ReceiveUnreliableP{s}{1}{4}{l1b}{\perp}{v_1}.\ReceiveUnreliableP{s}{2}{4}{l1b}{\perp}{v_2}.\If{\dots}\\
-\Or \Mu{X} \If{15 = \perp} \Then{\PaCont} \Else{\dots}\\
-\Or \Paren{
-    \Mu{X} \If{15 = \perp} \Then{\PaCont} \Else{\dots}
-    \Or \Mu{X} X
-}\\
-\Or \Mu{X} X\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% % A1: n=15, pr=Nothing
+% % A2: n=15, pr=Proposal 10 abc
+% % A3: n=10, pr=Proposal 10 abc
+% $=\\
+% \NuChannels \big (
+% \Mu{X} \SendWeaklyP{s}{4}{\Curly{1,2}}{\Accept}{\dots}\\
+% \Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}
+%     \Or \Mu{X} X
+% }\\
+% \Or \Mu{X} X\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-% A1: n=5, pr=Nothing
-% A2: n=10, pr=Proposal 10 abc
-% A3: n=10, pr=Proposal 10 abc
-$=\\
-\NuChannels \big (
-\Mu{X} \ReceiveUnreliableP{s}{1}{4}{l1b}{\perp}{v_1}.\ReceiveUnreliableP{s}{2}{4}{l1b}{\perp}{v_2}.\If{\dots}\\
-\Or \Mu{X} \If{\greaterThan{15}{\Just{5}}} \Then{\update{n}{15}\dots} \Else{\dots}\\
-\Or \Paren{
-    \Mu{X} \If{\greaterThan{15}{\Just{10}}} \Then{\update{n}{15}\dots} \Else{\dots}
-    \Or \Mu{X} X
-}\\
-\Or \Mu{X} X\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% % A1: n=15, pr=Nothing
+% % A2: n=15, pr=Proposal 10 abc
+% % A3: n=10, pr=Proposal 10 abc
+% $\longmapsto (WSel + WBran)\\
+% \NuChannels \big (
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l2a}{\ProposalC{\prNumber{6}{4}}{\promValue{\VectorV}}}.\\\SendUnreliableP{s}{4}{2}{l2a}{\ProposalC{\prNumber{6}{4}}{\promValue{\VectorV}}}.end\\
+% \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l2a}{\perp}{pr'}.\If{\dots}\\
+% \Or \Paren{
+%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l2a}{\perp}{pr'}.\If{\dots}
+%     \Or \Mu{X} X
+% }\\
+% \Or \Mu{X} X\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-% A1: n=15, pr=Nothing
-% A2: n=15, pr=Proposal 10 abc
-% A3: n=10, pr=Proposal 10 abc
-$=\\
-\NuChannels \big (
-\Mu{X} \ReceiveUnreliableP{s}{1}{4}{l1b}{\perp}{v_1}.\ReceiveUnreliableP{s}{2}{4}{l1b}{\perp}{v_2}.\If{\dots}\\
-\Or \Mu{X} \SendUnreliableP{s}{1}{4}{l1b}{\Promise{\Nothing}}.\PaCont\\
-\Or \Paren{
-    \Mu{X} \SendUnreliableP{s}{2}{4}{l1b}{\Promise{\ProposalC{10}{abc}}}.\PaCont
-    \Or \Mu{X} X
-}\\
-\Or \Mu{X} X\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% % A1: n=15, pr=Nothing
+% % A2: n=15, pr=Proposal 10 abc
+% % A3: n=10, pr=Proposal 10 abc
+% $\longmapsto (USend + UGet, USend + UGet)\\
+% \NuChannels \big (
+% \Mu{X} end\\
+% \Or \Mu{X} \If{\ProposalC{15}{\ProposalC{15}{abc}} = \perp} \Then{\dots} \Else{\dots}\\
+% \Or \Paren{
+%     \Mu{X} \If{\ProposalC{15}{\ProposalC{15}{abc}} = \perp} \Then{\dots} \Else{\dots}
+%     \Or \Mu{X} X
+% }\\
+% \Or \Mu{X} X\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-% A1: n=15, pr=Nothing
-% A2: n=15, pr=Proposal 10 abc
-% A3: n=10, pr=Proposal 10 abc
-$\longmapsto (USend + UGet, USend + UGet)\\
-\NuChannels \big (
-\Mu{X} \If{\False \tOr 2 < 1} \Then{\dots} \Else{\SendWeaklyP{s}{4}{\Curly{1,2}}{\Accept}{\dots}}\\
-\Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
-\Or \Paren{
-    \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}
-    \Or \Mu{X} X
-}\\
-\Or \Mu{X} X\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% % A1: n=15, pr=Nothing
+% % A2: n=15, pr=Proposal 10 abc
+% % A3: n=10, pr=Proposal 10 abc
+% $=\\
+% \NuChannels \big (
+% \Or \Mu{X} \If{\greaterEqual{15}{\Just{15}}}\\\hspace*{1em}\Then{\update{pr}{\ProposalC{15}{abc}}.\update{n}{15}.X} \Else{\dots}\\
+% \Or (
+%     \Mu{X} \If{\greaterEqual{15}{\Just{15}}}\\\hspace*{1em}\Then{\update{pr}{\ProposalC{15}{abc}}.\update{n}{15}.X} \Else{\dots}
+%     \Or \Mu{X} X
+% )\\
+% \Or \Mu{X} X\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-% A1: n=15, pr=Nothing
-% A2: n=15, pr=Proposal 10 abc
-% A3: n=10, pr=Proposal 10 abc
-$=\\
-\NuChannels \big (
-\Mu{X} \SendWeaklyP{s}{4}{\Curly{1,2}}{\Accept}{\dots}\\
-\Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
-\Or \Paren{
-    \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}
-    \Or \Mu{X} X
-}\\
-\Or \Mu{X} X\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% % A1: n=15, pr=Proposal 15 abc
+% % A2: n=15, pr=Proposal 15 abc
+% % A3: n=10, pr=Proposal 10 abc
+% $=\\
+% \NuChannels \big (
+% \Or \Mu{X} X\\
+% \Or \Paren{
+%     \Mu{X} X
+%     \Or \Mu{X} X
+% }\\
+% \Or \Mu{X} X\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-% A1: n=15, pr=Nothing
-% A2: n=15, pr=Proposal 10 abc
-% A3: n=10, pr=Proposal 10 abc
-$\longmapsto (WSel + WBran)\\
-\NuChannels \big (
-\Mu{X} \SendUnreliableP{s}{4}{1}{l2a}{\ProposalC{\prNumber{6}{4}}{\promValue{\VectorV}}}.\\\SendUnreliableP{s}{4}{2}{l2a}{\ProposalC{\prNumber{6}{4}}{\promValue{\VectorV}}}.end\\
-\Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l2a}{\perp}{pr'}.\If{\dots}\\
-\Or \Paren{
-    \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l2a}{\perp}{pr'}.\If{\dots}
-    \Or \Mu{X} X
-}\\
-\Or \Mu{X} X\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
+% % A1: n=15, pr=Proposal 15 abc
+% % A2: n=15, pr=Proposal 15 abc
+% % A3: n=10, pr=Proposal 10 abc
+% $\longmapsto (USkip + WSkip, USkip + WSkip, USkip + WSkip, USkip + WSkip)\\
+% \NuChannels \big (
+% \Or \Mu{X} end\\
+% \Or \Paren{
+%     \Mu{X} end
+%     \Or \Mu{X} end
+% }\\
+% \Or \Mu{X} end\\
+% \Or \InnerSessionQueues{s}
+% \Or \InnerSessionQueues{r}
+% \Or \OuterSessionQueues
+% \big )$
 
-% A1: n=15, pr=Nothing
-% A2: n=15, pr=Proposal 10 abc
-% A3: n=10, pr=Proposal 10 abc
-$\longmapsto (USend + UGet, USend + UGet)\\
-\NuChannels \big (
-\Mu{X} end\\
-\Or \Mu{X} \If{\ProposalC{15}{\ProposalC{15}{abc}} = \perp} \Then{\dots} \Else{\dots}\\
-\Or \Paren{
-    \Mu{X} \If{\ProposalC{15}{\ProposalC{15}{abc}} = \perp} \Then{\dots} \Else{\dots}
-    \Or \Mu{X} X
-}\\
-\Or \Mu{X} X\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
-
-% A1: n=15, pr=Nothing
-% A2: n=15, pr=Proposal 10 abc
-% A3: n=10, pr=Proposal 10 abc
-$=\\
-\NuChannels \big (
-\Or \Mu{X} \If{\greaterEqual{15}{\Just{15}}}\\\hspace*{1em}\Then{\update{pr}{\ProposalC{15}{abc}}.\update{n}{15}.X} \Else{\dots}\\
-\Or (
-    \Mu{X} \If{\greaterEqual{15}{\Just{15}}}\\\hspace*{1em}\Then{\update{pr}{\ProposalC{15}{abc}}.\update{n}{15}.X} \Else{\dots}
-    \Or \Mu{X} X
-)\\
-\Or \Mu{X} X\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
-
-% A1: n=15, pr=Proposal 15 abc
-% A2: n=15, pr=Proposal 15 abc
-% A3: n=10, pr=Proposal 10 abc
-$=\\
-\NuChannels \big (
-\Or \Mu{X} X\\
-\Or \Paren{
-    \Mu{X} X
-    \Or \Mu{X} X
-}\\
-\Or \Mu{X} X\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
-
-% A1: n=15, pr=Proposal 15 abc
-% A2: n=15, pr=Proposal 15 abc
-% A3: n=10, pr=Proposal 10 abc
-$\longmapsto (USkip + WSkip, USkip + WSkip, USkip + WSkip, USkip + WSkip)\\
-\NuChannels \big (
-\Or \Mu{X} end\\
-\Or \Paren{
-    \Mu{X} end
-    \Or \Mu{X} end
-}\\
-\Or \Mu{X} end\\
-\Or \InnerSessionQueues{s}
-\Or \InnerSessionQueues{r}
-\Or \OuterSessionQueues
-\big )$
-
-% A1: n=15, pr=Proposal 15 abc
-% A2: n=15, pr=Proposal 15 abc
-% A3: n=10, pr=Proposal 10 abc
-$=\\
-\NuChannels \Paren{
-    \Or \InnerSessionQueues{s}
-    \Or \InnerSessionQueues{r}
-    \Or \OuterSessionQueues
-}$
+% % A1: n=15, pr=Proposal 15 abc
+% % A2: n=15, pr=Proposal 15 abc
+% % A3: n=10, pr=Proposal 10 abc
+% $=\\
+% \NuChannels \Paren{
+%     \Or \InnerSessionQueues{s}
+%     \Or \InnerSessionQueues{r}
+%     \Or \OuterSessionQueues
+% }$
