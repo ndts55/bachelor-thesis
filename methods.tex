@@ -270,34 +270,29 @@ In Paxos there is no need to reject outdated messages so $\FPuget$ is implemente
 
 \newcommand{\BeginPaCont}[0]{\Accept \dots \oplus \Restart .X \oplus \Abort .end}
 \newcommand{\ABC}[0]{\operatorname{abc}}
-
-% we will take a look at an example of the model with 3 acceptors and 2 proposers
-% first an overview of the scenario we will be looking at
-% proposer P5 runs through the algorithm with acceptors A2 and A3 (1 - 5)
-% proposer P4 tries to run through the algorithm but learns that a higher proposal number has already been promised by A2 (6 - 10)
-% P4 tries again with a higher proposal number and successfully runs through the algorithm (11 - 15)
-% P4 learns from A2 that abc has been chosen already (13) and issues a proposal with the value of the highest-numbered proposal that has already been chosen (15)
+\newcommand{\Acceptor}[1]{\operatorname{A#1}}
+\newcommand{\Proposer}[1]{\operatorname{P#1}}
 
 \begin{figure}
 \begin{tikzpicture}[node distance=2cm, >=stealth', arrt/.style={above, font=\footnotesize}, arr/.style={->, thick}]
     \def\InitialOffset{0.4}
     \def\StepSize{0.7}
     \newcommand{\Step}[1]{\InitialOffset + #1 * \StepSize}
-    \def\MaxSteps{15}
+    \def\MaxSteps{14}
     \def\FullHeight{\Step{\MaxSteps} + 0.66 * \StepSize}
 
-    \node (a1) {A1};
-    \node[right = of a1] (a2) {A2};
-    \node[right = of a2] (a3) {A3};
-    \node[right = of a3] (p4) {P4};
-    \node[right = of p4] (p5) {P5};
+    \node (a1) {$\Acceptor{1}$};
+    \node[right = of a1] (a2) {$\Acceptor{2}$};
+    \node[right = of a2] (a3) {$\Acceptor{3}$};
+    \node[right = of a3] (p4) {$\Proposer{4}$};
+    \node[right = of p4] (p5) {$\Proposer{5}$};
     \node[left = of a1] (notes) {};
 
     \draw[dashed] (a1) -- ($(a1) - (0, \FullHeight)$);
     \draw[dashed] (a2) -- ($(a2) - (0, \FullHeight)$);
     \draw[dashed] (a3) -- ($(a3) - (0, \FullHeight)$);
-    \draw[dashed] (p4) -- ($(p4) - (0, \Step{15.5})$);
-    \draw[dashed] (p5) -- ($(p5) - (0, \Step{7.5})$);
+    \draw[dashed] (p4) -- ($(p4) - (0, \Step{14.5})$);
+    \draw[dashed] (p5) -- ($(p5) - (0, \Step{5.5})$);
     
     \draw[arr] ($(p5) - (0, \Step{1})$) -- node[arrt] {$\prNumber{6}{5} = 10$} ($(a2) - (0, \Step{1})$);
     \draw[arr] ($(p5) - (0, \Step{1})$) -- ($(a3) - (0, \Step{1})$);
@@ -313,30 +308,49 @@ In Paxos there is no need to reject outdated messages so $\FPuget$ is implemente
     \draw[arr] ($(p5) - (0, \Step{5})$) -- ($(a3) - (0, \Step{5})$);
 
     \draw[arr] ($(p4) - (0, \Step{6})$) -- node[arrt] {$\prNumber{5}{4} = 5$} ($(a1) - (0, \Step{6})$);
+    \draw[arr] ($(p4) - (0, \Step{6})$) -- ($(a2) - (0, \Step{6})$);
 
-    \draw[arr] ($(p4) - (0, \Step{7})$) -- node[arrt] {$\prNumber{5}{4} = 5$} ($(a2) - (0, \Step{7})$);
+    \draw[arr] ($(a1) - (0, \Step{7})$) -- node[arrt] {$\Promise{\Nothing}$} ($(p4) - (0, \Step{7})$);
 
-    \draw[arr] ($(a1) - (0, \Step{8})$) -- node[arrt] {$\Promise{\Nothing}$} ($(p4) - (0, \Step{8})$);
+    \draw[arr] ($(a2) - (0, \Step{8})$) -- node[arrt] {$\Nack{10}$} ($(p4) - (0, \Step{8})$);
 
-    \draw[arr] ($(a2) - (0, \Step{9})$) -- node[arrt] {$\Nack{10}$} ($(p4) - (0, \Step{9})$);
+    \draw[arr] ($(p4) - (0, \Step{9})$) -- node[arrt] {$\Restart$} ($(a1) - (0, \Step{9})$);
+    \draw[arr] ($(p4) - (0, \Step{9})$) -- ($(a2) - (0, \Step{9})$);
 
-    \draw[arr] ($(p4) - (0, \Step{10})$) -- node[arrt] {$\Restart$} ($(a1) - (0, \Step{10})$);
+    \draw[arr] ($(p4) - (0, \Step{10})$) -- node[arrt] {$\prNumber{6}{4} = 15$} ($(a1) - (0, \Step{10})$);
     \draw[arr] ($(p4) - (0, \Step{10})$) -- ($(a2) - (0, \Step{10})$);
 
-    \draw[arr] ($(p4) - (0, \Step{11})$) -- node[arrt] {$\prNumber{6}{4} = 15$} ($(a1) - (0, \Step{11})$);
-
-    \draw[arr] ($(a1) - (0, \Step{12})$) -- node[arrt] {$\Promise{\Nothing}$} ($(p4) - (0, \Step{12})$);
+    \draw[arr] ($(a1) - (0, \Step{11})$) -- node[arrt] {$\Promise{\Nothing}$} ($(p4) - (0, \Step{11})$);
     
-    \draw[arr] ($(a2) - (0, \Step{13})$) -- node[arrt] {$\Promise{\ProposalC{10}{\ABC}}$} ($(p4) - (0, \Step{13})$);
+    \draw[arr] ($(a2) - (0, \Step{12})$) -- node[arrt] {$\Promise{\ProposalC{10}{\ABC}}$} ($(p4) - (0, \Step{12})$);
 
-    \draw[arr] ($(p4) - (0, \Step{14})$) -- node[arrt] {$\Accept$} ($(a1) - (0, \Step{14})$);
+    \draw[arr] ($(p4) - (0, \Step{13})$) -- node[arrt] {$\Accept$} ($(a1) - (0, \Step{13})$);
+    \draw[arr] ($(p4) - (0, \Step{13})$) -- ($(a2) - (0, \Step{13})$);
+
+    \draw[arr] ($(p4) - (0, \Step{14})$) -- node[arrt] {$\ProposalC{15}{\ABC}$} ($(a1) - (0, \Step{14})$);
     \draw[arr] ($(p4) - (0, \Step{14})$) -- ($(a2) - (0, \Step{14})$);
-
-    \draw[arr] ($(p4) - (0, \Step{15})$) -- node[arrt] {$\ProposalC{15}{\ABC}$} ($(a1) - (0, \Step{15})$);
-    \draw[arr] ($(p4) - (0, \Step{15})$) -- ($(a2) - (0, \Step{15})$);
 
     \foreach \r in {1,...,\MaxSteps} {
         \node[font=\footnotesize] at ($(notes) - (0, \Step{\r})$) {$(\r)$};
     }
 \end{tikzpicture}
+\caption{Example scenario with $3$ acceptors and $2$ proposers.}
+\label{fig:scenario}
 \end{figure}
+
+We will take a look at an example run of the model with $3$ acceptors and $2$ proposers.
+% first understand scenario and then check out the formulas?
+
+Figure \ref{fig:scenario} provides an overview of the scenario we will go through where $\Acceptor{1}$, $\Acceptor{2}$, and $\Acceptor{3}$ are the acceptors and $\Proposer{4}$ and $\Proposer{5}$ are the proposers.
+In steps $\Paren{1}$ to $\Paren{5}$, $\Proposer{5}$ completes the Paxos algorithm with $\Acceptor{2}$ and $\Acceptor{3}$ and terminates.
+
+At this point $\Acceptor{2}$ has promised not to accept any proposal numbered less than $10$ and has accepted the value $\ABC$.
+So, when $\Proposer{4}$ tries to use $4$ as its proposal number $\Paren{6}$, it receives $\Nack{10}$ from $\Acceptor{2}$ $\Paren{8}$ and has to restart the algorithm $\Paren{9}$.
+
+$\Proposer{4}$ then runs through the Paxos algorithm with $\Acceptor{1}$ and $\Acceptor{2}$ starting with a new prepare request $\Paren{10}$ with a higher proposal number.
+In step $\Paren{12}$ $\Proposer{4}$ learns that value $\ABC$ with proposal number $10$ has already been accepted by $\Acceptor{2}$.
+Later, in step $\Paren{14}$, $\Proposer{4}$ issues a proposal with the value of the highest-numbered proposal that it receives as a response to its prepare request.
+In this case there is only one such proposal, which is $\ProposalC{10}{\ABC}$.
+
+In the end all $3$ acceptors have accepted the value $\ABC$.
+$\Acceptor{1}$ and $\Acceptor{2}$ have accepted $\ProposalC{15}{\ABC}$ and $\Acceptor{3}$ has accepted $\ProposalC{10}{\ABC}$.
