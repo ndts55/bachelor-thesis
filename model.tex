@@ -1,9 +1,10 @@
-\chapter{Model and Analysis}
+\chapter{Model}
 First, we specify some sorts with which we can then define the global type.
 Afterwards, we define the processes for the proposer and the acceptor.
 Finally, we will study an example run of the model.
 
 \section{Sorts}
+Sorts are basic data types.
 We assume the following sorts.
 
 $\Maybe{a} = \Just{a} \Or \Nothing$
@@ -293,7 +294,7 @@ $\Sys{ac}{pc} = \Sys{3}{2} =
 \Or \SessionRequest{a}{2}{t}.\PpInit{4}{\genAq{5}{3}{2}}{5}{5}{[]}\\
 \Or \ParallelFor{1 \le j \le 3} \PaInit{j}{4}{3}{2}{n_j}{pr_j}$
 
-% $\longmapsto \Init\\
+% $\mapstostar \Init\\
 % \Nu{t}\big (
 % \PpInit{4}{A_{Q,1}}{4}{4}{[]} \Or \PpInit{4}{A_{Q,2}}{5}{5}{[]}\\
 % \Or \PaInit{1}{4}{3}{2}{n_1}{pr_1} \Or \PaInit{2}{4}{3}{2}{n_2}{pr_2} \Or \PaInit{3}{4}{3}{2}{n_3}{pr_3}\\
@@ -310,7 +311,7 @@ $\Sys{ac}{pc} = \Sys{3}{2} =
 % \Or \OuterSessionQueues
 % \big )$
 
-$\longmapsto
+$\mapstostar
 \Nu{t}\big (
 \SessionRequest{b_4}{4}{s}.\Pp \comment{= \Proposer{4}}\\
 \Or \SessionRequest{b_5}{4}{r}.\Pp \comment{= \Proposer{5}}\\
@@ -322,7 +323,7 @@ $\longmapsto
 
 We apply $\Init$ thrice for shared-point $b_4$ and thrice again for shared-point $b_5$ to obtain:
 
-$\longmapsto
+$\mapstostar
 \NuChannels\big (\\
 \Mu{X} \update{n}{5} . \Paren{\DotForall{j\in \{1,2\}} \SendUnreliableP{s}{4}{j}{l1a}{\prNumber{n}{4}}}\dots \comment{= \Proposer{4}}\\
 \Or \Mu{X} \update{n}{6} . \Paren{\DotForall{j\in \{2,3\}} \SendUnreliableP{r}{4}{j}{l1a}{\prNumber{n}{5}}}\dots \comment{= \Proposer{5}}\\
@@ -372,7 +373,7 @@ In this case $\Proposer{5}$ communicates with $\Acceptor{2}$ and $\Acceptor{3}$.
 We apply $\Usend$ and $\Uget$ twice to send $\prNumber{6}{5} = 10$ to $\Acceptor{2}$ and $\Acceptor{3}$.
 % corresponds to (1)
 
-$\longmapsto
+$\mapstostar
 \NuChannels \big (\\
 \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
 \Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}.\ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}\dots \comment{= \Proposer{5}}\\
@@ -472,7 +473,7 @@ Note that we also apply $\Uskip$ to $\Acceptor{1}$ and evaluate its branches.
 All three acceptors move into $\PaCont$.
 % corresponds to (2) - (3)
 
-% $\longmapsto (USkip)\\
+% $\mapstostar (USkip)\\
 % \NuChannels \big (
 % \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
 % \Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}.\ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}\dots\\
@@ -514,7 +515,7 @@ All three acceptors move into $\PaCont$.
 % \Or \OuterSessionQueues
 % \big )$
 
-% $\longmapsto (USend + UGet)\\
+% $\mapstostar (USend + UGet)\\
 % \NuChannels \big (
 % \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
 % \Or \Mu{X} \ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}.\If{\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < 1} \Then{\dots}\\
@@ -535,7 +536,7 @@ All three acceptors move into $\PaCont$.
 % \Or \OuterSessionQueues
 % \big )$
 
-% $\longmapsto (USend + UGet)\\
+% $\mapstostar (USend + UGet)\\
 % \NuChannels \big (
 % \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
 % \Or \Mu{X} \If{\False \tOr 2 < 1} \Then{\dots} \Else{\SendWeaklyP{r}{4}{\Curly{2,3}}{\Accept}{\dots}}\\
@@ -556,7 +557,7 @@ All three acceptors move into $\PaCont$.
 % \Or \OuterSessionQueues
 % \big )$
 
-$\longmapsto
+$\mapstostar
 \NuChannels \big (\\
 \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
 \Or \Mu{X} \SendWeaklyP{r}{4}{\Curly{2,3}}{\Accept}{\SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{10}{\ABC}}}\dots \comment{= \Proposer{5}}\\
@@ -581,7 +582,7 @@ $\Proposer{5}$ broadcasts its decision $\Accept$ to $\Acceptor{2}$ and $\Accepto
 By applying $\Wsel$ once, $\Wbran$ twice we obtain:
 % corresponds to (4)
 
-$\longmapsto
+$\mapstostar
 \NuChannels \big (\\
 \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
 \Or \Mu{X} \SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{10}{\ABC}}.\SendUnreliableP{r}{4}{3}{l2a}{\ProposalC{10}{\ABC}}\dots \comment{= \Proposer{5}}\\
@@ -602,7 +603,7 @@ $\longmapsto
 \Or \OuterSessionQueues
 \big )$
 
-% $\longmapsto (WSkip)\\
+% $\mapstostar (WSkip)\\
 % \NuChannels \big (
 % \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
 % \Or \Mu{X} \SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}.\\\hspace*{1em}\SendUnreliableP{r}{4}{3}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}\dots\\
@@ -623,7 +624,7 @@ $\longmapsto
 % \Or \OuterSessionQueues
 % \big )$
 
-% $\longmapsto (USend + UGet)\\
+% $\mapstostar (USend + UGet)\\
 % \NuChannels \big (
 % \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
 % \Or \Mu{X} \SendUnreliableP{r}{4}{3}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}.end\\
@@ -641,7 +642,7 @@ $\longmapsto
 % \Or \OuterSessionQueues
 % \big )$
 
-% $\longmapsto (USend + UGet)\\
+% $\mapstostar (USend + UGet)\\
 % \NuChannels \big (
 % \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
 % \Or \Mu{X} end\\
@@ -702,7 +703,7 @@ $\Acceptor{2}$ and $\Acceptor{3}$ accept the proposal and the respective subproc
 Note that we apply $\Wskip$ in $\Acceptor{1}$ and terminate that subprocess as well.
 % corresponds to (5)
 
-$\longmapsto
+$\mapstostar
 \NuChannels \big (\\
 \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
 \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots} \comment{= \Acceptor{1}}\\
@@ -722,7 +723,7 @@ $\Proposer{4}$ then decides to restart the algorithm.
 We apply $\Usend$ and $\Uget$ twice.
 We also apply $\Uskip$ once in $\Acceptor{3}$.
 
-$\longmapsto
+$\mapstostar
 \NuChannels \big (\\
 \Mu{X} \ReceiveUnreliableP{s}{1}{4}{l1b}{\perp}{v_1}.\ReceiveUnreliableP{s}{2}{4}{l1b}{\perp}{v_2}\dots \comment{= \Proposer{4}}\\
 \Or \Mu{X} \If{5 = \perp} \Then{\PaCont} \Else{\dots} \comment{= \Acceptor{1}}\\
@@ -767,7 +768,7 @@ $=
 \Or \OuterSessionQueues
 \big )$
 
-% $\longmapsto (USend + UGet, USend + UGet)\\
+% $\mapstostar (USend + UGet, USend + UGet)\\
 % \NuChannels \big (
 % \Mu{X} \If{\True \tOr 1 < 1} \Then{\SendWeaklyP{s}{4}{\Curly{1,2}}{\Restart}{X}} \Else{\dots}\\
 % \Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
@@ -786,7 +787,7 @@ $=
 
 Applying $\Usend$ and $\Uget$ twice and evaluating the branching in $\Proposer{4}$ yields:
 
-$\longmapsto
+$\mapstostar
 \NuChannels \big (\\
 \Mu{X} \SendWeaklyP{s}{4}{\Curly{1,2}}{\Restart}{X}\\
 \Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
@@ -797,7 +798,7 @@ $\longmapsto
 \Or \OuterSessionQueues
 \big )$
 
-% $\longmapsto (WSel + WBran, WSkip)\\
+% $\mapstostar (WSel + WBran, WSkip)\\
 % \NuChannels \big (
 % \Mu{X} X\\
 % \Or \Mu{X} X\\
@@ -817,7 +818,7 @@ $\longmapsto
 $\Proposer{4}$ sends its decision to restart the algorithm to $\Acceptor{1}$ and $\Acceptor{2}$ by applying $\Wsel$ once and $\Wbran$ twice.
 $\Acceptor{3}$ terminates after applying $\Wskip$.
 
-$\longmapsto
+$\mapstostar
 \NuChannels \big (\\
 \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{15}.\SendUnreliableP{s}{4}{2}{l1a}{15}\dots \comment{= \Proposer{4}}\\
 \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots} \comment{= \Acceptor{1}}\\
@@ -827,7 +828,7 @@ $\longmapsto
 \Or \OuterSessionQueues
 \big )$
 
-% $\longmapsto (USend + UGet, USend + UGet)\\
+% $\mapstostar (USend + UGet, USend + UGet)\\
 % \NuChannels \big (
 % \Mu{X} \ReceiveUnreliableP{s}{1}{4}{l1b}{\perp}{v_1}.\ReceiveUnreliableP{s}{2}{4}{l1b}{\perp}{v_2}.\If{\dots}\\
 % \Or \Mu{X} \If{15 = \perp} \Then{\PaCont} \Else{\dots}\\
@@ -844,7 +845,7 @@ $\longmapsto
 % % A1: n=5, pr=Nothing
 % % A2: n=10, pr=Proposal 10 abc
 % % A3: n=10, pr=Proposal 10 abc
-% $\longmapsto
+% $\mapstostar
 % \NuChannels \big (\\
 % \Mu{X} \ReceiveUnreliableP{s}{1}{4}{l1b}{\perp}{v_1}.\ReceiveUnreliableP{s}{2}{4}{l1b}{\perp}{v_2}.\If{\dots}\\
 % \Or \Mu{X} \If{\greaterThan{15}{\Just{5}}} \Then{\update{n}{15}\dots} \Else{\dots}\\
@@ -862,7 +863,7 @@ By applying $\Usend$ and $\Uget$ and evaluating the branches in the remaining ac
 % A1: n=15, pr=Nothing
 % A2: n=15, pr=Proposal 10 abc
 % A3: n=10, pr=Proposal 10 abc
-$\longmapsto
+$\mapstostar
 \NuChannels \big (\\
 \Mu{X} \ReceiveUnreliableP{s}{1}{4}{l1b}{\perp}{v_1}.\ReceiveUnreliableP{s}{2}{4}{l1b}{\perp}{v_2}.\If{\dots} \comment{= \Proposer{4}}\\
 \Or \Mu{X} \SendUnreliableP{s}{1}{4}{l1b}{\Promise{\Nothing}}.\PaCont \comment{= \Acceptor{1}}\\
@@ -880,7 +881,7 @@ Twice more we apply $\Usend$ and $\Uget$ and evaluate the branch in $\Proposer{4
 % % A1: n=15, pr=Nothing
 % % A2: n=15, pr=Proposal 10 abc
 % % A3: n=10, pr=Proposal 10 abc
-% $\longmapsto (USend + UGet, USend + UGet)\\
+% $\mapstostar (USend + UGet, USend + UGet)\\
 % \NuChannels \big (
 % \Mu{X} \If{\False \tOr 2 < 1} \Then{\dots} \Else{\SendWeaklyP{s}{4}{\Curly{1,2}}{\Accept}{\dots}}\\
 % \Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
@@ -897,7 +898,7 @@ Twice more we apply $\Usend$ and $\Uget$ and evaluate the branch in $\Proposer{4
 % A1: n=15, pr=Nothing
 % A2: n=15, pr=Proposal 10 abc
 % A3: n=10, pr=Proposal 10 abc
-$\longmapsto
+$\mapstostar
 \NuChannels \big (\\
 \Mu{X} \SendWeaklyP{s}{4}{\Curly{1,2}}{\Accept}{\dots} \comment{= \Proposer{4}}\\
 \Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont} \comment{= \Acceptor{1}}\\
@@ -914,7 +915,7 @@ First, we apply $\Wsel$ and $\Wbran$.
 % A1: n=15, pr=Nothing
 % A2: n=15, pr=Proposal 10 abc
 % A3: n=10, pr=Proposal 10 abc
-$\longmapsto
+$\mapstostar
 \NuChannels \big (\\
 \Mu{X} \SendUnreliableP{s}{4}{1}{l2a}{\ProposalC{15}{\ABC}}.
 \SendUnreliableP{s}{4}{2}{l2a}{\ProposalC{15}{\ABC}}.end \comment{= \Proposer{4}}\\
@@ -931,7 +932,7 @@ $\Proposer{4}$ terminates and the acceptors accept the received proposal and the
 % % A1: n=15, pr=Nothing
 % % A2: n=15, pr=Proposal 10 abc
 % % A3: n=10, pr=Proposal 10 abc
-% $\longmapsto (USend + UGet, USend + UGet)\\
+% $\mapstostar (USend + UGet, USend + UGet)\\
 % \NuChannels \big (
 % \Mu{X} end\\
 % \Or \Mu{X} \If{\ProposalC{15}{\ProposalC{15}{abc}} = \perp} \Then{\dots} \Else{\dots}\\
@@ -980,7 +981,7 @@ $\Proposer{4}$ terminates and the acceptors accept the received proposal and the
 % A1: n=15, pr=Proposal 15 abc
 % A2: n=15, pr=Proposal 15 abc
 % A3: n=10, pr=Proposal 10 abc
-$\longmapsto
+$\mapstostar
 \NuChannels \big (\InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
 \Or \OuterSessionQueues
