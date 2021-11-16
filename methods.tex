@@ -4,45 +4,19 @@ Afterwards, we define the processes for the proposer and the acceptor.
 Finally, we will study an example run of the model.
 
 \section{Sorts}
-\newcommand{\Bool}[0]{\operatorname{Bool}}
-\newcommand{\True}[0]{\operatorname{true}}
-\newcommand{\False}[0]{\operatorname{false}}
-\newcommand{\Maybe}[1]{\operatorname{Maybe}\; #1}
-\newcommand{\Just}[1]{\operatorname{Just}\; #1}
-\newcommand{\Nothing}[0]{\operatorname{Nothing}}
-\newcommand{\Or}[0]{\; | \;}
-\newcommand{\Promise}[1]{\operatorname{Promise}\; #1}
-\newcommand{\Proposal}[1]{\operatorname{Proposal}\; #1}
-\newcommand{\ProposalC}[2]{\operatorname{Proposal}\; #1\; #2}
-\newcommand{\Nack}[1]{\operatorname{Nack}\; #1}
-\newcommand{\Value}[0]{\operatorname{Value}}
-
-\newcommand{\Curly}[1]{\left\{#1\right\}}
-\newcommand{\Paren}[1]{\left(#1\right)}
-
 We assume the following sorts.
 
-$\Maybe{a} = \Curly{\Just{a}, \Nothing}$
+$\Maybe{a} = \Just{a} \Or \Nothing$
 
 $\Bool = \Curly{\True, \False}$
 
-$\Value =$ Set of values.
+We assume a set of values $\Value$.
 
-$\Promise{a} = \Curly{\Promise{\Paren{\Maybe{\Paren{\Proposal{a}}}}}, \Nack{\mathbb{N}}}$
+$\Proposal{a} = \ProposalC{\mathbb{N}}{a}$
 
-$\Proposal{a} = \Curly{\ProposalC{\mathbb{N}}{a}}$
+$\Promise{a} = \Promise{\Maybe{\Proposal{a}}} \Or \Nack{\mathbb{N}}$
 
 \section{Global Type}
-\newcommand{\DotForall}[1]{\bigodot_{#1}\;}
-\newcommand{\SendUnreliableG}[4]{#1 \to_u #2 : #3 \left\langle #4 \right\rangle}
-\newcommand{\SendWeaklyG}[3]{#1 \to_w #2 : #3}
-
-\newcommand{\Accept}[0]{\mathnormal{Accept}}
-\newcommand{\Restart}[0]{\mathnormal{Restart}}
-\newcommand{\Abort}[0]{\mathnormal{Abort}}
-
-\newcommand{\Mu}[1]{\left(\mu #1\right)}
-
 Since each proposer initiates its own session the global type can be defined for one proposer.
 A quorum of acceptors $A_Q$ is assumed.
 
@@ -62,16 +36,6 @@ Should the proposer crash the algorithm ends for this particular proposer and qu
 
 \section{Functions}
 We define some functions which we use in the next section to define the processes.
-
-\newcommand{\prNumber}[2]{\operatorname{proposalNumber}\left( #1, #2 \right)}
-\newcommand{\promValue}[1]{\operatorname{promiseValue}\left(#1\right)}
-\newcommand{\anyNack}[1]{\operatorname{anyNack}\left(#1\right)}
-\newcommand{\promiseCount}[1]{\operatorname{promiseCount}\left(#1\right)}
-\newcommand{\greaterThan}[2]{\operatorname{gt}\left(#1, #2\right)}
-\newcommand{\greaterEqual}[2]{\operatorname{ge}\left(#1, #2\right)}
-\newcommand{\nFromProposal}[1]{\operatorname{nFromProposal}\left(#1 \right)}
-\newcommand{\genAq}[3]{\operatorname{genA_Q}\left(#1, #2, #3\right)}
-\newcommand{\update}[2]{\operatorname{update} \left(#1, #2\right)}
 
 $\operatorname{proposalNumber} : \mathbb{N} \times \mathbb{N} \to \mathbb{N}$
 
@@ -117,20 +81,7 @@ $\genAq{i}{ac}{pc}$ returns a randomly selected set $A_Q$ with $A_Q \subseteq A 
 $\update{n}{m}$ replaces the value inside $n$ with the value in $m$.
 
 \section{Processes}
-\newcommand{\Sys}[2]{\operatorname{Sys}\left(#1, #2\right)}
-\newcommand{\Pa}[0]{\operatorname{P^a}}
-\newcommand{\Pp}[0]{\operatorname{P^p}}
-\newcommand{\PaCont}[0]{\operatorname{P^a_{cont}}}
-
-\newcommand{\PpInit}[5]{\operatorname{P^p_{init}}\left(#1, #2, #3, #4, #5\right)}
-\newcommand{\PaInit}[6]{\operatorname{P^a_{init}}\left(#1, #2, #3, #4, #5, #6\right)}
-
 \subsection{System Initialization}
-\newcommand{\SessionRequest}[3]{\overline{#1}\left[#2\right]\left(#3\right)}
-\newcommand{\SessionAccept}[3]{#1\left[#2\right]\left(#3\right)}
-\newcommand{\ParallelFor}[1]{\Pi_{#1}\;}
-\newcommand{\VectorV}[0]{\overrightarrow{V}}
-
 % Idea: One shared-point per Proposer over which the session is initialized.
 $\Sys{ac}{pc} = \SessionRequest{a}{2}{t} . \PpInit{ac + 1}{\genAq{ac + pc}{ac}{pc}}{ac + pc}{ac + pc}{[]}\\
 \Or \SessionAccept{a}{1}{t} . \ParallelFor{ac < i < ac + pc} \PpInit{ac + 1}{\genAq{i}{ac}{pc}}{i}{i}{[]} \\
@@ -162,16 +113,6 @@ We observe that each subprocess in an acceptor accesses a different channel $s$,
 Afterwards, each subprocess behaves like $\Pa$.
 
 \subsection{Proposer}
-\newcommand{\SendUnreliableP}[5]{#1\left[#2, #3\right]!_u #4 \left\langle #5 \right\rangle}
-\newcommand{\ReceiveUnreliableP}[6]{#1\left[#2, #3\right]?_u #4 \left\langle #5 \right\rangle \left(#6\right)}
-\newcommand{\ceil}[1]{\Big\lceil #1 \Big\rceil}
-\newcommand{\SendWeaklyP}[5]{#1\left[#2, #3\right]!_w #4.#5}
-\newcommand{\ReceiveWeaklyP}[4]{#1\left[#2, #3\right]?_w #4}
-\newcommand{\If}[1]{\operatorname{if}\; #1}
-\newcommand{\Then}[1]{\operatorname{then}\; #1}
-\newcommand{\Else}[1]{\operatorname{else}\; #1}
-\newcommand{\tOr}[0]{\text{ or }}
-
 $\Pp = \Mu{X} \update{n}{n + 1} .\\
 \hspace*{0.5em}\left(\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l1a}{\prNumber{n}{m}}\right) .\\
 \hspace*{0.5em}\left(\DotForall{j \in A_Q} \ReceiveUnreliableP{s}{j}{i}{l1b}{\perp}{v_j}\right) .\\
@@ -235,12 +176,6 @@ Then the subprocess terminates.
 If the acceptor does not receive a proposal or the proposal number of $pr'$ is less than $n$ the subprocess terminates without updating $n$ or $pr$.
 
 \section{Failure Patterns}
-\newcommand{\FPuget}[0]{\mathtt{FP_{uget}}}
-\newcommand{\FPuskip}[0]{\mathtt{FP_{uskip}}}
-\newcommand{\FPml}[0]{\mathtt{FP_{ml}}}
-\newcommand{\FPwskip}[0]{\mathtt{FP_{wskip}}}
-\newcommand{\FPcrash}[0]{\mathtt{FP_{crash}}}
-\newcommand{\EventuallyWeak}[0]{\Diamond\mathscr{W}}
 Chandra and Toueg introduce a class of failure detectors $\EventuallyWeak$, which is called \emph{eventually weak} in \cite{failure_detectors}.
 Failure detectors in $\EventuallyWeak$ satisfy the following properties: (1) eventually every process that crashes is permanently suspected by some correct process and (2) eventually some correct process is never suspected by any correct process.
 
@@ -263,16 +198,6 @@ In Paxos there is no need to reject outdated messages so $\FPuget$ is implemente
 
 
 \section{Example}
-\newcommand{\Nu}[1]{\left(\nu #1\right)}
-\newcommand{\OuterSessionQueues}[0]{\ParallelFor{1 \le k,l \le 2, k \neq l} t_{k\to l}:[]}
-\newcommand{\InnerSessionQueues}[1]{\ParallelFor{1 \le k,l \le 4, k \neq l} #1_{k\to l}:[]}
-\newcommand{\NuChannels}[0]{\Nu{t}\Nu{s}\Nu{r}}
-
-\newcommand{\BeginPaCont}[0]{\Accept \dots \oplus \Restart .X \oplus \Abort .end}
-\newcommand{\ABC}[0]{\operatorname{abc}}
-\newcommand{\Acceptor}[1]{\operatorname{A_#1}}
-\newcommand{\Proposer}[1]{\operatorname{P_#1}}
-
 In this section we will study an example run of the model with $3$ acceptors and $2$ proposers.
 First, we will take a look at the example scenario.
 Then we will examine the scenario using reduction rules starting at system initialization.
@@ -361,8 +286,6 @@ $\Acceptor{1}$ and $\Acceptor{2}$ have accepted $\ProposalC{15}{\ABC}$ and $\Acc
 We set $ac = 3$, $pc = 2$, and $V=\Curly{\ABC, \operatorname{def}, \dots, \operatorname{vwx}, \operatorname{yz}}$.
 
 \subsubsection{System Initialization}
-\newcommand{\Init}[0]{\Paren{\operatorname{Init}}}
-\newcommand{\comment}[1]{\;\textcolor{teal}{#1}}
 After inserting $ac$ and $pc$ and applying $\Init$ once we have:
 
 $\Sys{ac}{pc} = \Sys{3}{2} =
@@ -444,12 +367,6 @@ $\longmapsto
 Note that each process is shortened to only show the next few steps instead of the entire process.
 
 \subsubsection{The Happy Path}
-\newcommand{\Usend}[0]{\Paren{\operatorname{USend}}}
-\newcommand{\Uget}[0]{\Paren{\operatorname{UGet}}}
-\newcommand{\Uskip}[0]{\Paren{\operatorname{USkip}}}
-\newcommand{\Wsel}[0]{\Paren{\operatorname{WSel}}}
-\newcommand{\Wbran}[0]{\Paren{\operatorname{WBran}}}
-\newcommand{\Wskip}[0]{\Paren{\operatorname{WSkip}}}
 After applying the updates in $\Proposer{4}$ and $\Proposer{5}$ the first inter-process communication can take place.
 In this case $\Proposer{5}$ communicates with $\Acceptor{2}$ and $\Acceptor{3}$.
 We apply $\Usend$ and $\Uget$ twice to send $\prNumber{6}{5} = 10$ to $\Acceptor{2}$ and $\Acceptor{3}$.
@@ -642,7 +559,7 @@ All three acceptors move into $\PaCont$.
 $\longmapsto
 \NuChannels \big (\\
 \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
-\Or \Mu{X} \SendWeaklyP{r}{4}{\Curly{2,3}}{\Accept}{\SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{10}{\ABC}}}\dots = \comment{= \Proposer{5}}\\
+\Or \Mu{X} \SendWeaklyP{r}{4}{\Curly{2,3}}{\Accept}{\SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{10}{\ABC}}}\dots \comment{= \Proposer{5}}\\
 \Or \Paren{
     \Mu{X} \dots
     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\BeginPaCont}

@@ -1,0 +1,85 @@
+\newcommand{\Bool}[0]{\operatorname{Bool}}
+\newcommand{\True}[0]{\operatorname{true}}
+\newcommand{\False}[0]{\operatorname{false}}
+\newcommand{\Maybe}[1]{\operatorname{Maybe}\; #1}
+\newcommand{\Just}[1]{\operatorname{Just}\; #1}
+\newcommand{\Nothing}[0]{\operatorname{Nothing}}
+\newcommand{\Or}[0]{\; | \;}
+\newcommand{\Promise}[1]{\operatorname{Promise}\; #1}
+\newcommand{\Proposal}[1]{\operatorname{Proposal}\; #1}
+\newcommand{\ProposalC}[2]{\operatorname{Proposal}\; #1\; #2}
+\newcommand{\Nack}[1]{\operatorname{Nack}\; #1}
+\newcommand{\Value}[0]{\operatorname{Value}}
+
+\newcommand{\Curly}[1]{\left\{#1\right\}}
+\newcommand{\Paren}[1]{\left(#1\right)}
+
+\newcommand{\DotForall}[1]{\bigodot_{#1}\;}
+\newcommand{\SendUnreliableG}[4]{#1 \to_u #2 : #3 \left\langle #4 \right\rangle}
+\newcommand{\SendWeaklyG}[3]{#1 \to_w #2 : #3}
+
+\newcommand{\Accept}[0]{\mathnormal{Accept}}
+\newcommand{\Restart}[0]{\mathnormal{Restart}}
+\newcommand{\Abort}[0]{\mathnormal{Abort}}
+
+\newcommand{\Mu}[1]{\left(\mu #1\right)}
+
+\newcommand{\prNumber}[2]{\operatorname{proposalNumber}\left( #1, #2 \right)}
+\newcommand{\promValue}[1]{\operatorname{promiseValue}\left(#1\right)}
+\newcommand{\anyNack}[1]{\operatorname{anyNack}\left(#1\right)}
+\newcommand{\promiseCount}[1]{\operatorname{promiseCount}\left(#1\right)}
+\newcommand{\greaterThan}[2]{\operatorname{gt}\left(#1, #2\right)}
+\newcommand{\greaterEqual}[2]{\operatorname{ge}\left(#1, #2\right)}
+\newcommand{\nFromProposal}[1]{\operatorname{nFromProposal}\left(#1 \right)}
+\newcommand{\genAq}[3]{\operatorname{genA_Q}\left(#1, #2, #3\right)}
+\newcommand{\update}[2]{\operatorname{update} \left(#1, #2\right)}
+
+\newcommand{\Sys}[2]{\operatorname{Sys}\left(#1, #2\right)}
+\newcommand{\Pa}[0]{\operatorname{P^a}}
+\newcommand{\Pp}[0]{\operatorname{P^p}}
+\newcommand{\PaCont}[0]{\operatorname{P^a_{cont}}}
+
+\newcommand{\PpInit}[5]{\operatorname{P^p_{init}}\left(#1, #2, #3, #4, #5\right)}
+\newcommand{\PaInit}[6]{\operatorname{P^a_{init}}\left(#1, #2, #3, #4, #5, #6\right)}
+
+\newcommand{\SessionRequest}[3]{\overline{#1}\left[#2\right]\left(#3\right)}
+\newcommand{\SessionAccept}[3]{#1\left[#2\right]\left(#3\right)}
+\newcommand{\ParallelFor}[1]{\Pi_{#1}\;}
+\newcommand{\VectorV}[0]{\overrightarrow{V}}
+
+\newcommand{\SendUnreliableP}[5]{#1\left[#2, #3\right]!_u #4 \left\langle #5 \right\rangle}
+\newcommand{\ReceiveUnreliableP}[6]{#1\left[#2, #3\right]?_u #4 \left\langle #5 \right\rangle \left(#6\right)}
+\newcommand{\ceil}[1]{\Big\lceil #1 \Big\rceil}
+\newcommand{\SendWeaklyP}[5]{#1\left[#2, #3\right]!_w #4.#5}
+\newcommand{\ReceiveWeaklyP}[4]{#1\left[#2, #3\right]?_w #4}
+\newcommand{\If}[1]{\operatorname{if}\; #1}
+\newcommand{\Then}[1]{\operatorname{then}\; #1}
+\newcommand{\Else}[1]{\operatorname{else}\; #1}
+\newcommand{\tOr}[0]{\text{ or }}
+
+\newcommand{\FPuget}[0]{\mathtt{FP_{uget}}}
+\newcommand{\FPuskip}[0]{\mathtt{FP_{uskip}}}
+\newcommand{\FPml}[0]{\mathtt{FP_{ml}}}
+\newcommand{\FPwskip}[0]{\mathtt{FP_{wskip}}}
+\newcommand{\FPcrash}[0]{\mathtt{FP_{crash}}}
+\newcommand{\EventuallyWeak}[0]{\Diamond\mathscr{W}}
+
+\newcommand{\Nu}[1]{\left(\nu #1\right)}
+\newcommand{\OuterSessionQueues}[0]{\ParallelFor{1 \le k,l \le 2, k \neq l} t_{k\to l}:[]}
+\newcommand{\InnerSessionQueues}[1]{\ParallelFor{1 \le k,l \le 4, k \neq l} #1_{k\to l}:[]}
+\newcommand{\NuChannels}[0]{\Nu{t}\Nu{s}\Nu{r}}
+
+\newcommand{\BeginPaCont}[0]{\Accept \dots \oplus \Restart .X \oplus \Abort .end}
+\newcommand{\ABC}[0]{\operatorname{abc}}
+\newcommand{\Acceptor}[1]{\operatorname{A_#1}}
+\newcommand{\Proposer}[1]{\operatorname{P_#1}}
+
+\newcommand{\Init}[0]{\Paren{\operatorname{Init}}}
+\newcommand{\comment}[1]{\;\textcolor{teal}{#1}}
+
+\newcommand{\Usend}[0]{\Paren{\operatorname{USend}}}
+\newcommand{\Uget}[0]{\Paren{\operatorname{UGet}}}
+\newcommand{\Uskip}[0]{\Paren{\operatorname{USkip}}}
+\newcommand{\Wsel}[0]{\Paren{\operatorname{WSel}}}
+\newcommand{\Wbran}[0]{\Paren{\operatorname{WBran}}}
+\newcommand{\Wskip}[0]{\Paren{\operatorname{WSkip}}}
