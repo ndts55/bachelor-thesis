@@ -62,15 +62,18 @@
 \newcommand{\genAq}[3]{\operatorname{genA_Q}\left(#1, #2, #3\right)}
 \newcommand{\update}[2]{\operatorname{update} \left(#1, #2\right)}
 
-% Math
+% Math and Programming
 \newcommand{\ceil}[1]{\Big\lceil #1 \Big\rceil}
 \newcommand{\VectorV}[0]{\overrightarrow{V}}
-
 \newcommand{\If}[1]{\operatorname{if}\; #1}
 \newcommand{\Then}[1]{\operatorname{then}\; #1}
 \newcommand{\Else}[1]{\operatorname{else}\; #1}
 \newcommand{\tOr}[0]{\text{ or }}
 \newcommand{\mapstostar}[0]{\longmapsto^*}
+\newcommand{\Wildcard}[0]{\mathtt{\_}}
+\newcommand{\EmptyList}[0]{\mathtt{[]}}
+\newcommand{\List}[1]{\mathtt{list\ of\ } #1}
+\newcommand{\ListPattern}[2]{\Paren{#1 \mathtt{\#} #2}}
 
 % Example run
 \newcommand{\Nu}[1]{\left(\nu #1\right)}
@@ -79,7 +82,6 @@
 \newcommand{\NuChannels}[0]{\Nu{t}\Nu{s}\Nu{r}}
 \newcommand{\BeginPaCont}[0]{\Accept \dots \oplus \Restart .X \oplus \Abort .end}
 \newcommand{\ABC}[0]{\operatorname{abc}}
-
 
 % Rules
 \newcommand{\Init}[0]{\Paren{\operatorname{Init}}}
