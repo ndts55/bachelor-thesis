@@ -23,10 +23,14 @@ A quorum of acceptors $A_Q$ is assumed.
 
 The last phase of Paxos contains no inter-process communication, so it is not modeled in the global type.
 
-$G_{p, A_Q} = \Mu{X} \DotForall{a \in A_Q} \SendUnreliableG{p}{a}{l1a}{\mathbb{N}} . \DotForall{a \in A_Q} \SendUnreliableG{a}{p}{l1b}{\Promise{\Value}} .\\
-\hspace*{0.5em}\SendWeaklyG{p}{A_Q}{\Accept.\Paren{\DotForall{a \in A_Q} \SendUnreliableG{p}{a}{l2a}{\Proposal{\Value}}}.end\\
-\hspace*{1em}\oplus \Restart.X\\
-\hspace*{1em}\oplus \Abort.end}$
+$G_{p, A_Q} = \Mu{X}
+\Paren{\DotForall{a \in A_Q} \SendUnreliableG{p}{a}{l1a}{\mathbb{N}}} .
+\Paren{\DotForall{a \in A_Q} \SendUnreliableG{a}{p}{l1b}{\Promise{\Value}}} .\\
+\hspace*{0.5em}\SendWeaklyG{p}{A_Q}{\\
+\hspace*{1em}
+\Accept.\Paren{\DotForall{a \in A_Q} \SendUnreliableG{p}{a}{l2a}{\Proposal{\Value}}}.end \oplus
+\Restart.X \oplus
+\Abort.end}$
 
 We can distinguish the individual phases of the Paxos algorithm by the labels $l1a$, $l1b$, and $l2a$.
 
@@ -42,42 +46,44 @@ $\operatorname{proposalNumber} : \mathbb{N} \times \mathbb{N} \to \mathbb{N}$
 
 $\prNumber{a}{b}$ returns a proposal number when given two natural numbers.
 
-$\operatorname{promiseValue} : [\Promise{a}] \to a$
+$\operatorname{promiseValue} : \List{\Promise{a}} \to a$
 
-$\promValue{ps}$ returns a new value if none of the promises in $ps$ contain a value. Otherwise, the best value is returned. Usually, that means the value with the highest associated proposal number.
+$\promValue{ps}$ returns a fresh value if none of the promises in $ps$ contain a value. Otherwise, the best value is returned. Usually, that means the value with the highest associated proposal number.
 A promise contains a value $v$ if it is of the form $\Promise{(\Just{v})}$.
 
-$\operatorname{anyNack} : [\Promise{a}] \to \Bool\\
-\anyNack{[]} = false\\
-\anyNack{\Paren{\Nack{\_}: \_}} = true\\
-\anyNack{\Paren{\_:xs}} = \anyNack{xs}$
+$\operatorname{anyNack} : \List{\Promise{a}} \to \Bool\\
+\anyNack{\EmptyList} = \False\\
+\anyNack{\ListPattern{\Nack{\Wildcard}}{\Wildcard}} = \True\\
+\anyNack{\ListPattern{\Wildcard}{xs}} = \anyNack{xs}$
 
 $\anyNack{ps}$ returns $\True$ if the list contains at least one promise of the form $\Nack{n}$.
 Otherwise, it returns $\False$.
 
-$\operatorname{promiseCount} : [\Promise{a}] \to \mathbb{N}\\
-\promiseCount{[]} = 0\\
-\promiseCount{\Paren{\Promise{\_}:xs}} = 1 + \promiseCount{xs}\\
-\promiseCount{\Paren{\_:xs}} = \promiseCount{xs}$
+$\operatorname{promiseCount} : \List{\Promise{a}} \to \mathbb{N}\\
+\promiseCount{\EmptyList} = 0\\
+\promiseCount{\ListPattern{\Promise{\Wildcard}}{xs}} = 1 + \promiseCount{xs}\\
+\promiseCount{\ListPattern{\Wildcard}{xs}} = \promiseCount{xs}$
 
 $\promiseCount{ps}$ takes a list of promises $ps$ and calculates the number of promises in that list of that have the form $\Promise{m}$.
 
 $\operatorname{gt}: a \to \Maybe{a} \to \Bool\\
-\greaterThan{\_}{\Nothing} = true\\
+\greaterThan{\Wildcard}{\Nothing} = \True\\
 \greaterThan{a}{\Just{b}} = a > b$
 
 $\operatorname{ge}: a \to \Maybe{a} \to \Bool\\
-\greaterEqual{\_}{\Nothing} = true\\
+\greaterEqual{\Wildcard}{\Nothing} = \True\\
 \greaterEqual{a}{\Just{b}} = a \ge b$
 
 $\operatorname{nFromProposal} : \Proposal{a} \to \mathbb{N}\\
-\nFromProposal{\ProposalC{n}{\_}} = n$
+\nFromProposal{\ProposalC{n}{\Wildcard}} = n$
 
 $\nFromProposal{p}$ retrieves the proposal number $n$ inside proposal $p$, which has the form $\ProposalC{n}{pr}$.
 
 $\operatorname{genA_Q} : \mathbb{N} \times \mathbb{N} \times \mathbb{N} \to \mathbb{N}$
 
 $\genAq{i}{ac}{pc}$ returns a randomly selected set $A_Q$ with $A_Q \subseteq A = \Curly{1, \dots, ac}$ and $|A_Q| > \frac{|A|}{2}$.
+$A_Q$ consists of any majority of acceptors.
+In Paxos a majority of acceptors forms a quorum, i.e. an accepting set with which a value can be chosen \cite{lower_bounds}.
 
 $\update{n}{m}$ replaces the value inside $n$ with the value in $m$.
 
