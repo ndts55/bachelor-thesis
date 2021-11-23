@@ -44,7 +44,7 @@ We define some functions which we use in the next section to define the processe
 
 $\operatorname{proposalNumber} : \mathbb{N} \times \mathbb{N} \to \mathbb{N}$
 
-$\prNumber{a}{b}$ returns a proposal number when given two natural numbers.
+$\proposalNumber{a}{b}$ returns a proposal number when given two natural numbers.
 
 $\operatorname{promiseValue} : \List{\Promise{a}} \to a$
 
@@ -121,11 +121,11 @@ Afterwards, each subprocess behaves like $\Pa$.
 
 \subsection{Proposer}
 $\Pp = \Mu{X} \update{n}{n + 1} .\\
-\hspace*{0.5em}\left(\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l1a}{\prNumber{n}{m}}\right) .\\
+\hspace*{0.5em}\left(\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l1a}{\proposalNumber{n}{m}}\right) .\\
 \hspace*{0.5em}\left(\DotForall{j \in A_Q} \ReceiveUnreliableP{s}{j}{i}{l1b}{\perp}{v_j}\right) .\\
 \hspace*{0.5em}\If{\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < \ceil{\frac{i}{2}}}\\
 \hspace*{1em}\Then{\SendWeaklyP{s}{i}{A_Q}{\Restart}{X}}\\
-\hspace*{1em}\Else{\\\hspace*{1.5em}\SendWeaklyP{s}{i}{A_Q}{\Accept}{\\\hspace*{1.5em}\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l2a}{\ProposalC{\prNumber{n}{m}}{\promValue{\VectorV}}}.\\\hspace*{1.5em}end}}$
+\hspace*{1em}\Else{\\\hspace*{1.5em}\SendWeaklyP{s}{i}{A_Q}{\Accept}{\\\hspace*{1.5em}\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l2a}{\ProposalC{\proposalNumber{n}{m}}{\promValue{\VectorV}}}.\\\hspace*{1.5em}end}}$
 
 At the start of the recursion $n$ is incremented to make sure every run of the recursion uses a different $n$ and thus a different proposal number.
 The proposal number is sent to every acceptor in $A_Q$ and their replies are gathered in $\VectorV$ through $v_j$.
@@ -230,7 +230,7 @@ Then we will examine the scenario using reduction rules starting at system initi
     \draw[dashed] (p4) -- ($(p4) - (0, \Step{14.5})$);
     \draw[dashed] (p5) -- ($(p5) - (0, \Step{5.5})$);
     
-    \draw[arr] ($(p5) - (0, \Step{1})$) -- node[arrt] {$\prNumber{6}{5} = 10$} ($(a2) - (0, \Step{1})$);
+    \draw[arr] ($(p5) - (0, \Step{1})$) -- node[arrt] {$\proposalNumber{6}{5} = 10$} ($(a2) - (0, \Step{1})$);
     \draw[arr] ($(p5) - (0, \Step{1})$) -- ($(a3) - (0, \Step{1})$);
 
     \draw[arr] ($(a2) - (0, \Step{2})$) -- node[arrt] {$\Promise{\Nothing}$} ($(p5) - (0, \Step{2})$);
@@ -243,7 +243,7 @@ Then we will examine the scenario using reduction rules starting at system initi
     \draw[arr] ($(p5) - (0, \Step{5})$) -- node[arrt] {$\ProposalC{10}{\ABC}$} ($(a2) - (0, \Step{5})$);
     \draw[arr] ($(p5) - (0, \Step{5})$) -- ($(a3) - (0, \Step{5})$);
 
-    \draw[arr] ($(p4) - (0, \Step{6})$) -- node[arrt] {$\prNumber{5}{4} = 5$} ($(a1) - (0, \Step{6})$);
+    \draw[arr] ($(p4) - (0, \Step{6})$) -- node[arrt] {$\proposalNumber{5}{4} = 5$} ($(a1) - (0, \Step{6})$);
     \draw[arr] ($(p4) - (0, \Step{6})$) -- ($(a2) - (0, \Step{6})$);
 
     \draw[arr] ($(a1) - (0, \Step{7})$) -- node[arrt] {$\Promise{\Nothing}$} ($(p4) - (0, \Step{7})$);
@@ -253,7 +253,7 @@ Then we will examine the scenario using reduction rules starting at system initi
     \draw[arr] ($(p4) - (0, \Step{9})$) -- node[arrt] {$\Restart$} ($(a1) - (0, \Step{9})$);
     \draw[arr] ($(p4) - (0, \Step{9})$) -- ($(a2) - (0, \Step{9})$);
 
-    \draw[arr] ($(p4) - (0, \Step{10})$) -- node[arrt] {$\prNumber{6}{4} = 15$} ($(a1) - (0, \Step{10})$);
+    \draw[arr] ($(p4) - (0, \Step{10})$) -- node[arrt] {$\proposalNumber{6}{4} = 15$} ($(a1) - (0, \Step{10})$);
     \draw[arr] ($(p4) - (0, \Step{10})$) -- ($(a2) - (0, \Step{10})$);
 
     \draw[arr] ($(a1) - (0, \Step{11})$) -- node[arrt] {$\Promise{\Nothing}$} ($(p4) - (0, \Step{11})$);
@@ -331,8 +331,8 @@ We apply $\Init$ thrice for shared-point $b_4$ and thrice again for shared-point
 
 $\mapstostar
 \NuChannels\big (\\
-\Mu{X} \update{n}{5} . \Paren{\DotForall{j\in \{1,2\}} \SendUnreliableP{s}{4}{j}{l1a}{\prNumber{n}{4}}}\dots \comment{= \Proposer{4}}\\
-\Or \Mu{X} \update{n}{6} . \Paren{\DotForall{j\in \{2,3\}} \SendUnreliableP{r}{4}{j}{l1a}{\prNumber{n}{5}}}\dots \comment{= \Proposer{5}}\\
+\Mu{X} \update{n}{5} . \Paren{\DotForall{j\in \{1,2\}} \SendUnreliableP{s}{4}{j}{l1a}{\proposalNumber{n}{4}}}\dots \comment{= \Proposer{4}}\\
+\Or \Mu{X} \update{n}{6} . \Paren{\DotForall{j\in \{2,3\}} \SendUnreliableP{r}{4}{j}{l1a}{\proposalNumber{n}{5}}}\dots \comment{= \Proposer{5}}\\
 \Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
@@ -352,8 +352,8 @@ $\mapstostar
 
 % $=\\
 % \NuChannels\big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-% \Or \Mu{X} \SendUnreliableP{r}{4}{2}{l1a}{\prNumber{6}{5}}.\SendUnreliableP{r}{4}{3}{l1a}{\prNumber{6}{5}}\dots\\
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots\\
+% \Or \Mu{X} \SendUnreliableP{r}{4}{2}{l1a}{\proposalNumber{6}{5}}.\SendUnreliableP{r}{4}{3}{l1a}{\proposalNumber{6}{5}}\dots\\
 % \Or \Paren{
 %     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
 %     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
@@ -376,12 +376,12 @@ Note that each process is shortened to only show the next few steps instead of t
 \subsubsection{The Happy Path}
 After applying the updates in $\Proposer{4}$ and $\Proposer{5}$ the first inter-process communication can take place.
 In this case $\Proposer{5}$ communicates with $\Acceptor{2}$ and $\Acceptor{3}$.
-We apply $\Usend$ and $\Uget$ twice to send $\prNumber{6}{5} = 10$ to $\Acceptor{2}$ and $\Acceptor{3}$.
+We apply $\Usend$ and $\Uget$ twice to send $\proposalNumber{6}{5} = 10$ to $\Acceptor{2}$ and $\Acceptor{3}$.
 % corresponds to (1)
 
 $\mapstostar
 \NuChannels \big (\\
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
+\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
 \Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}.\ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}\dots \comment{= \Proposer{5}}\\
 \Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
@@ -404,7 +404,7 @@ Since $10 \neq \perp$ both $\Acceptor{2}$ and $\Acceptor{3}$ move into their res
 
 $=
 \NuChannels \big (\\
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
+\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
 \Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}.\ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}\dots \comment{= \Proposer{5}}\\
 \Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
@@ -428,8 +428,8 @@ $=
 % % A3: n=Nothing, pr=Nothing
 % $=\\
 % \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-% \Or \Mu{X} \SendUnreliableP{r}{4}{3}{l1a}{\prNumber{6}{5}}.\ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}\dots\\
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots\\
+% \Or \Mu{X} \SendUnreliableP{r}{4}{3}{l1a}{\proposalNumber{6}{5}}.\ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}\dots\\
 % \Or \Paren{
 %     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
 %     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
@@ -455,7 +455,7 @@ After executing $\update{n}{10}$, $\Acceptor{2}$ and $\Acceptor{3}$ are ready to
 % A3: n=10, pr=Nothing
 $=
 \NuChannels \big (\\
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
+\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
 \Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}.\ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}\dots \comment{= \Proposer{5}}\\
 \Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
@@ -481,7 +481,7 @@ All three acceptors move into $\PaCont$.
 
 % $\mapstostar (USkip)\\
 % \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots\\
 % \Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}.\ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}\dots\\
 % \Or \Paren{
 %     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
@@ -502,7 +502,7 @@ All three acceptors move into $\PaCont$.
 
 % $=\\
 % \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots\\
 % \Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{l1b}{\perp}{v_2}.\ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}\dots\\
 % \Or \Paren{
 %     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
@@ -523,7 +523,7 @@ All three acceptors move into $\PaCont$.
 
 % $\mapstostar (USend + UGet)\\
 % \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots\\
 % \Or \Mu{X} \ReceiveUnreliableP{r}{3}{4}{l1b}{\perp}{v_3}.\If{\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < 1} \Then{\dots}\\
 % \Or \Paren{
 %     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
@@ -544,7 +544,7 @@ All three acceptors move into $\PaCont$.
 
 % $\mapstostar (USend + UGet)\\
 % \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots\\
 % \Or \Mu{X} \If{\False \tOr 2 < 1} \Then{\dots} \Else{\SendWeaklyP{r}{4}{\Curly{2,3}}{\Accept}{\dots}}\\
 % \Or \Paren{
 %     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
@@ -565,7 +565,7 @@ All three acceptors move into $\PaCont$.
 
 $\mapstostar
 \NuChannels \big (\\
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
+\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
 \Or \Mu{X} \SendWeaklyP{r}{4}{\Curly{2,3}}{\Accept}{\SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{10}{\ABC}}}\dots \comment{= \Proposer{5}}\\
 \Or \Paren{
     \Mu{X} \dots
@@ -590,7 +590,7 @@ By applying $\Wsel$ once, $\Wbran$ twice we obtain:
 
 $\mapstostar
 \NuChannels \big (\\
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
+\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
 \Or \Mu{X} \SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{10}{\ABC}}.\SendUnreliableP{r}{4}{3}{l2a}{\ProposalC{10}{\ABC}}\dots \comment{= \Proposer{5}}\\
 \Or \Paren{
     \Mu{X} \dots
@@ -611,8 +611,8 @@ $\mapstostar
 
 % $\mapstostar (WSkip)\\
 % \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-% \Or \Mu{X} \SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}.\\\hspace*{1em}\SendUnreliableP{r}{4}{3}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}\dots\\
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots\\
+% \Or \Mu{X} \SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{\proposalNumber{5}{6}}{\promValue{\VectorV}}}.\\\hspace*{1em}\SendUnreliableP{r}{4}{3}{l2a}{\ProposalC{\proposalNumber{5}{6}}{\promValue{\VectorV}}}\dots\\
 % \Or \Paren{
 %     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
 %     \Or \Mu{X} end
@@ -632,8 +632,8 @@ $\mapstostar
 
 % $\mapstostar (USend + UGet)\\
 % \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
-% \Or \Mu{X} \SendUnreliableP{r}{4}{3}{l2a}{\ProposalC{\prNumber{5}{6}}{\promValue{\VectorV}}}.end\\
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots\\
+% \Or \Mu{X} \SendUnreliableP{r}{4}{3}{l2a}{\ProposalC{\proposalNumber{5}{6}}{\promValue{\VectorV}}}.end\\
 % \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}\\
 % \Or \Paren{
 %     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
@@ -650,7 +650,7 @@ $\mapstostar
 
 % $\mapstostar (USend + UGet)\\
 % \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots\\
 % \Or \Mu{X} end\\
 % \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}\\
 % \Or \Paren{
@@ -668,7 +668,7 @@ $\mapstostar
 
 % $=\\
 % \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots\\
 % \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}\\
 % \Or (
 %     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
@@ -688,7 +688,7 @@ $\mapstostar
 % % A3: n=10, pr=Proposal 10 abc
 % $=\\
 % \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots\\
+% \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots\\
 % \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}\\
 % \Or \Paren{
 %     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
@@ -711,7 +711,7 @@ Note that we apply $\Wskip$ in $\Acceptor{1}$ and terminate that subprocess as w
 
 $\mapstostar
 \NuChannels \big (\\
-\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\prNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\prNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
+\Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
 \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots} \comment{= \Acceptor{1}}\\
 \Or \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots} \comment{= \Acceptor{2}}\\
 \Or \Mu{X} \ReceiveUnreliableP{s}{4}{3}{l1a}{\perp}{n'}.\If{\dots} \comment{= \Acceptor{3}}\\
