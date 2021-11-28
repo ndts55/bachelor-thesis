@@ -7,15 +7,50 @@ Finally, we will study an example run of the model.
 Sorts are basic data types.
 We assume the following sorts.
 
-$\Maybe{a} = \Just{a} \Or \Nothing$
+First, we have $\Bool$ which we define as a set.
 
 $\Bool = \Curly{\True, \False}$
 
-We assume a set of values $\Value$.
+Second, we assume a set of values $\Value$.
+
+Then, we have some sorts which we define using a grammar.
+% explain type variable a
+Each of these definitions contains a type variable, which is a variable ranging over types.
+In this case the type variable in each definition is called $a$.
+
+% give some examples of values for each sort
+$\Maybe{a} = \Just{a} \Or \Nothing$
+
+A value of type $\Maybe{a}$ can have the form $\Just{a}$ or $\Nothing$.
+Some examples include $\Just{4}$ of type $\Maybe{\mathbb{N}}$, $\Just{\False}$ of type $\Maybe{\Bool}$, and $\Nothing$.
+$\Nothing$ itself does not dictate an exact type because its definition does not include the type variable $a$.
+The type is underspecified and is specified manually or through the context in which $\Nothing$ is used.
+It can be of type $\Maybe{\mathbb{N}}$, $\Maybe{\Bool}$, or any other type $b$ in $\Maybe{b}$.
+We use $\Maybe{a}$ where optional values are needed.
 
 $\Proposal{a} = \ProposalC{\mathbb{N}}{a}$
 
+$\Proposal{a}$ only has one possible form, which is $\ProposalC{\mathbb{N}}{a}$.
+A proposal contains its proposal number of type $\mathbb{N}$ and its value of type $a$.
+Again, $a$ is a variable ranging over types.
+An example for a value of type $\Proposal{\Bool}$ could be $\ProposalC{1}{\True}$ and an example for a value of type $\Proposal{\Maybe{\mathbb{N}}}$ could be $\ProposalC{1}{\Just{1}}$.
+Note that $\ProposalC{1}{\Just{1}}$ is of type $\Proposal{a}$ where $a = \Maybe{b}$ and $b = \mathbb{N}$.
+This sort models the proposals issued by the proposers in phase $2a$.
+
 $\Promise{a} = \Promise{\Maybe{\Proposal{a}}} \Or \Nack{\mathbb{N}}$
+
+$\Promise{a}$ has two possible forms.
+$\Promise{\Maybe{\Proposal{a}}}$ and $\Nack{\mathbb{N}}$.
+Note that $\Promise{\Maybe{\Proposal{a}}}$ is the same as $\Promise{c}$ where $c = \Maybe{b}$ and $b = \Proposal{a}$.
+Possible values include $\Nack{1}$ and $\Promise{\Just{\ProposalC{1}{{-1}}}}$ of type $\Promise{\mathbb{Z}}$.
+The actual type of $\Nack{1}$, much like that of $\Nothing$, is underspecified.
+Again, we have to specify the exact type manually or through context.
+
+In phase $1b$ the acceptors respond to the proposers prepare request with a value of type $\Promise{\Value}$.
+The prepare request contains a number $n$.
+The acceptors may respond to the prepare request with a promise to not accept any proposal numbered less than $n$ or with a rejection.
+In the first case the acceptor's response optionally includes the last proposal it accepted, if available, and is of the form $\Promise{\Maybe{\Proposal{a}}}$.
+In the second case it includes the highest $n$ that acceptor promised and is of the form $\Nack{\mathbb{N}}$.
 
 \section{Global Type}
 Since each proposer initiates its own session the global type can be defined for one proposer.
@@ -45,6 +80,9 @@ We define some functions which we use in the next section to define the processe
 $\operatorname{proposalNumber} : \mathbb{N} \times \mathbb{N} \to \mathbb{N}$
 
 $\proposalNumber{a}{b}$ returns a proposal number when given two natural numbers.
+% Requirements:
+%  Different proposers choose their numbers from disjoint sets of numbers, so two different proposers never issue a proposal with the same number. 
+% Each proposer remembers (in stable storage) the highest-numbered proposal it has tried to issue, and begins phase 1 with a higher proposal number than any it has already used.
 
 $\operatorname{promiseValue} : \List{\Promise{a}} \to a$
 
