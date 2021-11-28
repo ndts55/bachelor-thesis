@@ -79,7 +79,20 @@ We define some functions which we use in the next section to define the processe
 
 $\operatorname{proposalNumber} : \mathbb{N} \times \mathbb{N} \to \mathbb{N}$
 
-$\proposalNumber{a}{b}$ returns a proposal number when given two natural numbers.
+$\proposalNumber{n}{p}$ returns a proposal number for proposer $p$ when given a natural number $n$.
+We have two requirements for this function.
+
+Let $\mathbb{P}$ be the set of proposers.
+
+\[\forall p,q \in \mathbb{P} \; \forall n,m \in \mathbb{N}: p \neq q \to \proposalNumber{n}{p} \neq \proposalNumber{m}{q}\]
+
+Different proposers pick their proposal numbers from disjoint sets of numbers.
+This way different proposers never issue a proposal with the same proposal number.
+
+\[\forall p \in \mathbb{P} \; \forall n,m \in \mathbb{N}: n > m \to \proposalNumber{n}{p} > \proposalNumber{m}{p}\]
+
+We require $\proposalNumber{n}{p}$ to be strictly increasing for each proposer $p$ so every proposer uses a higher proposal number than any it has already used.
+
 % Requirements:
 %  Different proposers choose their numbers from disjoint sets of numbers, so two different proposers never issue a proposal with the same number. 
 % Each proposer remembers (in stable storage) the highest-numbered proposal it has tried to issue, and begins phase 1 with a higher proposal number than any it has already used.
@@ -123,8 +136,6 @@ $\genAq{i}{ac}{pc}$ returns a randomly selected set $A_Q$ with $A_Q \subseteq A 
 $A_Q$ consists of any majority of acceptors.
 In Paxos a majority of acceptors forms a quorum, i.e. an accepting set with which a value can be chosen \cite{lower_bounds}.
 
-$\update{n}{m}$ replaces the value inside $n$ with the value in $m$.
-
 \section{Processes}
 \subsection{System Initialization}
 % Idea: One shared-point per Proposer over which the session is initialized.
@@ -158,6 +169,9 @@ We observe that each subprocess in an acceptor accesses a different channel $s$,
 Afterwards, each subprocess behaves like $\Pa$.
 
 \subsection{Proposer}
+To define the proposer and the acceptor we introduce a function $\update{n}{m}$ which replaces the value inside $n$ with the value of $m$.
+We use this function to update the local variables of the processes.
+
 $\Pp = \Mu{X} \update{n}{n + 1} .\\
 \hspace*{0.5em}\left(\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l1a}{\proposalNumber{n}{m}}\right) .\\
 \hspace*{0.5em}\left(\DotForall{j \in A_Q} \ReceiveUnreliableP{s}{j}{i}{l1b}{\perp}{v_j}\right) .\\
