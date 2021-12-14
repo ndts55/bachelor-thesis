@@ -59,11 +59,11 @@ A quorum of acceptors $\AQ$ is assumed.
 The last phase of Paxos contains no inter-process communication, so it is not modeled in the global type.
 
 $\GlobalType = \Mu{X}
-\Paren{\DotForall{a \in \AQ} \SendUnreliableG{p}{a}{\LOneA}{\mathbb{N}}} .
-\Paren{\DotForall{a \in \AQ} \SendUnreliableG{a}{p}{\LOneB}{\Promise{\Value}}} .\\
+\DotForall{a \in \AQ}{\SendUnreliableG{p}{a}{\LOneA}{\mathbb{N}}} .
+\DotForall{a \in \AQ}{\SendUnreliableG{a}{p}{\LOneB}{\Promise{\Value}}} .\\
 \hspace*{0.5em}\SendWeaklyG{p}{\AQ}{\\
 \hspace*{1em}
-\Accept.\Paren{\DotForall{a \in \AQ} \SendUnreliableG{p}{a}{\LTwoA}{\Proposal{\Value}}}.end \oplus
+\Accept.\DotForall{a \in \AQ}{\SendUnreliableG{p}{a}{\LTwoA}{\Proposal{\Value}}}.end \oplus
 \Restart.X \oplus
 \Abort.end}$
 
@@ -180,11 +180,11 @@ To define the proposer and the acceptor we introduce a function $\update{n}{m}$ 
 We use this function to update the local variables of the processes.
 
 $\Pp = \Mu{X} \update{n}{n + 1} .\\
-\hspace*{0.5em}\left(\DotForall{j \in \AQ} \SendUnreliableP{s}{i}{j}{\LOneA}{\proposalNumber{n}{m}}\right) .\\
-\hspace*{0.5em}\left(\DotForall{j \in \AQ} \ReceiveUnreliableP{s}{j}{i}{\LOneB}{\perp}{v_j}\right) .\\
+\hspace*{0.5em}\DotForall{j \in \AQ}{\SendUnreliableP{s}{i}{j}{\LOneA}{\proposalNumber{n}{m}}} .\\
+\hspace*{0.5em}\DotForall{j \in \AQ}{\ReceiveUnreliableP{s}{j}{i}{\LOneB}{\perp}{v_j}} .\\
 \hspace*{0.5em}\If{\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < \ceil{\frac{i}{2}}}\\
 \hspace*{1em}\Then{\SendWeaklyP{s}{i}{\AQ}{\Restart}{X}}\\
-\hspace*{1em}\Else{\\\hspace*{1.5em}\SendWeaklyP{s}{i}{\AQ}{\Accept}{\\\hspace*{1.5em}\DotForall{j \in \AQ} \SendUnreliableP{s}{i}{j}{\LTwoA}{\ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}}.\\\hspace*{1.5em}end}}$
+\hspace*{1em}\Else{\\\hspace*{1.5em}\SendWeaklyP{s}{i}{\AQ}{\Accept}{\\\hspace*{1.5em}\DotForall{j \in \AQ}{\SendUnreliableP{s}{i}{j}{\LTwoA}{\ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}}}.\\\hspace*{1.5em}end}}$
 
 At the start of the recursion $n$ is incremented to make sure every run of the recursion uses a different $n$ and thus a different proposal number.
 The proposal number is sent to every acceptor in $\AQ$ and their replies are gathered in $\VectorV$ through $v_j$.
@@ -391,8 +391,8 @@ We apply $\Init$ once for shared-point $b_4$ and once again for shared-point $b_
 
 $\mapstostar
 \NuChannels\big (\\
-\Mu{X} \update{n}{5} . \Paren{\DotForall{j\in \{1,2\}} \SendUnreliableP{s}{4}{j}{\LOneA}{\proposalNumber{n}{4}}}\dots \comment{= \Proposer{4}}\\
-\Or \Mu{X} \update{n}{6} . \Paren{\DotForall{j\in \{2,3\}} \SendUnreliableP{r}{4}{j}{\LOneA}{\proposalNumber{n}{5}}}\dots \comment{= \Proposer{5}}\\
+\Mu{X} \update{n}{5} . \DotForall{j\in \{1,2\}}{\SendUnreliableP{s}{4}{j}{\LOneA}{\proposalNumber{n}{4}}}\dots \comment{= \Proposer{4}}\\
+\Or \Mu{X} \update{n}{6} . \DotForall{j\in \{2,3\}}{\SendUnreliableP{r}{4}{j}{\LOneA}{\proposalNumber{n}{5}}}\dots \comment{= \Proposer{5}}\\
 \Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\perp}{n'}.\If{\dots}
     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{\LOneA}{\perp}{n'}.\If{\dots}
