@@ -80,16 +80,17 @@ We define some functions which we use in the next section to define the processe
 $\operatorname{proposalNumber} : \mathbb{N} \times \mathbb{N} \to \mathbb{N}$
 
 $\proposalNumber{n}{p}$ returns a proposal number for proposer $p$ when given a natural number $n$.
+It is used to pick a number for the prepare request in phase $1a$, which is also used in phase $2a$ in the actual proposal.
 We have two requirements for this function.
 
-Let $\mathbb{P}$ be the set of proposers.
+Let $\SetOfProposers$ be the set of proposers.
 
-\[\forall p,q \in \mathbb{P} \; \forall n,m \in \mathbb{N}: p \neq q \to \proposalNumber{n}{p} \neq \proposalNumber{m}{q}\]
+\[\forall p,q \in \SetOfProposers . \forall n,m \in \mathbb{N}: p \neq q \to \proposalNumber{n}{p} \neq \proposalNumber{m}{q}\]
 
 Different proposers pick their proposal numbers from disjoint sets of numbers.
 This way different proposers never issue a proposal with the same proposal number.
 
-\[\forall p \in \mathbb{P} \; \forall n,m \in \mathbb{N}: n > m \to \proposalNumber{n}{p} > \proposalNumber{m}{p}\]
+\[\forall p \in \SetOfProposers . \forall n,m \in \mathbb{N}: n > m \to \proposalNumber{n}{p} > \proposalNumber{m}{p}\]
 
 We require $\proposalNumber{n}{p}$ to be strictly increasing for each proposer $p$ so every proposer uses a higher proposal number than any it has already used.
 
@@ -99,8 +100,9 @@ We require $\proposalNumber{n}{p}$ to be strictly increasing for each proposer $
 
 $\operatorname{promiseValue} : \List{\Promise{a}} \to a$
 
-$\promValue{ps}$ returns a fresh value if none of the promises in $ps$ contain a value. Otherwise, the best value is returned. Usually, that means the value with the highest associated proposal number.
-A promise contains a value $v$ if it is of the form $\Promise{(\Just{v})}$.
+$\promiseValue{ps}$ returns a fresh value if none of the promises in $ps$ contain a value. Otherwise, the best value is returned. Usually, that means the value with the highest associated proposal number.
+A promise contains a value $v$ if it is of the form $\Promise{\Just{v}}$.
+With this function we can model the picking of a value for a proposal in phase $2a$.
 
 $\operatorname{anyNack} : \List{\Promise{a}} \to \Bool\\
 \anyNack{\EmptyList} = \False\\
@@ -117,6 +119,8 @@ $\operatorname{promiseCount} : \List{\Promise{a}} \to \mathbb{N}\\
 
 $\promiseCount{ps}$ takes a list of promises $ps$ and calculates the number of promises in that list of that have the form $\Promise{m}$.
 
+$\anyNack{ps}$ and $\promiseCount{ps}$ are used in the proposer to decide which branch to take in phase $2a$.
+
 $\operatorname{gt}: a \to \Maybe{a} \to \Bool\\
 \greaterThan{\Wildcard}{\Nothing} = \True\\
 \greaterThan{a}{\Just{b}} = a > b$
@@ -130,11 +134,14 @@ $\operatorname{nFromProposal} : \Proposal{a} \to \mathbb{N}\\
 
 $\nFromProposal{p}$ retrieves the proposal number $n$ inside proposal $p$, which has the form $\ProposalC{n}{pr}$.
 
+$\nFromProposal{p}$, $\greaterThan{a}{ma}$, and $\greaterEqual{a}{ma}$ are used to extract and compare proposal numbers in phase $2b$ of the acceptor.
+
 $\operatorname{genA_Q} : \mathbb{N} \times \mathbb{N} \times \mathbb{N} \to \mathbb{N}$
 
 $\genAq{i}{ac}{pc}$ returns a randomly selected set $A_Q$ with $A_Q \subseteq A = \Curly{1, \dots, ac}$ and $|A_Q| > \frac{|A|}{2}$.
 $A_Q$ consists of any majority of acceptors.
 In Paxos a majority of acceptors forms a quorum, i.e. an accepting set with which a value can be chosen \cite{lower_bounds}.
+We use this function when initiating the proposers to give them a quorum of acceptors with which they communicate.
 
 \section{Processes}
 \subsection{System Initialization}
@@ -177,7 +184,7 @@ $\Pp = \Mu{X} \update{n}{n + 1} .\\
 \hspace*{0.5em}\left(\DotForall{j \in A_Q} \ReceiveUnreliableP{s}{j}{i}{l1b}{\perp}{v_j}\right) .\\
 \hspace*{0.5em}\If{\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < \ceil{\frac{i}{2}}}\\
 \hspace*{1em}\Then{\SendWeaklyP{s}{i}{A_Q}{\Restart}{X}}\\
-\hspace*{1em}\Else{\\\hspace*{1.5em}\SendWeaklyP{s}{i}{A_Q}{\Accept}{\\\hspace*{1.5em}\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l2a}{\ProposalC{\proposalNumber{n}{m}}{\promValue{\VectorV}}}.\\\hspace*{1.5em}end}}$
+\hspace*{1em}\Else{\\\hspace*{1.5em}\SendWeaklyP{s}{i}{A_Q}{\Accept}{\\\hspace*{1.5em}\DotForall{j \in A_Q} \SendUnreliableP{s}{i}{j}{l2a}{\ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}}.\\\hspace*{1.5em}end}}$
 
 At the start of the recursion $n$ is incremented to make sure every run of the recursion uses a different $n$ and thus a different proposal number.
 The proposal number is sent to every acceptor in $A_Q$ and their replies are gathered in $\VectorV$ through $v_j$.
@@ -664,7 +671,7 @@ $\mapstostar
 % $\mapstostar (WSkip)\\
 % \NuChannels \big (
 % \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots\\
-% \Or \Mu{X} \SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{\proposalNumber{5}{6}}{\promValue{\VectorV}}}.\\\hspace*{1em}\SendUnreliableP{r}{4}{3}{l2a}{\ProposalC{\proposalNumber{5}{6}}{\promValue{\VectorV}}}\dots\\
+% \Or \Mu{X} \SendUnreliableP{r}{4}{2}{l2a}{\ProposalC{\proposalNumber{5}{6}}{\promiseValue{\VectorV}}}.\\\hspace*{1em}\SendUnreliableP{r}{4}{3}{l2a}{\ProposalC{\proposalNumber{5}{6}}{\promiseValue{\VectorV}}}\dots\\
 % \Or \Paren{
 %     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}
 %     \Or \Mu{X} end
@@ -685,7 +692,7 @@ $\mapstostar
 % $\mapstostar (USend + UGet)\\
 % \NuChannels \big (
 % \Mu{X} \SendUnreliableP{s}{4}{1}{l1a}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{l1a}{\proposalNumber{5}{4}}\dots\\
-% \Or \Mu{X} \SendUnreliableP{r}{4}{3}{l2a}{\ProposalC{\proposalNumber{5}{6}}{\promValue{\VectorV}}}.end\\
+% \Or \Mu{X} \SendUnreliableP{r}{4}{3}{l2a}{\ProposalC{\proposalNumber{5}{6}}{\promiseValue{\VectorV}}}.end\\
 % \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{l1a}{\perp}{n'}.\If{\dots}\\
 % \Or \Paren{
 %     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{l1a}{\perp}{n'}.\If{\dots}
