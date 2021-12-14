@@ -18,10 +18,32 @@
 \newcommand{\Value}[0]{\operatorname{Value}}
 
 % MPST
+%% General
 \newcommand{\DotForall}[1]{\bigodot_{#1}\;}
+\newcommand{\Mu}[1]{\left(\mu #1\right)}
+\newcommand{\AQ}[0]{A_Q}
+
+%% Phases
+\newcommand{\POneA}[0]{1a}
+\newcommand{\POneB}[0]{1b}
+\newcommand{\PTwoA}[0]{2a}
+\newcommand{\PTwoB}[0]{2b}
+\newcommand{\LOneA}[0]{l1a}
+\newcommand{\LOneB}[0]{l1b}
+\newcommand{\LTwoA}[0]{l2a}
+\newcommand{\LTwoB}[0]{l2b}
+
+%% Global Type
+\newcommand{\GlobalType}[0]{G_{p, A_Q}}
 \newcommand{\SendUnreliableG}[4]{#1 \to_u #2 : #3 \left\langle #4 \right\rangle}
 \newcommand{\SendWeaklyG}[3]{#1 \to_w #2 : #3}
-\newcommand{\Mu}[1]{\left(\mu #1\right)}
+
+%% Local Type
+\newcommand{\LocalTypeProposer}[0]{T^p_{p, A_Q}}
+\newcommand{\LocalTypeAcceptor}[0]{T^a_{p}}
+\newcommand{\SendUnreliableL}[3]{\left[#1\right]!_u #2 \left\langle #2 \right\rangle}
+
+%% Process
 \newcommand{\SendUnreliableP}[5]{#1\left[#2, #3\right]!_u #4 \left\langle #5 \right\rangle}
 \newcommand{\ReceiveUnreliableP}[6]{#1\left[#2, #3\right]?_u #4 \left\langle #5 \right\rangle \left(#6\right)}
 \newcommand{\SendWeaklyP}[5]{#1\left[#2, #3\right]!_w #4.#5}
@@ -84,7 +106,7 @@
 \newcommand{\BeginPaCont}[0]{\Accept \dots \oplus \Restart .X \oplus \Abort .end}
 \newcommand{\ABC}[0]{\operatorname{abc}}
 
-% Rules
+% Reduction Rules
 \newcommand{\Init}[0]{\Paren{\operatorname{Init}}}
 \newcommand{\Usend}[0]{\Paren{\operatorname{USend}}}
 \newcommand{\Uget}[0]{\Paren{\operatorname{UGet}}}
@@ -92,3 +114,5 @@
 \newcommand{\Wsel}[0]{\Paren{\operatorname{WSel}}}
 \newcommand{\Wbran}[0]{\Paren{\operatorname{WBran}}}
 \newcommand{\Wskip}[0]{\Paren{\operatorname{WSkip}}}
+
+% Type Rules
