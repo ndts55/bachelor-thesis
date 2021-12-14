@@ -338,7 +338,7 @@ Figure \ref{fig:scenario} provides an overview where $\Acceptor{1}$, $\Acceptor{
 In steps $\Paren{1}$ to $\Paren{5}$, $\Proposer{5}$ completes the Paxos algorithm with $\Acceptor{2}$ and $\Acceptor{3}$ and terminates.
 
 At this point $\Acceptor{2}$ has promised not to accept any proposal numbered less than $10$ and has accepted the value $\ABC$.
-So, when $\Proposer{4}$ tries to use $4$ as its proposal number $\Paren{6}$, it receives $\Nack{10}$ from $\Acceptor{2}$ $\Paren{8}$ and has to restart the algorithm $\Paren{9}$.
+So, when $\Proposer{4}$ tries to use $5$ as its proposal number $\Paren{6}$, it receives $\Nack{10}$ from $\Acceptor{2}$ $\Paren{8}$ and has to restart the algorithm $\Paren{9}$.
 
 $\Proposer{4}$ then runs through the Paxos algorithm with $\Acceptor{1}$ and $\Acceptor{2}$ starting with a new prepare request $\Paren{10}$ with a higher proposal number.
 In step $\Paren{12}$ $\Proposer{4}$ learns that value $\ABC$ with proposal number $10$ has already been accepted by $\Acceptor{2}$.
@@ -352,7 +352,7 @@ $\Acceptor{1}$ and $\Acceptor{2}$ have accepted $\ProposalC{15}{\ABC}$ and $\Acc
 We set $ac = 3$, $pc = 2$, and $V=\Curly{\ABC, \operatorname{def}, \dots, \operatorname{vwx}, \operatorname{yz}}$.
 
 \subsubsection{System Initialization}
-After inserting $ac$ and $pc$ and applying $\Init$ once we have:
+After inserting $ac$ and $pc$ and applying $\Init$ once for shared-point $a$ we have:
 
 $\Sys{ac}{pc} = \Sys{3}{2} =
 \SessionAccept{a}{1}{t}.\ParallelFor{3 < i < 5} \PpInit{4}{\genAq{i}{3}{2}}{i}{i}{[]}\\
@@ -386,7 +386,8 @@ $\mapstostar
 \Or \OuterSessionQueues
 \big )$
 
-We apply $\Init$ thrice for shared-point $b_4$ and thrice again for shared-point $b_5$ to obtain:
+Note that the outer session created via shared-point $a$ isn't strictly necessary in the model.
+We apply $\Init$ once for shared-point $b_4$ and once again for shared-point $b_5$ to obtain:
 
 $\mapstostar
 \NuChannels\big (\\
