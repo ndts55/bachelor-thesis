@@ -1,7 +1,9 @@
-% General
+% General typesetting stuff
 \newcommand{\Curly}[1]{\left\{#1\right\}}
 \newcommand{\Paren}[1]{\left(#1\right)}
 \newcommand{\comment}[1]{\;\textcolor{teal}{#1}}
+\def\IndentationSize{0.5em}
+\newcommand{\Indent}[1]{\hspace*{\IndentationSize * #1}}
 
 % Sorts
 \newcommand{\Bool}[0]{\operatorname{Bool}}
@@ -42,6 +44,10 @@
 \newcommand{\LocalTypeProposer}[0]{T^p_{p, A_Q}}
 \newcommand{\LocalTypeAcceptor}[0]{T^a_{p}}
 \newcommand{\SendUnreliableL}[3]{\left[#1\right]!_u #2 \left\langle #2 \right\rangle}
+\newcommand{\ReceiveUnreliableL}[3]{\left[#1\right]?_u #2 \left\langle #3 \right\rangle}
+\newcommand{\SendWeaklyL}[2]{\left[#1\right]!_w #2}
+\newcommand{\ReceiveWeaklyL}[2]{\left[#1\right]?_w #2}
+\newcommand{\GlobalTypeProjection}[1]{\GlobalType \upharpoonright_{#1}}
 
 %% Process
 \newcommand{\SendUnreliableP}[5]{#1\left[#2, #3\right]!_u #4 \left\langle #5 \right\rangle}

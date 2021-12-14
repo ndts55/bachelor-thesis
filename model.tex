@@ -61,8 +61,8 @@ The last phase of Paxos contains no inter-process communication, so it is not mo
 $\GlobalType = \Mu{X}
 \DotForall{a \in \AQ}{\SendUnreliableG{p}{a}{\LOneA}{\mathbb{N}}} .
 \DotForall{a \in \AQ}{\SendUnreliableG{a}{p}{\LOneB}{\Promise{\Value}}} .\\
-\hspace*{0.5em}\SendWeaklyG{p}{\AQ}{\\
-\hspace*{1em}
+\Indent{1}\SendWeaklyG{p}{\AQ}{\\
+\Indent{2}
 \Accept.\DotForall{a \in \AQ}{\SendUnreliableG{p}{a}{\LTwoA}{\Proposal{\Value}}}.end \oplus
 \Restart.X \oplus
 \Abort.end}$
@@ -180,11 +180,11 @@ To define the proposer and the acceptor we introduce a function $\update{n}{m}$ 
 We use this function to update the local variables of the processes.
 
 $\Pp = \Mu{X} \update{n}{n + 1} .\\
-\hspace*{0.5em}\DotForall{j \in \AQ}{\SendUnreliableP{s}{i}{j}{\LOneA}{\proposalNumber{n}{m}}} .\\
-\hspace*{0.5em}\DotForall{j \in \AQ}{\ReceiveUnreliableP{s}{j}{i}{\LOneB}{\perp}{v_j}} .\\
-\hspace*{0.5em}\If{\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < \ceil{\frac{i}{2}}}\\
-\hspace*{1em}\Then{\SendWeaklyP{s}{i}{\AQ}{\Restart}{X}}\\
-\hspace*{1em}\Else{\\\hspace*{1.5em}\SendWeaklyP{s}{i}{\AQ}{\Accept}{\\\hspace*{1.5em}\DotForall{j \in \AQ}{\SendUnreliableP{s}{i}{j}{\LTwoA}{\ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}}}.\\\hspace*{1.5em}end}}$
+\Indent{1}\DotForall{j \in \AQ}{\SendUnreliableP{s}{i}{j}{\LOneA}{\proposalNumber{n}{m}}} .\\
+\Indent{1}\DotForall{j \in \AQ}{\ReceiveUnreliableP{s}{j}{i}{\LOneB}{\perp}{v_j}} .\\
+\Indent{1}\If{\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < \ceil{\frac{i}{2}}}\\
+\Indent{2}\Then{\SendWeaklyP{s}{i}{\AQ}{\Restart}{X}}\\
+\Indent{2}\Else{\\\Indent{3}\SendWeaklyP{s}{i}{\AQ}{\Accept}{\\\Indent{3}\DotForall{j \in \AQ}{\SendUnreliableP{s}{i}{j}{\LTwoA}{\ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}}}.\\\Indent{3}end}}$
 
 At the start of the recursion $n$ is incremented to make sure every run of the recursion uses a different $n$ and thus a different proposal number.
 The proposal number is sent to every acceptor in $\AQ$ and their replies are gathered in $\VectorV$ through $v_j$.
@@ -194,22 +194,22 @@ Otherwise, the proposer sends its proposal to the acceptors and terminates.
 
 \subsection{Acceptor}
 $\Pa = \Mu{X} \ReceiveUnreliableP{s}{i}{j}{\LOneA}{\perp}{n'} .\\
-\hspace*{0.5em}\If{n' = \perp}\\
-\hspace*{1em}\Then{\PaCont}\\
-\hspace*{1em}\Else{\\
-\hspace*{1.5em}\If{\greaterThan{n'}{n}}\\
-\hspace*{1.5em}\Then{\update{n}{n'}.\SendUnreliableP{s}{j}{i}{\LOneB}{\Promise{pr}}.\PaCont}\\
-\hspace*{1.5em}\Else{\SendUnreliableP{s}{j}{i}{\LOneB}{\Nack{n}}.\PaCont}}$
+\Indent{1}\If{n' = \perp}\\
+\Indent{2}\Then{\PaCont}\\
+\Indent{2}\Else{\\
+\Indent{3}\If{\greaterThan{n'}{n}}\\
+\Indent{3}\Then{\update{n}{n'}.\SendUnreliableP{s}{j}{i}{\LOneB}{\Promise{pr}}.\PaCont}\\
+\Indent{3}\Else{\SendUnreliableP{s}{j}{i}{\LOneB}{\Nack{n}}.\PaCont}}$
 
 $\PaCont = \ReceiveWeaklyP{s}{i}{j}{\Accept . \ReceiveUnreliableP{s}{i}{j}{\LTwoA}{\perp}{pr'} .\\
-\hspace*{1em}\If{pr' = \perp}\\
-\hspace*{1.5em}\Then{end}\\
-\hspace*{1.5em}\Else{\\
-\hspace*{2em}\If{\greaterEqual{\nFromProposal{pr'}}{n}}\\
-\hspace*{2.5em}\Then{\update{pr}{pr'} . \update{n}{\Just{\nFromProposal{pr'}}}.end}\\
-\hspace*{2.5em}\Else{end}}\\
-\hspace*{0.5em} \oplus \Restart.X\\
-\hspace*{0.5em} \oplus \Abort.end}$
+\Indent{2}\If{pr' = \perp}\\
+\Indent{3}\Then{end}\\
+\Indent{3}\Else{\\
+\Indent{4}\If{\greaterEqual{\nFromProposal{pr'}}{n}}\\
+\Indent{5}\Then{\update{pr}{pr'} . \update{n}{\Just{\nFromProposal{pr'}}}.end}\\
+\Indent{5}\Else{end}}\\
+\Indent{1} \oplus \Restart.X\\
+\Indent{1} \oplus \Abort.end}$
 
 For each proposer an acceptor has a corresponding subprocess, which behaves like $\Pa$.
 These subprocesses access the same values for $n$ and $pr$.
@@ -672,7 +672,7 @@ $\mapstostar
 % $\mapstostar (WSkip)\\
 % \NuChannels \big (
 % \Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots\\
-% \Or \Mu{X} \SendUnreliableP{r}{4}{2}{\LTwoA}{\ProposalC{\proposalNumber{5}{6}}{\promiseValue{\VectorV}}}.\\\hspace*{1em}\SendUnreliableP{r}{4}{3}{\LTwoA}{\ProposalC{\proposalNumber{5}{6}}{\promiseValue{\VectorV}}}\dots\\
+% \Or \Mu{X} \SendUnreliableP{r}{4}{2}{\LTwoA}{\ProposalC{\proposalNumber{5}{6}}{\promiseValue{\VectorV}}}.\\\Indent{2}\SendUnreliableP{r}{4}{3}{\LTwoA}{\ProposalC{\proposalNumber{5}{6}}{\promiseValue{\VectorV}}}\dots\\
 % \Or \Paren{
 %     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\perp}{n'}.\If{\dots}
 %     \Or \Mu{X} end
@@ -732,11 +732,11 @@ $\mapstostar
 % \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\perp}{n'}.\If{\dots}\\
 % \Or (
 %     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\perp}{n'}.\If{\dots}
-%     \\\hspace*{1em}\Or \Mu{X} \If{\greaterEqual{10}{10}} \Then{\update{pr}{pr'}.\update{n}{\Just{10}}.X} \Else{\dots}
+%     \\\Indent{2}\Or \Mu{X} \If{\greaterEqual{10}{10}} \Then{\update{pr}{pr'}.\update{n}{\Just{10}}.X} \Else{\dots}
 % )\\
 % \Or (
 %     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\perp}{n'}.\If{\dots}
-%     \\\hspace*{1em}\Or \Mu{X} \If{\greaterEqual{10}{10}} \Then{\update{pr}{pr'}.\update{n}{\Just{10}}.X} \Else{\dots}
+%     \\\Indent{2}\Or \Mu{X} \If{\greaterEqual{10}{10}} \Then{\update{pr}{pr'}.\update{n}{\Just{10}}.X} \Else{\dots}
 % )\\
 % \Or \InnerSessionQueues{s}
 % \Or \InnerSessionQueues{r}
@@ -1017,9 +1017,9 @@ $\Proposer{4}$ terminates and the acceptors accept the received proposal and the
 % % A3: n=10, pr=Proposal 10 abc
 % $=\\
 % \NuChannels \big (
-% \Or \Mu{X} \If{\greaterEqual{15}{\Just{15}}}\\\hspace*{1em}\Then{\update{pr}{\ProposalC{15}{abc}}.\update{n}{15}.X} \Else{\dots}\\
+% \Or \Mu{X} \If{\greaterEqual{15}{\Just{15}}}\\\Indent{2}\Then{\update{pr}{\ProposalC{15}{abc}}.\update{n}{15}.X} \Else{\dots}\\
 % \Or (
-%     \Mu{X} \If{\greaterEqual{15}{\Just{15}}}\\\hspace*{1em}\Then{\update{pr}{\ProposalC{15}{abc}}.\update{n}{15}.X} \Else{\dots}
+%     \Mu{X} \If{\greaterEqual{15}{\Just{15}}}\\\Indent{2}\Then{\update{pr}{\ProposalC{15}{abc}}.\update{n}{15}.X} \Else{\dots}
 %     \Or \Mu{X} X
 % )\\
 % \Or \Mu{X} X\\
