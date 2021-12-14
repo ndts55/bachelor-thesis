@@ -1,2 +1,12 @@
 \chapter{Analysis}
-% TODO type check the model
+
+\section{Local Types}
+$\GlobalTypeProjection{p} = \LocalTypeProposer = \Mu{X}\\
+\Indent{1}\DotForall{a \in \AQ}{\SendUnreliableL{a}{\LOneA}{\mathbb{N}}} .\\
+\Indent{1}\DotForall{a \in \AQ}{\ReceiveUnreliableL{a}{\LOneB}{\Promise{\Value}}} .\\
+\Indent{1}\SendWeaklyL{\AQ}{\Accept . \DotForall{a \in \AQ}{\SendUnreliableL{a}{\LTwoA}{\Proposal{\Value}}} \oplus \Restart . X \oplus \Abort . end}$
+
+$\GlobalTypeProjection{a} = \LocalTypeAcceptor = \Mu{X}\\
+\Indent{1}\ReceiveUnreliableL{p}{\LOneA}{\mathbb{N}} .\\
+\Indent{1}\SendUnreliableL{p}{\LOneB}{\Promise{\Value}} .\\
+\Indent{1}\ReceiveWeaklyL{p}{\Accept . \ReceiveUnreliableL{p}{\LTwoA}{\Proposal{\Value}} \oplus \Restart . X \oplus \Abort . end}$
