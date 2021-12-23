@@ -43,7 +43,7 @@
 %% Local Type
 \newcommand{\LocalTypeProposer}[0]{T^p_{p, A_Q}}
 \newcommand{\LocalTypeAcceptor}[0]{T^a_{p}}
-\newcommand{\SendUnreliableL}[3]{\left[#1\right]!_u #2 \left\langle #2 \right\rangle}
+\newcommand{\SendUnreliableL}[3]{\left[#1\right]!_u #2 \left\langle #3 \right\rangle}
 \newcommand{\ReceiveUnreliableL}[3]{\left[#1\right]?_u #2 \left\langle #3 \right\rangle}
 \newcommand{\SendWeaklyL}[2]{\left[#1\right]!_w #2}
 \newcommand{\ReceiveWeaklyL}[2]{\left[#1\right]?_w #2}
@@ -71,13 +71,17 @@
 \newcommand{\Pa}[0]{\operatorname{P^a}}
 \newcommand{\Pp}[0]{\operatorname{P^p}}
 \newcommand{\PaCont}[0]{\operatorname{P^a_{cont}}}
-\newcommand{\PpInit}[5]{\operatorname{P^p_{init}}\left(#1, #2, #3, #4, #5\right)}
-\newcommand{\PaInit}[6]{\operatorname{P^a_{init}}\left(#1, #2, #3, #4, #5, #6\right)}
+\newcommand{\PpInitName}[0]{\operatorname{P^p_{init}}}
+\newcommand{\PpInit}[5]{\PpInitName\left(#1, #2, #3, #4, #5\right)}
+\newcommand{\PpInitShort}[0]{\PpInitName\left(\dots\right)}
+\newcommand{\PaInitName}[0]{\operatorname{P^a_{init}}}
+\newcommand{\PaInit}[6]{\PaInitName\left(#1, #2, #3, #4, #5, #6\right)}
+\newcommand{\PaInitShort}[0]{\PaInitName\left(\dots\right)}
 \newcommand{\SessionRequest}[3]{\overline{#1}\left[#2\right]\left(#3\right)}
 \newcommand{\SessionAccept}[3]{#1\left[#2\right]\left(#3\right)}
 \newcommand{\ParallelFor}[1]{\Pi_{#1}\;}
-\newcommand{\Acceptor}[1]{\operatorname{A_#1}}
-\newcommand{\Proposer}[1]{\operatorname{P_#1}}
+\newcommand{\Acceptor}[1]{\operatorname{A_{#1}}}
+\newcommand{\Proposer}[1]{\operatorname{P_{#1}}}
 
 % Functions
 \newcommand{\proposalNumber}[2]{\operatorname{proposalNumber}_#2\left( #1\right)}
@@ -112,13 +116,45 @@
 \newcommand{\BeginPaCont}[0]{\Accept \dots \oplus \Restart .X \oplus \Abort .end}
 \newcommand{\ABC}[0]{\operatorname{abc}}
 
-% Reduction Rules
-\newcommand{\Init}[0]{\Paren{\operatorname{Init}}}
-\newcommand{\Usend}[0]{\Paren{\operatorname{USend}}}
-\newcommand{\Uget}[0]{\Paren{\operatorname{UGet}}}
-\newcommand{\Uskip}[0]{\Paren{\operatorname{USkip}}}
-\newcommand{\Wsel}[0]{\Paren{\operatorname{WSel}}}
-\newcommand{\Wbran}[0]{\Paren{\operatorname{WBran}}}
-\newcommand{\Wskip}[0]{\Paren{\operatorname{WSkip}}}
+% Reduction / Typing Rules
+\newcommand{\Rule}[1]{\Paren{\operatorname{#1}}}
+\newcommand{\RInit}[0]{\Rule{Init}}
+\newcommand{\RUsend}[0]{\Rule{USend}}
+\newcommand{\RUget}[0]{\Rule{UGet}}
+\newcommand{\RUskip}[0]{\Rule{USkip}}
+\newcommand{\RWsel}[0]{\Rule{WSel}}
+\newcommand{\RWbran}[0]{\Rule{WBran}}
+%% Reduction Rules
+\newcommand{\RWskip}[0]{\Rule{WSkip}}
+%% Typing Rules
+\newcommand{\RReq}[0]{\Rule{Req}}
+\newcommand{\RAcc}[0]{\Rule{Acc}}
+\newcommand{\REnd}[0]{\Rule{End}}
+\newcommand{\RIf}[0]{\Rule{If}}
+\newcommand{\RPar}[0]{\Rule{Par}}
+\newcommand{\RRec}[0]{\Rule{Rec}}
+\newcommand{\RVar}[0]{\Rule{Var}}
 
-% Type Rules
+% Type Check
+\newcommand{\SEnvEntry}[3]{#1\left[#2\right]:#3}
+\newcommand{\GEnvEntry}[2]{#1:#2}
+
+\newcommand{\ProofLabel}[1]{\Paren{#1}}
+\newcommand{\SysProof}[1]{\ProofLabel{S_{#1}}}
+\newcommand{\ProposerProof}[1]{\ProofLabel{P_{#1}}}
+\newcommand{\AcceptorProof}[1]{\ProofLabel{A_{#1}}}
+
+\newcommand{\ProposerProofTrue}[0]{\ProposerProof{t}}
+\newcommand{\ProposerProofFalse}[0]{\ProposerProof{f}}
+\newcommand{\AcceptorProofCont}[0]{\AcceptorProof{cont}}
+\newcommand{\AcceptorProofTrue}[0]{\AcceptorProof{t}}
+\newcommand{\AcceptorProofFalse}[0]{\AcceptorProof{f}}
+\newcommand{\AcceptorProofAccept}[0]{\AcceptorProof{\Accept}}
+
+\newcommand{\Tp}[0]{T^p}
+\newcommand{\Ta}[0]{T^a}
+\newcommand{\TpBranch}[0]{\Tp_{branch}}
+\newcommand{\TpAccept}[0]{\Tp_{accept}}
+\newcommand{\TaOneB}[0]{\Ta_{1b}}
+\newcommand{\TaBranch}[0]{\Ta_{branch}}
+\newcommand{\TaAccept}[0]{\Ta_{accept}}

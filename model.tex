@@ -147,7 +147,7 @@ We use this function when initiating the proposers to give them a quorum of acce
 \subsection{System Initialization}
 % Idea: One shared-point per Proposer over which the session is initialized.
 $\Sys{ac}{pc} = \SessionRequest{a}{2}{t} . \PpInit{ac + 1}{\genAq{ac + pc}{ac}{pc}}{ac + pc}{ac + pc}{[]}\\
-\Or \SessionAccept{a}{1}{t} . \ParallelFor{ac < i < ac + pc} \PpInit{ac + 1}{\genAq{i}{ac}{pc}}{i}{i}{[]} \\
+\Or \SessionAccept{a}{1}{t} . \ParallelFor{ac < k < ac + pc} \PpInit{ac + 1}{\genAq{k}{ac}{pc}}{k}{k}{[]} \\
 \Or \ParallelFor{1 \le j \le ac} \PaInit{j}{ac + 1}{ac}{pc}{n_j}{pr_j}$
 
 $\PpInit{i}{\AQ}{n}{m}{\VectorV} = \SessionRequest{b_n}{i}{s} . \Pp$
@@ -352,14 +352,14 @@ $\Acceptor{1}$ and $\Acceptor{2}$ have accepted $\ProposalC{15}{\ABC}$ and $\Acc
 We set $ac = 3$, $pc = 2$, and $V=\Curly{\ABC, \operatorname{def}, \dots, \operatorname{vwx}, \operatorname{yz}}$.
 
 \subsubsection{System Initialization}
-After inserting $ac$ and $pc$ and applying $\Init$ once for shared-point $a$ we have:
+After inserting $ac$ and $pc$ and applying $\RInit$ once for shared-point $a$ we have:
 
 $\Sys{ac}{pc} = \Sys{3}{2} =
 \SessionAccept{a}{1}{t}.\ParallelFor{3 < i < 5} \PpInit{4}{\genAq{i}{3}{2}}{i}{i}{[]}\\
 \Or \SessionRequest{a}{2}{t}.\PpInit{4}{\genAq{5}{3}{2}}{5}{5}{[]}\\
 \Or \ParallelFor{1 \le j \le 3} \PaInit{j}{4}{3}{2}{n_j}{pr_j}$
 
-% $\mapstostar \Init\\
+% $\mapstostar \RInit\\
 % \Nu{t}\big (
 % \PpInit{4}{A_{Q,1}}{4}{4}{[]} \Or \PpInit{4}{A_{Q,2}}{5}{5}{[]}\\
 % \Or \PaInit{1}{4}{3}{2}{n_1}{pr_1} \Or \PaInit{2}{4}{3}{2}{n_2}{pr_2} \Or \PaInit{3}{4}{3}{2}{n_3}{pr_3}\\
@@ -387,7 +387,7 @@ $\mapstostar
 \big )$
 
 Note that the outer session created via shared-point $a$ isn't strictly necessary in the model.
-We apply $\Init$ once for shared-point $b_4$ and once again for shared-point $b_5$ to obtain:
+We apply $\RInit$ once for shared-point $b_4$ and once again for shared-point $b_5$ to obtain:
 
 $\mapstostar
 \NuChannels\big (\\
@@ -436,7 +436,7 @@ Note that each process is shortened to only show the next few steps instead of t
 \subsubsection{The Happy Path}
 After applying the updates in $\Proposer{4}$ and $\Proposer{5}$ the first inter-process communication can take place.
 In this case $\Proposer{5}$ communicates with $\Acceptor{2}$ and $\Acceptor{3}$.
-We apply $\Usend$ and $\Uget$ twice to send $\proposalNumber{6}{5} = 10$ to $\Acceptor{2}$ and $\Acceptor{3}$.
+We apply $\RUsend$ and $\RUget$ twice to send $\proposalNumber{6}{5} = 10$ to $\Acceptor{2}$ and $\Acceptor{3}$.
 % corresponds to (1)
 
 $\mapstostar
@@ -534,8 +534,8 @@ $=
 \Or \OuterSessionQueues
 \big )$
 
-We apply $\Usend$ and $\Uget$ twice to do just that.
-Note that we also apply $\Uskip$ to $\Acceptor{1}$ and evaluate its branches.
+We apply $\RUsend$ and $\RUget$ twice to do just that.
+Note that we also apply $\RUskip$ to $\Acceptor{1}$ and evaluate its branches.
 All three acceptors move into $\PaCont$.
 % corresponds to (2) - (3)
 
@@ -645,7 +645,7 @@ $\mapstostar
 \big )$
 
 $\Proposer{5}$ broadcasts its decision $\Accept$ to $\Acceptor{2}$ and $\Acceptor{3}$.
-By applying $\Wsel$ once, $\Wbran$ twice we obtain:
+By applying $\RWsel$ once, $\RWbran$ twice we obtain:
 % corresponds to (4)
 
 $\mapstostar
@@ -764,9 +764,9 @@ $\mapstostar
 % \big )$
 
 Now $\Proposer{5}$ can send its proposal to $\Acceptor{2}$ and $\Acceptor{3}$ and terminate.
-To do so we apply $\Usend$ and $\Uget$ twice.
+To do so we apply $\RUsend$ and $\RUget$ twice.
 $\Acceptor{2}$ and $\Acceptor{3}$ accept the proposal and the respective subprocesses terminate.
-Note that we apply $\Wskip$ in $\Acceptor{1}$ and terminate that subprocess as well.
+Note that we apply $\RWskip$ in $\Acceptor{1}$ and terminate that subprocess as well.
 % corresponds to (5)
 
 $\mapstostar
@@ -786,8 +786,8 @@ $\Acceptor{1}$ has not updated its local variables $n = \Nothing$ and $pr = \Not
 \subsubsection{Restarting the Algorithm}
 Next, $\Proposer{4}$ sends prepare requests with a proposal number less than 10, which is rejected by $\Acceptor{2}$.
 $\Proposer{4}$ then decides to restart the algorithm.
-We apply $\Usend$ and $\Uget$ twice.
-We also apply $\Uskip$ once in $\Acceptor{3}$.
+We apply $\RUsend$ and $\RUget$ twice.
+We also apply $\RUskip$ once in $\Acceptor{3}$.
 
 $\mapstostar
 \NuChannels \big (\\
@@ -851,7 +851,7 @@ $=
 % \Or \OuterSessionQueues
 % \big )$
 
-Applying $\Usend$ and $\Uget$ twice and evaluating the branching in $\Proposer{4}$ yields:
+Applying $\RUsend$ and $\RUget$ twice and evaluating the branching in $\Proposer{4}$ yields:
 
 $\mapstostar
 \NuChannels \big (\\
@@ -881,8 +881,8 @@ $\mapstostar
 % \Or \OuterSessionQueues
 % \big )$
 
-$\Proposer{4}$ sends its decision to restart the algorithm to $\Acceptor{1}$ and $\Acceptor{2}$ by applying $\Wsel$ once and $\Wbran$ twice.
-$\Acceptor{3}$ terminates after applying $\Wskip$.
+$\Proposer{4}$ sends its decision to restart the algorithm to $\Acceptor{1}$ and $\Acceptor{2}$ by applying $\RWsel$ once and $\RWbran$ twice.
+$\Acceptor{3}$ terminates after applying $\RWskip$.
 
 $\mapstostar
 \NuChannels \big (\\
@@ -924,7 +924,7 @@ $\mapstostar
 \subsubsection{The Happy Path, Again}
 
 This time $\Proposer{4}$ uses a high enough proposal number so that $\Acceptor{1}$ and $\Acceptor{2}$ both promise not to accept any proposal numbered less than that.
-By applying $\Usend$ and $\Uget$ and evaluating the branches in the remaining acceptors we arrive at:
+By applying $\RUsend$ and $\RUget$ and evaluating the branches in the remaining acceptors we arrive at:
 
 % A1: n=15, pr=Nothing
 % A2: n=15, pr=Proposal 10 abc
@@ -942,7 +942,7 @@ $\mapstostar
 Note that, at this point, $\Acceptor{1}$ and $\Acceptor{2}$ have updated their respective $n$ to $15$.
 
 Because $\Acceptor{2}$ has already accepted a proposal, it responds to $\Proposer{4}$'s prepare request with that proposal.
-Twice more we apply $\Usend$ and $\Uget$ and evaluate the branch in $\Proposer{4}$ to obtain:
+Twice more we apply $\RUsend$ and $\RUget$ and evaluate the branch in $\Proposer{4}$ to obtain:
 
 % % A1: n=15, pr=Nothing
 % % A2: n=15, pr=Proposal 10 abc
@@ -976,7 +976,7 @@ $\mapstostar
 
 $\Proposer{4}$ has received enough promises to send its own proposal.
 The value for that proposal is $\ABC$ because that is the value of the highest-numbered proposal $\Proposer{4}$ received as a response to its prepare request.
-First, we apply $\Wsel$ and $\Wbran$.
+First, we apply $\RWsel$ and $\RWbran$.
 
 % A1: n=15, pr=Nothing
 % A2: n=15, pr=Proposal 10 abc
@@ -992,7 +992,7 @@ $\mapstostar
 \Or \OuterSessionQueues
 \big )$
 
-Then we apply $\Usend$ and $\Uget$ to send the proposal from $\Proposer{4}$ to the acceptors.
+Then we apply $\RUsend$ and $\RUget$ to send the proposal from $\Proposer{4}$ to the acceptors.
 $\Proposer{4}$ terminates and the acceptors accept the received proposal and then terminate as well.
 
 % % A1: n=15, pr=Nothing
