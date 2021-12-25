@@ -195,7 +195,7 @@ Otherwise, the proposer sends its proposal to the acceptors and terminates.
 \subsection{Acceptor}
 $\Pa = \Mu{X} \ReceiveUnreliableP{s}{i}{j}{\LOneA}{\bot}{n'} .\\
 \Indent{1}\If{n' = \bot}\\
-\Indent{2}\Then{\PaCont}\\
+\Indent{2}\Then{\SendUnreliableP{s}{j}{i}{\LOneB}{\bot}.\PaCont}\\
 \Indent{2}\Else{\\
 \Indent{3}\If{\greaterThan{n'}{n}}\\
 \Indent{3}\Then{\update{n}{n'}.\SendUnreliableP{s}{j}{i}{\LOneB}{\Promise{pr}}.\PaCont}\\
@@ -222,7 +222,8 @@ It is also possible for a proposer to crash or otherwise terminate, in which cas
 
 Each subprocess starts out by potentially receiving a proposal number $n'$ from the corresponding proposer.
 If the acceptor does receive a proposal number $n'$ it responds with either $\Promise{pr}$ or $\Nack{n}$, depending on the values of $n'$ and $n$.
-If the acceptor does not receive a proposal number then it sends no response to the proposer.
+If the acceptor does not receive a proposal number then it sends $\bot$ to the proposer.
+Sending $\bot$ to the proposer is only necessary to maintain the global type.
 In either case the subprocess moves on to receive the proposers' decision in phase $\PTwoA$.
 % why does the acceptor move on if it received no proposal number?
 
@@ -251,7 +252,9 @@ The proposers may suspect some acceptors in phase $\POneB$ with label $\LOneB$.
 Accordingly, $\FPuskip$ is implemented with a failure detector in $\EventuallyWeak$ for phases $\POneA$, $\POneB$, and $\PTwoA$.
 
 Similarly, message loss is possible in all phases modeled in the global type.
-Thus, $\FPml$ is also implemented with a failure detector in $\EventuallyWeak$.
+Thus, $\FPml$ is also implemented with a failure detector in $\EventuallyWeak$ with one exception.
+$\FPml\left(s,i,j,l\right)$ returns $\True$ if $i$ is a proposer, $j$ is an acceptor that is not contained in the proposers' quorum of acceptors, and $l = \LOneB$.
+Since any proposer only communicates with the acceptors in its quorum, we can discard any messages from acceptors outside it.
 
 For the weakly reliable broadcast in phase $\PTwoA$, the failure pattern $\FPwskip$ returns $\True$ if, and only if, the corresponding proposer crashed or otherwise terminated.
 
@@ -449,11 +452,11 @@ $\mapstostar
 } \comment{=\Acceptor{1}}\\
 \Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots}
-    \Or \Mu{X} \If{10 = \bot} \Then{\PaCont} \Else{\dots}
+    \Or \Mu{X} \If{10 = \bot} \Then{\SendUnreliableP{s}{2}{4}{\LOneB}{\bot}.\PaCont} \Else{\dots}
 } \comment{=\Acceptor{2}}\\
 \Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
-    \Or \Mu{X} \If{10 = \bot} \Then{\PaCont} \Else{\dots}
+    \Or \Mu{X} \If{10 = \bot} \Then{\SendUnreliableP{s}{3}{4}{\LOneB}{\bot}.\PaCont} \Else{\dots}
 } \comment{=\Acceptor{3}}\\
 \Or \InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
@@ -535,7 +538,7 @@ $=
 \big )$
 
 We apply $\RUsend$ and $\RUget$ twice to do just that.
-Note that we also apply $\RUskip$ to $\Acceptor{1}$ and evaluate its branches.
+Note that we also apply $\RUskip$ to $\Acceptor{1}$, evaluate its branches, and apply $\RUsend$ to $\Acceptor{1}$ and then $\Rml$ to $\Proposer{5}$ to discard the dummy message.
 All three acceptors move into $\PaCont$.
 % corresponds to (2) - (3)
 
