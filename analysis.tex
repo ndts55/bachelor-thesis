@@ -175,6 +175,8 @@ $\Pa_t = \update{n}{n'}.\SendUnreliableP{s}{j}{i}{\LOneB}{\Promise{pr}}.\PaCont$
 
 $\Pa_f = \SendUnreliableP{s}{j}{i}{\LOneB}{\Nack{n}}.\PaCont$
 
+$\Pa_{gt} = \If{\greaterThan{n'}{n}}\Then{\Pa_t}\Else{\Pa_f}$
+
 $\TaAccept = \ReceiveUnreliableL{i}{\LTwoA}{\Proposal{\Value}}.\End$
 
 $\TaBranch = \ReceiveWeaklyL{i}{\Accept . \TaAccept \oplus \Restart . x \oplus \Abort .\End}$
@@ -191,15 +193,10 @@ $\PaAccept = \ReceiveUnreliableP{s}{i}{j}{\LTwoA}{\bot}{pr'} .
 \AxiomC{$\AcceptorProofCont$}
 \UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \PaCont \vartriangleright \SEnvEntry{s}{j}{\TaBranch}$}
 \RightLabel{$\RUsend$}
-\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash ??.\PaCont \vartriangleright \SEnvEntry{s}{j}{\TaOneB}$}
+\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \SendUnreliableP{s}{j}{i}{\LOneB}{\bot}.\PaCont \vartriangleright \SEnvEntry{s}{j}{\TaOneB}$}
 
-\AxiomC{$\AcceptorProofTrue$}
-\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \Pa_t \vartriangleright \SEnvEntry{s}{j}{\TaOneB}$}
-\AxiomC{$\AcceptorProofFalse$}
-\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \Pa_f \vartriangleright \SEnvEntry{s}{j}{\TaOneB}$}
-
-\RightLabel{$\RIf$}
-\BinaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \If{\greaterThan{n'}{n}}\Then{\Pa_t}\Else{\Pa_f} \vartriangleright \SEnvEntry{s}{j}{\TaOneB}$}
+\AxiomC{$\AcceptorProof{gt}$}
+\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \Pa_{gt} \vartriangleright \SEnvEntry{s}{j}{\TaOneB}$}
 
 \RightLabel{$\RIf$}
 \BinaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \If{n'=\bot}\Then{\PaCont}\Else{\If{\greaterThan{n'}{n}}\ldots} \vartriangleright \SEnvEntry{s}{j}{\TaOneB}$}
@@ -210,6 +207,19 @@ $\PaAccept = \ReceiveUnreliableP{s}{i}{j}{\LTwoA}{\bot}{pr'} .
 \LeftLabel{$\AcceptorProof{} =$}
 \RightLabel{$\RRec$}
 \UnaryInfC{$\Gamma\vdash \Mu{X} \ReceiveUnreliableP{s}{i}{j}{\LOneA}{\bot}{n'}.\ldots \vartriangleright \SEnvEntry{s}{j}{\Mu{x}\ReceiveUnreliableL{i}{\LOneA}{\mathbb{N}}.\ldots}$}
+\end{prooftree}
+
+\subsubsection{$\AcceptorProof{gt}$}
+\begin{prooftree}
+\AxiomC{$\AcceptorProofTrue$}
+\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \Pa_t \vartriangleright \SEnvEntry{s}{j}{\TaOneB}$}
+
+\AxiomC{$\AcceptorProofFalse$}
+\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \Pa_f \vartriangleright \SEnvEntry{s}{j}{\TaOneB}$}
+
+\LeftLabel{$\AcceptorProof{gt} =$}
+\RightLabel{$\RIf$}
+\BinaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \If{\greaterThan{n'}{n}}\Then{\Pa_t}\Else{\Pa_f} \vartriangleright \SEnvEntry{s}{j}{\TaOneB}$}
 \end{prooftree}
 
 \subsubsection{$\AcceptorProofTrue$}
