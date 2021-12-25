@@ -158,10 +158,11 @@
 \newcommand{\AcceptorProofFalse}[0]{\AcceptorProof{f}}
 \newcommand{\AcceptorProofAccept}[0]{\AcceptorProof{\Accept}}
 
-\newcommand{\Tp}[0]{T^p}
-\newcommand{\Ta}[0]{T^a}
-\newcommand{\TpBranch}[0]{\Tp_{branch}}
-\newcommand{\TpAccept}[0]{\Tp_{acc}}
-\newcommand{\TaOneB}[0]{\Ta_{1b}}
-\newcommand{\TaBranch}[0]{\Ta_{branch}}
-\newcommand{\TaAccept}[0]{\Ta_{acc}}
+\newcommand{\Type}[2]{\operatorname{T^{#1}_{#2}}}
+\newcommand{\Tp}[1]{\Type{P}{#1}}
+\newcommand{\Ta}[1]{\Type{A}{#1}}
+\newcommand{\TpBranch}[0]{\Tp{branch}}
+\newcommand{\TpAccept}[0]{\Tp{acc}}
+\newcommand{\TaOneB}[0]{\Ta{1b}}
+\newcommand{\TaBranch}[0]{\Ta{branch}}
+\newcommand{\TaAccept}[0]{\Ta{acc}}
