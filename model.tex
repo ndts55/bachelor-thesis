@@ -53,16 +53,15 @@ In the first case the acceptor's response optionally includes the last proposal 
 In the second case it includes the highest $n$ that acceptor promised and is of the form $\Nack{\mathbb{N}}$.
 
 \section{Global Type}
-Since each proposer initiates its own session the global type can be defined for one proposer $i$.
-Additionally, a quorum of acceptors $\AQ$ is assumed.
+Since each proposer initiates its own session the global type can be defined for one proposer $\ProposerIndex$ and a quorum of acceptors $\AQ$.
 
 The last phase of Paxos contains no inter-process communication, so it is not modeled in the global type.
 
 $\GlobalType = \Mu{X}
-\DotForall{j \in \AQ}{\SendUnreliableG{i}{j}{\LOneA}{\mathbb{N}}} .
-\DotForall{j \in \AQ}{\SendUnreliableG{j}{i}{\LOneB}{\Promise{\Value}}} .\\
-\Indent{1}\SendWeaklyG{i}{\AQ}{
-\Accept.\DotForall{j \in \AQ}{\SendUnreliableG{i}{j}{\LTwoA}{\Proposal{\Value}}}.\End \oplus
+\DotForall{\AcceptorIndex \in \AQ}{\SendUnreliableG{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\mathbb{N}}} .
+\DotForall{\AcceptorIndex \in \AQ}{\SendUnreliableG{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Promise{\Value}}} .\\
+\Indent{1}\SendWeaklyG{\ProposerIndex}{\AQ}{
+\Accept.\DotForall{\AcceptorIndex \in \AQ}{\SendUnreliableG{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\Proposal{\Value}}}.\End \oplus
 \Restart.X \oplus
 \Abort.\End}$
 
@@ -137,7 +136,7 @@ $\nFromProposal{p}$, $\greaterThan{a}{ma}$, and $\greaterEqual{a}{ma}$ are used 
 
 $\operatorname{gen\AQ} : \mathbb{N} \times \mathbb{N} \times \mathbb{N} \to \mathbb{N}$
 
-$\genAq{i}{ac}{pc}$ returns a randomly selected set $\AQ$ with $\AQ \subseteq A = \Curly{1, \dots, ac}$ and $|\AQ| > \frac{|A|}{2}$.
+$\genAq{\ProposerIndex}{ac}{pc}$ returns a randomly selected set $\AQ$ with $\AQ \subseteq A = \Curly{1, \dots, ac}$ and $|\AQ| > \frac{|A|}{2}$.
 $\AQ$ consists of any majority of acceptors.
 In Paxos a majority of acceptors forms a quorum, i.e. an accepting set with which a value can be chosen \cite{lower_bounds}.
 We use this function when initiating the proposers to give them a quorum of acceptors with which they communicate.
@@ -145,29 +144,30 @@ We use this function when initiating the proposers to give them a quorum of acce
 \section{Processes}
 \subsection{System Initialization}
 % Idea: One shared-point per Proposer over which the session is initialized.
-$\Sys{ac}{pc} = \SessionRequest{a}{2}{t} . \PpInit{ac + 1}{\genAq{ac + pc}{ac}{pc}}{ac + pc}{ac + pc}{[]}\\
-\Or \SessionAccept{a}{1}{t} . \ParallelFor{ac < k < ac + pc} \PpInit{ac + 1}{\genAq{k}{ac}{pc}}{k}{k}{[]} \\
-\Or \ParallelFor{1 \le j \le ac} \PaInit{j}{ac + 1}{ac}{pc}{n_j}{pr_j}$
+$\Sys{ac}{pc} = \SessionRequest{\OuterSharedPoint}{2}{t} . \PpInit{ac + 1}{\genAq{ac + pc}{ac}{pc}}{ac + pc}{ac + pc}{[]}\\
+\Or \SessionAccept{\OuterSharedPoint}{1}{t} . \ParallelFor{ac < k < ac + pc} \PpInit{ac + 1}{\genAq{k}{ac}{pc}}{k}{k}{[]} \\
+\Or \ParallelFor{1 \leq j \leq ac} \PaInit{j}{ac + 1}{ac}{pc}{n_{\AcceptorIndex}}{pr_{\AcceptorIndex}}$
 
-$\PpInit{i}{\AQ}{n}{m}{\VectorV} = \SessionRequest{b_n}{i}{s} . \Pp{} $
+$\PpInit{\ProposerIndex}{\AQ}{n}{m}{\VectorV} = \SessionRequest{\SharedPoint{n}}{i}{s} . \Pp{} $
 
-$\PaInit{j}{i}{ac}{pc}{n}{pr} = \ParallelFor{ac < k \le ac + pc} \SessionAccept{b_k}{j}{s} . \PaOne$
+$\PaInit{\AcceptorIndex}{\ProposerIndex}{ac}{pc}{n}{pr} = \ParallelFor{ac < k \le ac + pc} \SessionAccept{\SharedPoint{k}}{\AcceptorIndex}{s} . \PaOne$
 
-$\Sys{ac}{pc}$, $\PpInit{i}{\AQ}{n}{m}{\VectorV}$, and $\PaInit{j}{i}{ac}{pc}{n}{pr}$ describe the system initialization.
+$\Sys{ac}{pc}$, $\PpInit{\ProposerIndex}{\AQ}{n}{m}{\VectorV}$, and $\PaInit{\AcceptorIndex}{\ProposerIndex}{ac}{pc}{n}{pr}$ describe the system initialization.
 $ac$ and $pc$ are the number of acceptors and proposers respectively.
 
-An outer session is created through shared-point $a$.
+An outer session is created through shared-point $\OuterSharedPoint$.
 This outer session is not strictly necessary but was left in to allow for easier extension of the model.
 The acceptors are initialized using indices from 1 to $ac$ and the proposers are initialized using indices from $ac + 1$ to $ac + pc$.
 
-$\PpInit{i}{\AQ}{n}{m}{\VectorV}$ is initialized with the proposer's role in its own session $i$, which is always $ac + 1$, a quorum of acceptors $\AQ$, an index $n$, and a vector $\VectorV$.
-Each proposer has the same role $i = ac + 1$ but uses a different shared-point $b_n$ according to its index $n$.
+$\PpInit{\ProposerIndex}{\AQ}{n}{m}{\VectorV}$ is initialized with the proposer's role in its own session $\ProposerIndex$, which is always $ac + 1$, a quorum of acceptors $\AQ$, an index $n$, and a vector $\VectorV$.
+Each proposer has the same role $\ProposerIndex = ac + 1$ but uses a different shared-point $\SharedPoint{n}$ according to its index $n$.
+$m$ is initialized to the same value as $n$ but is never updated.
 $\VectorV$ is used in the proposer to collect and evaluate the responses from the acceptors.
 It is always initialized with an empty list $[]$.
-Shared-point $b_n$ is used to initiate a session.
+Shared-point $\SharedPoint{n}$ is used to initiate a session.
 Afterwards, the process behaves like $\Pp{} $.
 
-$\PaInit{j}{i}{ac}{pc}{n}{pr}$ is initialized with the acceptor's index $j$, the proposer index $i$, which is always $ac + 1$, $ac$, $pc$, initial knowledge for the highest promised proposal number $n$, if available, and initial knowledge for the most recently accepted proposal $pr$, if available.
+$\PaInit{\AcceptorIndex}{\ProposerIndex}{ac}{pc}{n}{pr}$ is initialized with the acceptor's index $\AcceptorIndex$, the proposer index $\ProposerIndex$, which is always $ac + 1$, $ac$, $pc$, initial knowledge for the highest promised proposal number $n$, if available, and initial knowledge for the most recently accepted proposal $pr$, if available.
 $n$ is of type $\Maybe{\mathbb{N}}$ and $pr$ is of type $\Maybe{\Paren{\Proposal{\Value}}}$ thus both can be $\Nothing$.
 Each of the proposers' session requests are accepted in a separate subprocess.
 These subprocesses run parallel to each other but still access the same values for $n$ and $pr$.
@@ -179,28 +179,28 @@ To define the proposer and the acceptor we introduce a function $\update{n}{m}$ 
 We use this function to update the local variables of the processes.
 
 $\Pp{} {} = \Mu{X} \update{n}{n + 1} .\\
-\Indent{1}\DotForall{j \in \AQ}{\SendUnreliableP{s}{i}{j}{\LOneA}{\proposalNumber{n}{m}}} .\\
-\Indent{1}\DotForall{j \in \AQ}{\ReceiveUnreliableP{s}{j}{i}{\LOneB}{\bot}{v_j}} .\\
-\Indent{1}\If{\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < \ceil{\frac{i}{2}}}\\
-\Indent{2}\Then{\SendWeaklyP{s}{i}{\AQ}{\Restart}{X}}\\
-\Indent{2}\Else{\\\Indent{3}\SendWeaklyP{s}{i}{\AQ}{\Accept}{\\\Indent{3}\DotForall{j \in \AQ}{\SendUnreliableP{s}{i}{j}{\LTwoA}{\ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}}}.\End}}$
+\Indent{1}\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\proposalNumber{n}{m}}} .\\
+\Indent{1}\DotForall{\AcceptorIndex\in\AQ}{\ReceiveUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}{v_{\AcceptorIndex}}} .\\
+\Indent{1}\If{\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < \ceil{\frac{\ProposerIndex}{2}}}\\
+\Indent{2}\Then{\SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Restart}{X}}\\
+\Indent{2}\Else{\\\Indent{3}\SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Accept}{\\\Indent{3}\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}}}.\End}}$
 
 At the start of the recursion $n$ is incremented to make sure every run of the recursion uses a different $n$ and thus a different proposal number.
-The proposal number is sent to every acceptor in $\AQ$ and their replies are gathered in $\VectorV$ through $v_j$.
-Because $i = ac + 1$, the minimum number of acceptors needed to form a majority is $\ceil{\frac{i}{2}} = \ceil{\frac{ac + 1}{2}}$.
+The proposal number is sent to every acceptor in $\AQ$ and their replies are gathered in $\VectorV$ through $v_{\AcceptorIndex}$.
+Because $\ProposerIndex = ac + 1$, the minimum number of acceptors needed to form a majority is $\ceil{\frac{\ProposerIndex}{2}} = \ceil{\frac{ac + 1}{2}}$.
 If any $\Nack{x}$ was received or the number of $\Promise{y}$ received is less than that needed for the smallest majority the proposer restarts the algorithm.
 Otherwise, the proposer sends its proposal to the acceptors and terminates.
 
 \subsection{Acceptor}
-$\PaOne = \Mu{X} \ReceiveUnreliableP{s}{i}{j}{\LOneA}{\bot}{n'} .\\
+$\PaOne = \Mu{X} \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\bot}{n'} .\\
 \Indent{1}\If{n' = \bot}\\
-\Indent{2}\Then{\SendUnreliableP{s}{j}{i}{\LOneB}{\bot}.\PaTwo}\\
+\Indent{2}\Then{\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}.\PaTwo}\\
 \Indent{2}\Else{\\
 \Indent{3}\If{\greaterThan{n'}{n}}\\
-\Indent{3}\Then{\update{n}{n'}.\SendUnreliableP{s}{j}{i}{\LOneB}{\Promise{pr}}.\PaTwo}\\
-\Indent{3}\Else{\SendUnreliableP{s}{j}{i}{\LOneB}{\Nack{n}}.\PaTwo}}$
+\Indent{3}\Then{\update{n}{n'}.\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Promise{pr}}.\PaTwo}\\
+\Indent{3}\Else{\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{n}}.\PaTwo}}$
 
-$\PaTwo = \ReceiveWeaklyP{s}{i}{j}{\Accept . \ReceiveUnreliableP{s}{i}{j}{\LTwoA}{\bot}{pr'} .\\
+$\PaTwo = \ReceiveWeaklyP{s}{\ProposerIndex}{\AcceptorIndex}{\Accept . \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\bot}{pr'} .\\
 \Indent{2}\If{pr' = \bot}\\
 \Indent{3}\Then{\End}\\
 \Indent{3}\Else{\\
@@ -252,7 +252,7 @@ Accordingly, $\FPuskip$ is implemented with a failure detector in $\EventuallyWe
 
 Similarly, message loss is possible in all phases modeled in the global type.
 Thus, $\FPml$ is also implemented with a failure detector in $\EventuallyWeak$ with one exception.
-$\FPml\left(s,i,j,l\right)$ returns $\True$ if $i$ is a proposer, $j$ is an acceptor that is not contained in the proposers' quorum of acceptors, and $l = \LOneB$.
+$\FPml\left(s,\ProposerIndex,\AcceptorIndex,l\right)$ returns $\True$ if $\ProposerIndex$ is a proposer, $\AcceptorIndex$ is an acceptor that is not contained in the proposers' quorum of acceptors, and $l = \LOneB$.
 Since any proposer only communicates with the acceptors in its quorum, we can discard any messages from acceptors outside it.
 
 For the weakly reliable broadcast in phase $\PTwoA$, the failure pattern $\FPwskip$ returns $\True$ if, and only if, the corresponding proposer crashed or otherwise terminated.
@@ -357,9 +357,9 @@ We set $ac = 3$, $pc = 2$, and $V=\Curly{\ABC, \operatorname{def}, \dots, \opera
 After inserting $ac$ and $pc$ and applying $\RInit$ once for shared-point $a$ we have:
 
 $\Sys{ac}{pc} = \Sys{3}{2} =
-\SessionAccept{a}{1}{t}.\ParallelFor{3 < i < 5} \PpInit{4}{\genAq{i}{3}{2}}{i}{i}{[]}\\
-\Or \SessionRequest{a}{2}{t}.\PpInit{4}{\genAq{5}{3}{2}}{5}{5}{[]}\\
-\Or \ParallelFor{1 \le j \le 3} \PaInit{j}{4}{3}{2}{n_j}{pr_j}$
+\SessionAccept{\OuterSharedPoint}{1}{t}.\ParallelFor{3 < k < 5} \PpInit{4}{\genAq{k}{3}{2}}{k}{k}{[]}\\
+\Or \SessionRequest{\OuterSharedPoint}{2}{t}.\PpInit{4}{\genAq{5}{3}{2}}{5}{5}{[]}\\
+\Or \ParallelFor{1 \le \AcceptorIndex \le 3} \PaInit{\AcceptorIndex}{4}{3}{2}{n_{\AcceptorIndex}}{pr_{\AcceptorIndex}}$
 
 % $\mapstostar \RInit\\
 % \Nu{t}\big (
@@ -371,25 +371,25 @@ $\Sys{ac}{pc} = \Sys{3}{2} =
 % $=\\
 % % Is this step really necessary?
 % \Nu{t}\big (
-% \SessionRequest{b_4}{4}{s}.\Pp{} \Or \SessionRequest{b_5}{4}{r}.\Pp{} \\
-% \Or \ParallelFor{3 < n \le 5} \SessionAccept{b_n}{1}{s} . \Pa\\
-% \Or \ParallelFor{3 < n \le 5} \SessionAccept{b_n}{2}{s} . \Pa\\
-% \Or \ParallelFor{3 < n \le 5} \SessionAccept{b_n}{3}{s} . \Pa\\
+% \SessionRequest{\SharedPoint{4}}{4}{s}.\Pp{} \Or \SessionRequest{\SharedPoint{5}}{4}{r}.\Pp{} \\
+% \Or \ParallelFor{3 < n \le 5} \SessionAccept{\SharedPoint{n}}{1}{s} . \Pa\\
+% \Or \ParallelFor{3 < n \le 5} \SessionAccept{\SharedPoint{n}}{2}{s} . \Pa\\
+% \Or \ParallelFor{3 < n \le 5} \SessionAccept{\SharedPoint{n}}{3}{s} . \Pa\\
 % \Or \OuterSessionQueues
 % \big )$
 
 $\mapstostar
 \Nu{t}\big (
-\SessionRequest{b_4}{4}{s}.\Pp{} \comment{= \Proposer{4}}\\
-\Or \SessionRequest{b_5}{4}{r}.\Pp{} \comment{= \Proposer{5}}\\
-\Or \Paren{\SessionAccept{b_4}{1}{s}.\PaOne \Or \SessionAccept{b_5}{1}{r}.\PaOne} \comment{= \Acceptor{1}}\\
-\Or \Paren{\SessionAccept{b_4}{2}{s}.\PaOne \Or \SessionAccept{b_5}{2}{r}.\PaOne} \comment{= \Acceptor{2}}\\
-\Or \Paren{\SessionAccept{b_4}{3}{s}.\PaOne \Or \SessionAccept{b_5}{3}{r}.\PaOne} \comment{= \Acceptor{3}}\\
+\SessionRequest{\SharedPoint{4}}{4}{s}.\Pp{} \comment{= \Proposer{4}}\\
+\Or \SessionRequest{\SharedPoint{5}}{4}{r}.\Pp{} \comment{= \Proposer{5}}\\
+\Or \Paren{\SessionAccept{\SharedPoint{4}}{1}{s}.\PaOne \Or \SessionAccept{\SharedPoint{5}}{1}{r}.\PaOne} \comment{= \Acceptor{1}}\\
+\Or \Paren{\SessionAccept{\SharedPoint{4}}{2}{s}.\PaOne \Or \SessionAccept{\SharedPoint{5}}{2}{r}.\PaOne} \comment{= \Acceptor{2}}\\
+\Or \Paren{\SessionAccept{\SharedPoint{4}}{3}{s}.\PaOne \Or \SessionAccept{\SharedPoint{5}}{3}{r}.\PaOne} \comment{= \Acceptor{3}}\\
 \Or \OuterSessionQueues
 \big )$
 
-Note that the outer session created via shared-point $a$ isn't strictly necessary in the model.
-We apply $\RInit$ once for shared-point $b_4$ and once again for shared-point $b_5$ to obtain:
+Note that the outer session created via shared-point $\OuterSharedPoint$ isn't strictly necessary in the model.
+We apply $\RInit$ once for shared-point $\SharedPoint{4}$ and once again for shared-point $\SharedPoint{5}$ to obtain:
 
 $\mapstostar
 \NuChannels\big (\\

@@ -1,47 +1,62 @@
 \chapter{Analysis}
+We take the model from the previous chapter, type-check it, and discuss what the type check means for agreement, validity, and termination of the Paxos algorithm.
+To execute the type check we project the global type to local types and use the typing rules given in \cite{ftmpst} to proof that our model can be derived from them.
 
 \section{Local Types}
+% TODO Elaborate on this.
 $\OuterGlobalTypeProjection{k} = \End$ for every $k$.
 
-$\GlobalTypeProjection{i} = \LocalTypeProposer = \Mu{x}
-\DotForall{j \in \AQ}{\SendUnreliableL{j}{\LOneA}{\mathbb{N}}} .
-\DotForall{j \in \AQ}{\ReceiveUnreliableL{j}{\LOneB}{\Promise{\Value}}} .\\
-\Indent{1}\SendWeaklyL{\AQ}{\Accept . \DotForall{j \in \AQ}{\SendUnreliableL{j}{\LTwoA}{\Proposal{\Value}}}.\End \oplus \Restart . x \oplus \Abort .\End}$
+% paxos has roles proposer and acceptor
+% therefore we have one local type for each
+% proposer i and acceptor j
 
-$\GlobalTypeProjection{j} = \LocalTypeAcceptor = \Mu{x}
-\ReceiveUnreliableL{i}{\LOneA}{\mathbb{N}} .
-\SendUnreliableL{i}{\LOneB}{\Promise{\Value}} .\\
-\Indent{1}\ReceiveWeaklyL{i}{\Accept . \ReceiveUnreliableL{i}{\LTwoA}{\Proposal{\Value}}.\End \oplus \Restart . x \oplus \Abort .\End}$
+For $1 \leq \AcceptorIndex \leq ac$ and $ac + 1 \leq \ProposerIndex \leq ac + pc$ we define the projections of the global type $\GlobalType$.
+
+$\GlobalTypeProjection{\ProposerIndex} = \Mu{x}
+\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}} .
+\DotForall{\AcceptorIndex\in\AQ}{\ReceiveUnreliableL{\AcceptorIndex}{\LOneB}{\Promise{\Value}}} .\\
+\Indent{1}\SendWeaklyL{\AQ}{\Accept . \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LTwoA}{\Proposal{\Value}}}.\End \oplus \Restart . x \oplus \Abort .\End}$
+
+$\GlobalTypeProjection{\ProposerIndex}$ defines the local type for proposers.
+We can see that the proposer communicates with all acceptors in its quorum in every phase.
+
+$\GlobalTypeProjection{\AcceptorIndex} = \Mu{x}
+\ReceiveUnreliableL{\ProposerIndex}{\LOneA}{\mathbb{N}} .
+\SendUnreliableL{\ProposerIndex}{\LOneB}{\Promise{\Value}} .\\
+\Indent{1}\ReceiveWeaklyL{\ProposerIndex}{\Accept . \ReceiveUnreliableL{\ProposerIndex}{\LTwoA}{\Proposal{\Value}}.\End \oplus \Restart . x \oplus \Abort .\End}$
+
+$\GlobalTypeProjection{\AcceptorIndex}$ defines the local type for acceptors, assuming a proposer $\ProposerIndex$.
+
 
 \section{Type Check}
 \subsection{System Initialization}
-$\Gamma = \GEnvEntry{a}{\OuterGlobalType} \cdot \GEnvEntry{b_{ac+1}}{\GlobalType} \cdot \GEnvEntry{b_{ac+2}}{\GlobalType} \cdot \ldots \cdot \GEnvEntry{b_{ac+pc}}{\GlobalType}$.
+$\Gamma = \GEnvEntry{\OuterSharedPoint}{\OuterGlobalType} \cdot \GEnvEntry{\SharedPoint{ac+1}}{\GlobalType} \cdot \GEnvEntry{\SharedPoint{ac+2}}{\GlobalType} \cdot \ldots \cdot \GEnvEntry{\SharedPoint{ac+pc}}{\GlobalType}$.
 
 \begin{prooftree}
 \AxiomC{$\SysProof{1}$}
-\UnaryInfC{$\Gamma\vdash \SessionRequest{a}{2}{t}\ldots \vartriangleright \emptyset$}
+\UnaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{t}\ldots \vartriangleright \emptyset$}
 
 \AxiomC{$\SysProof{2}$}
-\UnaryInfC{$\Gamma\vdash \SessionAccept{a}{1}{t} \ldots \vartriangleright \emptyset$}
+\UnaryInfC{$\Gamma\vdash \SessionAccept{\OuterSharedPoint}{1}{t} \ldots \vartriangleright \emptyset$}
 
 \AxiomC{$\SysProof{3}$}
-\UnaryInfC{$\Gamma\vdash \ParallelFor{1 \leq j \leq ac} \PaInitShort \vartriangleright \emptyset$}
+\UnaryInfC{$\Gamma\vdash \ParallelFor{1 \leq \AcceptorIndex \leq ac} \PaInitShort \vartriangleright \emptyset$}
 
 \RightLabel{$\RPar$}
-\BinaryInfC{$\Gamma\vdash \SessionAccept{a}{1}{t} \ldots \Or \ParallelFor{1 \leq j \leq ac} \PaInitShort \vartriangleright \emptyset$}
+\BinaryInfC{$\Gamma\vdash \SessionAccept{\OuterSharedPoint}{1}{t} \ldots \Or \ParallelFor{1 \leq \AcceptorIndex \leq ac} \PaInitShort \vartriangleright \emptyset$}
 
 \RightLabel{$\RPar$}
-\BinaryInfC{$\Gamma\vdash \SessionRequest{a}{2}{t}.\PpInitShort \Or \SessionAccept{a}{1}{t} \ldots \Or \ParallelFor{1 \leq j \leq ac} \PaInitShort \vartriangleright \emptyset$}
+\BinaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{t}.\PpInitShort \Or \SessionAccept{\OuterSharedPoint}{1}{t} \ldots \Or \ParallelFor{1 \leq \AcceptorIndex \leq ac} \PaInitShort \vartriangleright \emptyset$}
 \end{prooftree}
 
 \subsubsection{$\SysProof{1}$}
 \begin{prooftree}
 \AxiomC{$\ProposerProof{}$}
-\UnaryInfC{$\Gamma\vdash \SessionRequest{b_{ac+pc}}{ac+1}{s}.\Pp{} \vartriangleright \SEnvEntry{t}{2}{\OuterGlobalTypeProjection{2}}$}
+\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{ac+pc}}{ac+1}{s}.\Pp{} \vartriangleright \SEnvEntry{t}{2}{\OuterGlobalTypeProjection{2}}$}
 
 \LeftLabel{$\SysProof{1} =$}
 \RightLabel{$\RRec$}
-\UnaryInfC{$\Gamma\vdash \SessionRequest{a}{2}{t}.\PpInit{ac+1}{\genAq{ac+pc}{ac}{pc}}{ac+pc}{ac+pc}{[]} \vartriangleright \emptyset$}
+\UnaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{t}.\PpInit{ac+1}{\genAq{ac+pc}{ac}{pc}}{ac+pc}{ac+pc}{[]} \vartriangleright \emptyset$}
 \end{prooftree}
 
 Since $\OuterGlobalTypeProjection{2} = \End$, $\SEnvEntry{t}{2}{\OuterGlobalTypeProjection{2}} = \emptyset$.
@@ -50,19 +65,19 @@ This is relevant later when continuing proof $\ProposerProof{}$.
 \subsubsection{$\SysProof{2}$}
 \begin{prooftree}
 \AxiomC{$\ProposerProof{}$}
-\UnaryInfC{$\Gamma\vdash \SessionRequest{b_{ac+1}}{ac+1}{s}.\Pp{} \vartriangleright \emptyset$}
+\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{ac+1}}{ac+1}{s}.\Pp{} \vartriangleright \emptyset$}
 
 \AxiomC{$\ldots$}
 
 \AxiomC{$\ProposerProof{}$}
-\UnaryInfC{$\Gamma\vdash \SessionRequest{b_{ac+pc-1}}{ac+1}{s}.\Pp{} \vartriangleright \emptyset$}
+\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{ac+pc-1}}{ac+1}{s}.\Pp{} \vartriangleright \emptyset$}
 
 \RightLabel{$\RPar^{??}$}
 \TrinaryInfC{$\Gamma\vdash \ParallelFor{ac < k < ac+pc} \PpInit{ac+1}{\genAq{k}{ac}{pc}}{k}{k}{[]} \vartriangleright \SEnvEntry{t}{1}{G\upharpoonright_1}$}
 
 \LeftLabel{$\SysProof{2} =$}
 \RightLabel{$\RAcc$}
-\UnaryInfC{$\Gamma\vdash \SessionAccept{a}{1}{t} . \ParallelFor{ac < k < ac+pc} \PpInitShort \vartriangleright \emptyset$}
+\UnaryInfC{$\Gamma\vdash \SessionAccept{\OuterSharedPoint}{1}{t} . \ParallelFor{ac < k < ac+pc} \PpInitShort \vartriangleright \emptyset$}
 \end{prooftree}
 
 Because $\OuterGlobalTypeProjection{1} = \End$, $\SEnvEntry{t}{1}{\OuterGlobalTypeProjection{1}} = \emptyset$.
@@ -71,25 +86,25 @@ So $\Delta$ for each proposer is empty at this point.
 \subsubsection{$\SysProof{3}$}
 \begin{prooftree}
 \AxiomC{$\AcceptorProof{}$}
-\UnaryInfC{$\Gamma\vdash \PaOne \vartriangleright \SEnvEntry{s}{j}{\GlobalTypeProjection{j}}$}
+\UnaryInfC{$\Gamma\vdash \PaOne \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\GlobalTypeProjection{j}}$}
 \RightLabel{$\RAcc$}
-\UnaryInfC{$\Gamma\vdash\SessionAccept{b_{k}}{j}{s}.\PaOne\vartriangleright\emptyset$}
+\UnaryInfC{$\Gamma\vdash\SessionAccept{\SharedPoint{k}}{j}{s}.\PaOne\vartriangleright\emptyset$}
 \AxiomC{$\ldots$}
 \RightLabel{$\RPar^*$}
-\BinaryInfC{$\Gamma\vdash\ParallelFor{ac < k \le ac + pc} \SessionAccept{b_k}{ac}{s} . \PaOne\vartriangleright\emptyset$}
+\BinaryInfC{$\Gamma\vdash\ParallelFor{ac < k \le ac + pc} \SessionAccept{\SharedPoint{k}}{ac}{s} . \PaOne\vartriangleright\emptyset$}
 \AxiomC{$\ldots$}
 
 \LeftLabel{$\SysProof{3} =$}
 \RightLabel{$\RPar^*$}
-\BinaryInfC{$\Gamma\vdash\ParallelFor{1\leq j\leq ac} \left(\ParallelFor{ac < k \le ac + pc} \SessionAccept{b_k}{j}{s} . \PaOne\right) \vartriangleright\emptyset$}
+\BinaryInfC{$\Gamma\vdash\ParallelFor{1 \leq \AcceptorIndex \leq ac} \left(\ParallelFor{ac < k \le ac + pc} \SessionAccept{\SharedPoint{k}}{\AcceptorIndex}{s} . \PaOne\right) \vartriangleright\emptyset$}
 \end{prooftree}
 
 \subsection{Proposer}
-For simplicity, let $i = ac + 1, \AQ = \genAq{y}{ac}{pc}, n = y, m = y, \VectorV = []$ where $ac < y \leq ac + pc$.
-From that we know that $\Gamma = \Gamma' \cdot i:\mathbb{N} \cdot n:\mathbb{N} \cdot m:\mathbb{N}$.
+For simplicity, let $\ProposerIndex = ac + 1, \AQ = \genAq{y}{ac}{pc}, n = y, m = y, \VectorV = []$ where $ac < y \leq ac + pc$.
+% From that we know that $\Gamma = \Gamma' \cdot i:\mathbb{N} \cdot n:\mathbb{N} \cdot m:\mathbb{N}$.
 % so just the arguments for a proposer y.
 
-$\TpAccept = \DotForall{j \in \AQ}{\SendUnreliableL{j}{\LTwoA}{\Proposal{\Value}}}.\End$
+$\TpAccept = \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LTwoA}{\Proposal{\Value}}}.\End$
 
 $\TpBranch = \SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . x \oplus \Abort .\End}$
 
@@ -99,58 +114,58 @@ $pn = \proposalNumber{n}{m}$
 
 $\Gamma'=\Gamma\cdot\GEnvEntry{X}{x}$
 
-$\Gamma'' = \Gamma' \cdot \GEnvEntry{v_j}{\Promise{\Value}}$ for $j\in\AQ$
+$\Gamma'' = \Gamma' \cdot \GEnvEntry{v_{\AcceptorIndex}}{\Promise{\Value}}$ for $\AcceptorIndex\in\AQ$
 
 $prop = \ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}$
 
 \subsubsection{$\ProposerProof{}$}
 \begin{prooftree}
 \AxiomC{$\ProposerProofTrue$}
-\UnaryInfC{$\Gamma'' \vdash \SendWeaklyP{s}{i}{\AQ}{\Restart}{X} \vartriangleright \SEnvEntry{s}{i}{\TpBranch}$}
+\UnaryInfC{$\Gamma'' \vdash \SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Restart}{X} \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\TpBranch}$}
 
 \AxiomC{$\ProposerProofFalse$}
-\UnaryInfC{$\Gamma'' \vdash \SendWeaklyP{s}{i}{\AQ}{\Accept}{\ldots} \vartriangleright \SEnvEntry{s}{i}{\TpBranch}$}
+\UnaryInfC{$\Gamma'' \vdash \SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Accept}{\ldots} \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\TpBranch}$}
 
 \RightLabel{$\RIf$}
-\BinaryInfC{$\Gamma'' \vdash \If{e} \Then{\SendWeaklyP{s}{i}{\AQ}{\Restart}{X}} \Else{\SendWeaklyP{s}{i}{\AQ}{\Accept}{\ldots}} \vartriangleright \SEnvEntry{s}{i}{\TpBranch}$}
+\BinaryInfC{$\Gamma'' \vdash \If{e} \Then{\SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Restart}{X}} \Else{\SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Accept}{\ldots}} \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\TpBranch}$}
 
 \RightLabel{$\RUget^{|\AQ|}$}
-\UnaryInfC{$\Gamma' \vdash \DotForall{j \in \AQ}{\ReceiveUnreliableP{s}{j}{i}{\LOneB}{\bot}{v_j}} \ldots \vartriangleright \SEnvEntry{s}{i}{\DotForall{j \in \AQ}{\ReceiveUnreliableL{j}{\LOneB}{\Promise{\Value}}}}$}
+\UnaryInfC{$\Gamma' \vdash \DotForall{\AcceptorIndex\in\AQ}{\ReceiveUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}{v_{\AcceptorIndex}}} \ldots \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\DotForall{\AcceptorIndex\in\AQ}{\ReceiveUnreliableL{\AcceptorIndex}{\LOneB}{\Promise{\Value}}}}$}
 
 \RightLabel{$\RUsend^{|\AQ|}$}
-\UnaryInfC{$\Gamma' \vdash \DotForall{j \in \AQ}{\SendUnreliableP{s}{i}{j}{\LOneA}{pn}} \ldots \vartriangleright \SEnvEntry{s}{i}{\DotForall{j\in\AQ}{\SendUnreliableL{j}{\LOneA}{\mathbb{N}}}\ldots}$}
+\UnaryInfC{$\Gamma' \vdash \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{pn}} \ldots \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}}\ldots}$}
 
 \RightLabel{$?$}
-\UnaryInfC{$\Gamma' \vdash \update{n}{n+1} \ldots \vartriangleright \SEnvEntry{s}{i}{\DotForall{j\in\AQ}{\SendUnreliableL{j}{\LOneA}{\mathbb{N}}}\ldots}$}
+\UnaryInfC{$\Gamma' \vdash \update{n}{n+1} \ldots \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}}\ldots}$}
 
 \RightLabel{$\RRec$}
-\UnaryInfC{$\Gamma\vdash \Mu{X} \update{n}{n + 1} \ldots \vartriangleright \SEnvEntry{s}{i}{\Mu{x}\DotForall{j\in\AQ}{\SendUnreliableL{j}{\LOneA}{\mathbb{N}}}\ldots}$}
+\UnaryInfC{$\Gamma\vdash \Mu{X} \update{n}{n + 1} \ldots \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\Mu{x}\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}}\ldots}$}
 
 \LeftLabel{$\ProposerProof{} =$}
 \RightLabel{$\RReq$}
-\UnaryInfC{$\Gamma\vdash \SessionRequest{b_n}{i}{s}.\Pp{} \vartriangleright \emptyset$}
+\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{n}}{\ProposerIndex}{s}.\Pp{} \vartriangleright \emptyset$}
 \end{prooftree}
 
 \subsubsection{$\ProposerProofTrue$}
 \begin{prooftree}
 \AxiomC{}
 \RightLabel{$\RVar$}
-\UnaryInfC{$\Gamma\vdash X \vartriangleright \SEnvEntry{s}{i}{x}$}
+\UnaryInfC{$\Gamma\vdash X \vartriangleright \SEnvEntry{s}{\ProposerIndex}{x}$}
 \LeftLabel{$\ProposerProofTrue =$}
 \RightLabel{$\RWsel$}
-\UnaryInfC{$\Gamma\vdash \SendWeaklyP{s}{i}{\AQ}{\Restart}{X} \vartriangleright \SEnvEntry{s}{i}{\SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . x \oplus \Abort .\End}}$}
+\UnaryInfC{$\Gamma\vdash \SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Restart}{X} \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . x \oplus \Abort .\End}}$}
 \end{prooftree}
 
 \subsubsection{$\ProposerProofFalse$}
 \begin{prooftree}
 \AxiomC{}
 \RightLabel{$\REnd$}
-\UnaryInfC{$\Gamma\vdash \End \vartriangleright \SEnvEntry{s}{i}{\End}$}
-\UnaryInfC{$\Gamma\vdash \DotForall{j \in \AQ}{\SendUnreliableP{s}{i}{j}{\LTwoA}{prop}}.\End \vartriangleright \SEnvEntry{s}{i}{\DotForall{j \in \AQ}{\SendUnreliableL{j}{\LTwoA}{\Proposal{\Value}}}.\End}$}
+\UnaryInfC{$\Gamma\vdash \End \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\End}$}
+\UnaryInfC{$\Gamma\vdash \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{prop}}.\End \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LTwoA}{\Proposal{\Value}}}.\End}$}
 
 \LeftLabel{$\ProposerProofFalse =$}
 \RightLabel{$\RWsel$}
-\UnaryInfC{$\Gamma\vdash \SendWeaklyP{s}{i}{\AQ}{\Accept.\ldots} \vartriangleright \SEnvEntry{s}{i}{\SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . x \oplus \Abort .\End}}$}
+\UnaryInfC{$\Gamma\vdash \SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Accept.\ldots} \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . x \oplus \Abort .\End}}$}
 \end{prooftree}
 
 \subsection{Acceptor}
@@ -158,7 +173,7 @@ $\Gamma'=\Gamma\cdot\GEnvEntry{X}{x}$
 
 $i = ac + 1$
 
-$\PaAccept = \ReceiveUnreliableP{s}{i}{j}{\LTwoA}{\bot}{pr'} .
+$\PaAccept = \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\bot}{pr'} .
 \If{pr' = \bot}\\
 \Indent{1}\Then{\End}\\
 \Indent{1}\Else{
@@ -168,123 +183,121 @@ $\PaAccept = \ReceiveUnreliableP{s}{i}{j}{\LTwoA}{\bot}{pr'} .
 
 % TODO "Note that PaTwo = ... PaAccept"
 
-$\Pa{t} = \update{n}{n'}.\SendUnreliableP{s}{j}{i}{\LOneB}{\Promise{pr}}.\PaTwo$
+$\Pa{t} = \update{n}{n'}.\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Promise{pr}}.\PaTwo$
 
-$\Pa{f} = \SendUnreliableP{s}{j}{i}{\LOneB}{\Nack{n}}.\PaTwo$
+$\Pa{f} = \SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{n}}.\PaTwo$
 
 $\Pa{gt} = \If{\greaterThan{n'}{n}}\Then{\Pa{t}}\Else{\Pa{f}}$
 
 % TODO "Not that PaOne = ... PaTwo ... Pagt"
 
-$\LocalTypeAcceptor = \GlobalTypeProjection{j}$
+$\TaAccept = \ReceiveUnreliableL{\ProposerIndex}{\LTwoA}{\Proposal{\Value}}.\End$
 
-$\TaAccept = \ReceiveUnreliableL{i}{\LTwoA}{\Proposal{\Value}}.\End$
+$\TaBranch = \ReceiveWeaklyL{\ProposerIndex}{\Accept . \TaAccept \oplus \Restart . x \oplus \Abort .\End}$
 
-$\TaBranch = \ReceiveWeaklyL{i}{\Accept . \TaAccept \oplus \Restart . x \oplus \Abort .\End}$
-
-$\TaOneB = \SendUnreliableL{i}{\LOneB}{\Promise{\Value}} . \TaBranch$
+$\TaOneB = \SendUnreliableL{\ProposerIndex}{\LOneB}{\Promise{\Value}} . \TaBranch$
 
 \subsubsection{$\AcceptorProof{}$}
 \begin{prooftree}
 \AxiomC{$\AcceptorProofCont$}
-\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \PaTwo \vartriangleright \SEnvEntry{s}{j}{\TaBranch}$}
+\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaBranch}$}
 \RightLabel{$\RUsend$}
-\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \SendUnreliableP{s}{j}{i}{\LOneB}{\bot}.\PaTwo \vartriangleright \SEnvEntry{s}{j}{\TaOneB}$}
+\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaOneB}$}
 
 \AxiomC{$\AcceptorProof{gt}$}
-\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \Pa{gt} \vartriangleright \SEnvEntry{s}{j}{\TaOneB}$}
+\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \Pa{gt} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaOneB}$}
 
 \RightLabel{$\RIf$}
-\BinaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \If{n'=\bot}\Then{\PaTwo}\Else{\If{\greaterThan{n'}{n}}\ldots} \vartriangleright \SEnvEntry{s}{j}{\TaOneB}$}
+\BinaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \If{n'=\bot}\Then{\PaTwo}\Else{\If{\greaterThan{n'}{n}}\ldots} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaOneB}$}
 
 \RightLabel{$\RUget$}
-\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x} \vdash \ReceiveUnreliableP{s}{i}{j}{\LOneA}{\bot}{n'}.\If{n'=\bot}\ldots \vartriangleright \SEnvEntry{s}{j}{\ReceiveUnreliableL{i}{\LOneA}{\mathbb{N}}.\TaOneB}$}
+\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x} \vdash \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\bot}{n'}.\If{n'=\bot}\ldots \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\ReceiveUnreliableL{\ProposerIndex}{\LOneA}{\mathbb{N}}.\TaOneB}$}
 
 \LeftLabel{$\AcceptorProof{} =$}
 \RightLabel{$\RRec$}
-\UnaryInfC{$\Gamma\vdash \Mu{X} \ReceiveUnreliableP{s}{i}{j}{\LOneA}{\bot}{n'}.\ldots \vartriangleright \SEnvEntry{s}{j}{\Mu{x}\ReceiveUnreliableL{i}{\LOneA}{\mathbb{N}}.\ldots}$}
+\UnaryInfC{$\Gamma\vdash \Mu{X} \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\bot}{n'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\Mu{x}\ReceiveUnreliableL{\ProposerIndex}{\LOneA}{\mathbb{N}}.\ldots}$}
 \end{prooftree}
 
 \subsubsection{$\AcceptorProof{gt}$}
 \begin{prooftree}
 \AxiomC{$\AcceptorProofTrue$}
-\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \Pa{t} \vartriangleright \SEnvEntry{s}{j}{\TaOneB}$}
+\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \Pa{t} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaOneB}$}
 
 \AxiomC{$\AcceptorProofFalse$}
-\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \Pa{f} \vartriangleright \SEnvEntry{s}{j}{\TaOneB}$}
+\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \Pa{f} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaOneB}$}
 
 \LeftLabel{$\AcceptorProof{gt} =$}
 \RightLabel{$\RIf$}
-\BinaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \If{\greaterThan{n'}{n}}\Then{\Pa{t}}\Else{\Pa{f}} \vartriangleright \SEnvEntry{s}{j}{\TaOneB}$}
+\BinaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \If{\greaterThan{n'}{n}}\Then{\Pa{t}}\Else{\Pa{f}} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaOneB}$}
 \end{prooftree}
 
 \subsubsection{$\AcceptorProofTrue$}
 \begin{prooftree}
 \AxiomC{$\AcceptorProofCont$}
-\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \PaTwo \vartriangleright \SEnvEntry{s}{j}{\TaBranch}$}
+\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaBranch}$}
 \LeftLabel{$\AcceptorProofTrue =$}
 \RightLabel{$\RUsend$}
-\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \SendUnreliableP{s}{j}{i}{\LOneB}{\Nack{n}}.\PaTwo \vartriangleright \SEnvEntry{s}{j}{\SendUnreliableL{i}{\LOneB}{\Promise{\Value}} . \TaBranch}$}
+\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{n}}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\SendUnreliableL{\ProposerIndex}{\LOneB}{\Promise{\Value}} . \TaBranch}$}
 \end{prooftree}
 
 \subsubsection{$\AcceptorProofFalse$}
 \begin{prooftree}
 \AxiomC{$\AcceptorProofCont$}
-\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \PaTwo \vartriangleright \SEnvEntry{s}{j}{\TaBranch}$}
+\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaBranch}$}
 \LeftLabel{$\AcceptorProofFalse =$}
 \RightLabel{$\RUsend$}
-\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \SendUnreliableP{s}{j}{i}{\LOneB}{\Nack{n}}.\PaTwo \vartriangleright \SEnvEntry{s}{j}{\SendUnreliableL{i}{\LOneB}{\Promise{\Value}}.\TaBranch}$}
+\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{n}}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\SendUnreliableL{\ProposerIndex}{\LOneB}{\Promise{\Value}}.\TaBranch}$}
 \end{prooftree}
 
 \subsubsection{$\AcceptorProofCont$}
 \begin{prooftree}
 \AxiomC{$\AcceptorProofAccept$}
-\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \PaAccept \vartriangleright \SEnvEntry{s}{j}{\TaAccept}$}
+\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \PaAccept \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaAccept}$}
 
 \AxiomC{}
 \RightLabel{$\RVar$}
-\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash X \vartriangleright \SEnvEntry{s}{j}{x}$}
+\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash X \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{x}$}
 
 \AxiomC{}
 \RightLabel{$\REnd$}
-\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \End \vartriangleright \SEnvEntry{s}{j}{\End}$}
+\UnaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
 
 \LeftLabel{$\AcceptorProofCont =$}
 \RightLabel{$\RWbran$}
-\TrinaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \PaTwo \vartriangleright \SEnvEntry{s}{j}{\TaBranch}$}
+\TrinaryInfC{$\Gamma\cdot\GEnvEntry{X}{x}\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaBranch}$}
 \end{prooftree}
 
 \subsubsection{$\AcceptorProofAccept$}
 \begin{prooftree}
 \AxiomC{}
 \RightLabel{$\REnd$}
-\UnaryInfC{$\Gamma'\vdash \End \vartriangleright \SEnvEntry{s}{j}{\End}$}
+\UnaryInfC{$\Gamma'\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
 
 \AxiomC{$\AcceptorProof{update}$}
-\UnaryInfC{$\Gamma'\vdash\update{pr}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{j}{\End}$}
+\UnaryInfC{$\Gamma'\vdash\update{pr}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
 
 \AxiomC{}
 \RightLabel{$\REnd$}
-\UnaryInfC{$\Gamma'\vdash \End \vartriangleright \SEnvEntry{s}{j}{\End}$}
+\UnaryInfC{$\Gamma'\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
 
 \RightLabel{$\RIf$}
-\BinaryInfC{$\Gamma'\vdash \If{\greaterEqual{\nFromProposal{pr'}}{n}}\Then{\ldots}\Else{\End} \vartriangleright \SEnvEntry{s}{j}{\End}$}
+\BinaryInfC{$\Gamma'\vdash \If{\greaterEqual{\nFromProposal{pr'}}{n}}\Then{\ldots}\Else{\End} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
 
 \RightLabel{$\RIf$}
-\BinaryInfC{$\Gamma'\vdash \If{pr'=\bot}\Then{\End}\Else{\ldots} \vartriangleright \SEnvEntry{s}{j}{\End}$}
+\BinaryInfC{$\Gamma'\vdash \If{pr'=\bot}\Then{\End}\Else{\ldots} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
 \LeftLabel{$\AcceptorProofAccept =$}
 \RightLabel{$\RUget$}
-\UnaryInfC{$\Gamma'\vdash \ReceiveUnreliableP{s}{i}{j}{\LTwoA}{\bot}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{j}{\ReceiveUnreliableL{i}{\LTwoA}{\Proposal{\Value}}.\End}$}
+\UnaryInfC{$\Gamma'\vdash \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\bot}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\ReceiveUnreliableL{\ProposerIndex}{\LTwoA}{\Proposal{\Value}}.\End}$}
 \end{prooftree}
 
 \subsubsection{$\AcceptorProof{update}$}
 \begin{prooftree}
 \AxiomC{}
 \RightLabel{$\REnd$}
-\UnaryInfC{$\Gamma'\vdash \End \vartriangleright \SEnvEntry{s}{j}{\End}$}
+\UnaryInfC{$\Gamma'\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
 \RightLabel{$??$}
-\UnaryInfC{$\Gamma'\vdash \update{n}{\Just{\nFromProposal{pr'}}}.\End \vartriangleright \SEnvEntry{s}{j}{\End}$}
+\UnaryInfC{$\Gamma'\vdash \update{n}{\Just{\nFromProposal{pr'}}}.\End \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
 \LeftLabel{$\AcceptorProof{update} =$}
 \RightLabel{$??$}
-\UnaryInfC{$\Gamma'\vdash\update{pr}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{j}{\End}$}
+\UnaryInfC{$\Gamma'\vdash\update{pr}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
 \end{prooftree}

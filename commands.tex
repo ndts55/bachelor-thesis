@@ -37,14 +37,16 @@
 \newcommand{\LTwoB}[0]{l2b}
 
 %% Global Type
+\newcommand{\ProposerIndex}[0]{p}
+\newcommand{\AcceptorIndex}[0]{a}
+\newcommand{\OuterSharedPoint}[0]{o}
+\newcommand{\SharedPoint}[1]{b_{#1}}
 \newcommand{\OuterGlobalType}[0]{\operatorname{G}}
-\newcommand{\GlobalType}[0]{\operatorname{G_{i, A_Q}}}
+\newcommand{\GlobalType}[0]{\operatorname{G_{\ProposerIndex, A_Q}}}
 \newcommand{\SendUnreliableG}[4]{#1 \to_u #2 : #3 \left\langle #4 \right\rangle}
 \newcommand{\SendWeaklyG}[3]{\left(#1 \to_w #2 : #3\right)}
 
 %% Local Type
-\newcommand{\LocalTypeProposer}[0]{T^p_{p, A_Q}}
-\newcommand{\LocalTypeAcceptor}[0]{T^a_{p}}
 \newcommand{\SendUnreliableL}[3]{\left[#1\right]!_u #2 \left\langle #3 \right\rangle}
 \newcommand{\ReceiveUnreliableL}[3]{\left[#1\right]?_u #2 \left\langle #3 \right\rangle}
 \newcommand{\SendWeaklyL}[2]{\left(\left[#1\right]!_w #2\right)}
