@@ -393,8 +393,8 @@ We apply $\RInit$ once for shared-point $\SharedPoint{4}$ and once again for sha
 
 $\mapstostar
 \NuChannels\big (\\
-\Mu{X} \update{n}{5} . \DotForall{j\in \{1,2\}}{\SendUnreliableP{s}{4}{j}{\LOneA}{\proposalNumber{n}{4}}}\dots \comment{= \Proposer{4}}\\
-\Or \Mu{X} \update{n}{6} . \DotForall{j\in \{2,3\}}{\SendUnreliableP{r}{4}{j}{\LOneA}{\proposalNumber{n}{5}}}\dots \comment{= \Proposer{5}}\\
+\Mu{X} \update{n}{5} . \DotForall{\AcceptorIndex\in \{1,2\}}{\SendUnreliableP{s}{4}{\AcceptorIndex}{\LOneA}{\proposalNumber{n}{4}}}\dots \comment{= \Proposer{4}}\\
+\Or \Mu{X} \update{n}{6} . \DotForall{\AcceptorIndex\in \{2,3\}}{\SendUnreliableP{r}{4}{\AcceptorIndex}{\LOneA}{\proposalNumber{n}{5}}}\dots \comment{= \Proposer{5}}\\
 \Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
