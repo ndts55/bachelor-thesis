@@ -30,7 +30,7 @@ An acceptor first receives a proposal number, then it responds with a $\Promise{
 Finally, it receives the proposers' branching choice.
 
 \section{Type Check}
-$\Gamma = \GEnvEntry{\OuterSharedPoint}{\OuterGlobalType} \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+1}}{\GlobalType} \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+2}}{\GlobalType} \cdot \ldots \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+\ProposerCount}}{\GlobalType}$.
+$\Gamma = \GEnvEntry{\OuterSharedPoint}{\OuterGlobalType} \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+1}}{\GlobalType} \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+2}}{\GlobalType} \cdot \ldots \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+\ProposerCount}}{\GlobalType} \cdot \GEnvEntry{\AcceptorCount}{\mathbb{N}} \cdot \GEnvEntry{\ProposerCount}{\mathbb{N}}$.
 
 $\Gamma$ contains the type for our shared-points $\OuterSharedPoint$ and $\SharedPoint{n}$ where $\AcceptorCount + 1 \leq n \leq \AcceptorCount + \ProposerCount$.
 
@@ -66,7 +66,7 @@ This is relevant later when continuing $\ProposerProof{}$.
 
 \LeftLabel{$\SysProof{1} =$}
 \RightLabel{$\RRec$}
-\UnaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{t}.\PpInit{\AcceptorCount+1}{\genAq{\AcceptorCount+\ProposerCount}{\AcceptorCount}{\ProposerCount}}{\AcceptorCount+\ProposerCount}{\AcceptorCount+\ProposerCount}{[]} \vartriangleright \emptyset$}
+\UnaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{t}.\PpInit{\AcceptorCount+1}{\genAq{\AcceptorCount+\ProposerCount}{\AcceptorCount}{\ProposerCount}}{\AcceptorCount+\ProposerCount}{\AcceptorCount+\ProposerCount}{\EmptyList} \vartriangleright \emptyset$}
 \end{prooftree}
 
 Applying $\RAcc$ in $\SysProof{2}$ requires that $\GEnvEntry{\OuterSharedPoint}{\OuterGlobalType} \in \Gamma$.
@@ -85,7 +85,7 @@ The session environment $\Delta$ in $\ProposerProof{}$ is empty for every propos
 \UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\AcceptorCount+\ProposerCount-1}}{\AcceptorCount+1}{s}.\Pp{} \vartriangleright \emptyset$}
 
 \RightLabel{$\RPar^{\ProposerCount - 1}$}
-\TrinaryInfC{$\Gamma\vdash \ParallelFor{\AcceptorCount < k < \AcceptorCount+\ProposerCount} \PpInit{\AcceptorCount+1}{\genAq{k}{\AcceptorCount}{\ProposerCount}}{k}{k}{[]} \vartriangleright \SEnvEntry{t}{1}{G\upharpoonright_1}$}
+\TrinaryInfC{$\Gamma\vdash \ParallelFor{\AcceptorCount < k < \AcceptorCount+\ProposerCount} \PpInit{\AcceptorCount+1}{\genAq{k}{\AcceptorCount}{\ProposerCount}}{k}{k}{\EmptyList} \vartriangleright \SEnvEntry{t}{1}{G\upharpoonright_1}$}
 
 \LeftLabel{$\SysProof{2} =$}
 \RightLabel{$\RAcc$}
@@ -93,7 +93,7 @@ The session environment $\Delta$ in $\ProposerProof{}$ is empty for every propos
 \end{prooftree}
 
 $\RPar$ is applied $\AcceptorCount$ times to separate the individual acceptors and then $\ProposerCount$ times for each acceptor to separate the individual subprocesses.
-Since every subprocess of every acceptor behaves like $\PaOne$ and has the same local type, the same proof-tree $\AcceptorProof{}$ can be applied to each.
+Since every subprocess of every acceptor behaves like $\PaOne$ and has the same local type, the same proof-tree $\AcceptorProof{}$ can be applied.
 Applying $\RAcc$ to every subprocess of every acceptor requires $\forall k\in\mathbb{N}: \left(\AcceptorCount + 1 \leq k \land k \leq \AcceptorCount + \ProposerCount \right) \to \GEnvEntry{\SharedPoint{k}}{\GlobalType} \in \Gamma$.
 
 Note that only one acceptor and one of its subprocesses is shown in $\SysProof{3}$.
@@ -115,23 +115,33 @@ The rest has been left out to improve readability.
 \end{prooftree}
 
 \subsection{Proposer}
-For simplicity, let $\ProposerIndex = \AcceptorCount + 1, \AQ = \genAq{y}{\AcceptorCount}{\ProposerCount}, n = y, m = y, \VectorV = []$ where $\AcceptorCount < y \leq \AcceptorCount + \ProposerCount$.
-% From that we know that $\Gamma = \Gamma' \cdot i:\mathbb{N} \cdot n:\mathbb{N} \cdot m:\mathbb{N}$.
-% so just the arguments for a proposer y.
+Let $\ProposerIndex = \AcceptorCount + 1, \AQ = \genAq{k}{\AcceptorCount}{\ProposerCount}, n = k, m = k, \VectorV = \EmptyList$ where $\AcceptorCount < k \leq \AcceptorCount + \ProposerCount$.
+This gives us the values for the arguments of $\PpInitName$.
+We observe that, $\Gamma\Vdash\GEnvEntry{p}{\mathbb{N}}$, $\Gamma\Vdash\GEnvEntry{k}{\mathbb{N}}$, $\Gamma\Vdash\GEnvEntry{n}{\mathbb{N}}$, $\Gamma\Vdash\GEnvEntry{m}{\mathbb{N}}$, and $\Gamma\Vdash\GEnvEntry{\AQ}{\List{\mathbb{N}}}$.
+
+To abbreviate the proposer's local type in the following proof-trees we define the following sub-formulae.
 
 $\TpAccept = \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LTwoA}{\Proposal{\Value}}}.\End$
 
 $\TpBranch = \SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . x \oplus \Abort .\End}$
 
+Note that $\GlobalTypeProjection{\ProposerIndex} = \Mu{x}
+\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}} .
+\DotForall{\AcceptorIndex\in\AQ}{\ReceiveUnreliableL{\AcceptorIndex}{\LOneB}{\Promise{\Value}}} . \TpBranch$.
+
+In order to shorten the proposer's process we define some variables.
+
 $e = \anyNack{\VectorV} \tOr \promiseCount{\VectorV} < \ceil{\frac{i}{2}}$
 
 $pn = \proposalNumber{n}{m}$
 
+$prop = \ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}$
+
+% TODO we define some global environments to make it less long (synonym for shorten/abbreviate).
+
 $\Gamma'=\Gamma\cdot\GEnvEntry{X}{x}$
 
 $\Gamma'' = \Gamma' \cdot \GEnvEntry{v_{\AcceptorIndex}}{\Promise{\Value}}$ for $\AcceptorIndex\in\AQ$
-
-$prop = \ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}$
 
 \subsubsection{$\ProposerProof{}$}
 \begin{prooftree}
@@ -165,22 +175,23 @@ $prop = \ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}$
 \begin{prooftree}
 \AxiomC{}
 \RightLabel{$\RVar$}
-\UnaryInfC{$\Gamma\vdash X \vartriangleright \SEnvEntry{s}{\ProposerIndex}{x}$}
+\UnaryInfC{$\Gamma''\vdash X \vartriangleright \SEnvEntry{s}{\ProposerIndex}{x}$}
 \LeftLabel{$\ProposerProofTrue =$}
 \RightLabel{$\RWsel$}
-\UnaryInfC{$\Gamma\vdash \SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Restart}{X} \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . x \oplus \Abort .\End}}$}
+\UnaryInfC{$\Gamma''\vdash \SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Restart}{X} \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . x \oplus \Abort .\End}}$}
 \end{prooftree}
 
 \subsubsection{$\ProposerProofFalse$}
 \begin{prooftree}
 \AxiomC{}
 \RightLabel{$\REnd$}
-\UnaryInfC{$\Gamma\vdash \End \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\End}$}
-\UnaryInfC{$\Gamma\vdash \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{prop}}.\End \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LTwoA}{\Proposal{\Value}}}.\End}$}
+\UnaryInfC{$\Gamma''\vdash \End \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\End}$}
+\RightLabel{$\RUsend^{|\AQ|}$}
+\UnaryInfC{$\Gamma''\vdash \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{prop}}.\End \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LTwoA}{\Proposal{\Value}}}.\End}$}
 
 \LeftLabel{$\ProposerProofFalse =$}
 \RightLabel{$\RWsel$}
-\UnaryInfC{$\Gamma\vdash \SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Accept.\ldots} \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . x \oplus \Abort .\End}}$}
+\UnaryInfC{$\Gamma''\vdash \SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Accept.\ldots} \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . x \oplus \Abort .\End}}$}
 \end{prooftree}
 
 \subsection{Acceptor}
