@@ -136,7 +136,7 @@ $\nFromProposal{p}$, $\greaterThan{a}{ma}$, and $\greaterEqual{a}{ma}$ are used 
 
 $\operatorname{gen\AQ} : \mathbb{N} \times \mathbb{N} \times \mathbb{N} \to \mathbb{N}$
 
-$\genAq{\ProposerIndex}{ac}{pc}$ returns a randomly selected set $\AQ$ with $\AQ \subseteq A = \Curly{1, \dots, ac}$ and $|\AQ| > \frac{|A|}{2}$.
+$\genAq{\ProposerIndex}{\AcceptorCount}{\ProposerCount}$ returns a randomly selected set $\AQ$ with $\AQ \subseteq A = \Curly{1, \dots, \AcceptorCount}$ and $|\AQ| > \frac{|A|}{2}$.
 $\AQ$ consists of any majority of acceptors.
 In Paxos a majority of acceptors forms a quorum, i.e. an accepting set with which a value can be chosen \cite{lower_bounds}.
 We use this function when initiating the proposers to give them a quorum of acceptors with which they communicate.
@@ -144,30 +144,30 @@ We use this function when initiating the proposers to give them a quorum of acce
 \section{Processes}
 \subsection{System Initialization}
 % Idea: One shared-point per Proposer over which the session is initialized.
-$\Sys{ac}{pc} = \SessionRequest{\OuterSharedPoint}{2}{t} . \PpInit{ac + 1}{\genAq{ac + pc}{ac}{pc}}{ac + pc}{ac + pc}{[]}\\
-\Or \SessionAccept{\OuterSharedPoint}{1}{t} . \ParallelFor{ac < k < ac + pc} \PpInit{ac + 1}{\genAq{k}{ac}{pc}}{k}{k}{[]} \\
-\Or \ParallelFor{1 \leq j \leq ac} \PaInit{j}{ac + 1}{ac}{pc}{n_{\AcceptorIndex}}{pr_{\AcceptorIndex}}$
+$\Sys{\AcceptorCount}{\ProposerCount} = \SessionRequest{\OuterSharedPoint}{2}{t} . \PpInit{\AcceptorCount + 1}{\genAq{\AcceptorCount + \ProposerCount}{\AcceptorCount}{\ProposerCount}}{\AcceptorCount + \ProposerCount}{\AcceptorCount + \ProposerCount}{[]}\\
+\Or \SessionAccept{\OuterSharedPoint}{1}{t} . \ParallelFor{\AcceptorCount < k < \AcceptorCount + \ProposerCount} \PpInit{\AcceptorCount + 1}{\genAq{k}{\AcceptorCount}{\ProposerCount}}{k}{k}{[]} \\
+\Or \ParallelFor{1 \leq j \leq \AcceptorCount} \PaInit{j}{\AcceptorCount + 1}{\AcceptorCount}{\ProposerCount}{n_{\AcceptorIndex}}{pr_{\AcceptorIndex}}$
 
 $\PpInit{\ProposerIndex}{\AQ}{n}{m}{\VectorV} = \SessionRequest{\SharedPoint{n}}{i}{s} . \Pp{} $
 
-$\PaInit{\AcceptorIndex}{\ProposerIndex}{ac}{pc}{n}{pr} = \ParallelFor{ac < k \le ac + pc} \SessionAccept{\SharedPoint{k}}{\AcceptorIndex}{s} . \PaOne$
+$\PaInit{\AcceptorIndex}{\ProposerIndex}{\AcceptorCount}{\ProposerCount}{n}{pr} = \ParallelFor{\AcceptorCount < k \le \AcceptorCount + \ProposerCount} \SessionAccept{\SharedPoint{k}}{\AcceptorIndex}{s} . \PaOne$
 
-$\Sys{ac}{pc}$, $\PpInit{\ProposerIndex}{\AQ}{n}{m}{\VectorV}$, and $\PaInit{\AcceptorIndex}{\ProposerIndex}{ac}{pc}{n}{pr}$ describe the system initialization.
-$ac$ and $pc$ are the number of acceptors and proposers respectively.
+$\Sys{\AcceptorCount}{\ProposerCount}$, $\PpInit{\ProposerIndex}{\AQ}{n}{m}{\VectorV}$, and $\PaInit{\AcceptorIndex}{\ProposerIndex}{\AcceptorCount}{\ProposerCount}{n}{pr}$ describe the system initialization.
+$\AcceptorCount$ and $\ProposerCount$ are the number of acceptors and proposers respectively.
 
 An outer session is created through shared-point $\OuterSharedPoint$.
 This outer session is not strictly necessary but was left in to allow for easier extension of the model.
-The acceptors are initialized using indices from 1 to $ac$ and the proposers are initialized using indices from $ac + 1$ to $ac + pc$.
+The acceptors are initialized using indices from 1 to $\AcceptorCount$ and the proposers are initialized using indices from $\AcceptorCount + 1$ to $\AcceptorCount + \ProposerCount$.
 
-$\PpInit{\ProposerIndex}{\AQ}{n}{m}{\VectorV}$ is initialized with the proposer's role in its own session $\ProposerIndex$, which is always $ac + 1$, a quorum of acceptors $\AQ$, an index $n$, and a vector $\VectorV$.
-Each proposer has the same role $\ProposerIndex = ac + 1$ but uses a different shared-point $\SharedPoint{n}$ according to its index $n$.
+$\PpInit{\ProposerIndex}{\AQ}{n}{m}{\VectorV}$ is initialized with the proposer's role in its own session $\ProposerIndex$, which is always $\AcceptorCount + 1$, a quorum of acceptors $\AQ$, an index $n$, and a vector $\VectorV$.
+Each proposer has the same role $\ProposerIndex = \AcceptorCount + 1$ but uses a different shared-point $\SharedPoint{n}$ according to its index $n$.
 $m$ is initialized to the same value as $n$ but is never updated.
 $\VectorV$ is used in the proposer to collect and evaluate the responses from the acceptors.
 It is always initialized with an empty list $[]$.
 Shared-point $\SharedPoint{n}$ is used to initiate a session.
 Afterwards, the process behaves like $\Pp{} $.
 
-$\PaInit{\AcceptorIndex}{\ProposerIndex}{ac}{pc}{n}{pr}$ is initialized with the acceptor's index $\AcceptorIndex$, the proposer index $\ProposerIndex$, which is always $ac + 1$, $ac$, $pc$, initial knowledge for the highest promised proposal number $n$, if available, and initial knowledge for the most recently accepted proposal $pr$, if available.
+$\PaInit{\AcceptorIndex}{\ProposerIndex}{\AcceptorCount}{\ProposerCount}{n}{pr}$ is initialized with the acceptor's index $\AcceptorIndex$, the proposer index $\ProposerIndex$, which is always $\AcceptorCount + 1$, $\AcceptorCount$, $\ProposerCount$, initial knowledge for the highest promised proposal number $n$, if available, and initial knowledge for the most recently accepted proposal $pr$, if available.
 $n$ is of type $\Maybe{\mathbb{N}}$ and $pr$ is of type $\Maybe{\Paren{\Proposal{\Value}}}$ thus both can be $\Nothing$.
 Each of the proposers' session requests are accepted in a separate subprocess.
 These subprocesses run parallel to each other but still access the same values for $n$ and $pr$.
@@ -187,7 +187,7 @@ $\Pp{} {} = \Mu{X} \update{n}{n + 1} .\\
 
 At the start of the recursion $n$ is incremented to make sure every run of the recursion uses a different $n$ and thus a different proposal number.
 The proposal number is sent to every acceptor in $\AQ$ and their replies are gathered in $\VectorV$ through $v_{\AcceptorIndex}$.
-Because $\ProposerIndex = ac + 1$, the minimum number of acceptors needed to form a majority is $\ceil{\frac{\ProposerIndex}{2}} = \ceil{\frac{ac + 1}{2}}$.
+Because $\ProposerIndex = \AcceptorCount + 1$, the minimum number of acceptors needed to form a majority is $\ceil{\frac{\ProposerIndex}{2}} = \ceil{\frac{\AcceptorCount + 1}{2}}$.
 If any $\Nack{x}$ was received or the number of $\Promise{y}$ received is less than that needed for the smallest majority the proposer restarts the algorithm.
 Otherwise, the proposer sends its proposal to the acceptors and terminates.
 
@@ -351,12 +351,12 @@ In the end all $3$ acceptors have accepted the value $\ABC$.
 $\Acceptor{1}$ and $\Acceptor{2}$ have accepted $\ProposalC{15}{\ABC}$ and $\Acceptor{3}$ has accepted $\ProposalC{10}{\ABC}$.
 
 \subsection{Formulae}
-We set $ac = 3$, $pc = 2$, and $V=\Curly{\ABC, \operatorname{def}, \dots, \operatorname{vwx}, \operatorname{yz}}$.
+We set $\AcceptorCount = 3$, $\ProposerCount = 2$, and $V=\Curly{\ABC, \operatorname{def}, \dots, \operatorname{vwx}, \operatorname{yz}}$.
 
 \subsubsection{System Initialization}
-After inserting $ac$ and $pc$ and applying $\RInit$ once for shared-point $a$ we have:
+After inserting $\AcceptorCount$ and $\ProposerCount$ and applying $\RInit$ once for shared-point $a$ we have:
 
-$\Sys{ac}{pc} = \Sys{3}{2} =
+$\Sys{\AcceptorCount}{\ProposerCount} = \Sys{3}{2} =
 \SessionAccept{\OuterSharedPoint}{1}{t}.\ParallelFor{3 < k < 5} \PpInit{4}{\genAq{k}{3}{2}}{k}{k}{[]}\\
 \Or \SessionRequest{\OuterSharedPoint}{2}{t}.\PpInit{4}{\genAq{5}{3}{2}}{5}{5}{[]}\\
 \Or \ParallelFor{1 \le \AcceptorIndex \le 3} \PaInit{\AcceptorIndex}{4}{3}{2}{n_{\AcceptorIndex}}{pr_{\AcceptorIndex}}$

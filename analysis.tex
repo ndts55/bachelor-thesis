@@ -10,7 +10,7 @@ $\OuterGlobalTypeProjection{k} = \End$ for every $k$.
 % therefore we have one local type for each
 % proposer i and acceptor j
 
-For $1 \leq \AcceptorIndex \leq ac$ and $ac + 1 \leq \ProposerIndex \leq ac + pc$ we define the projections of the global type $\GlobalType$.
+For $1 \leq \AcceptorIndex \leq \AcceptorCount$ and $\AcceptorCount + 1 \leq \ProposerIndex \leq \AcceptorCount + \ProposerCount$ we define the projections of the global type $\GlobalType$.
 
 $\GlobalTypeProjection{\ProposerIndex} = \Mu{x}
 \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}} .
@@ -18,7 +18,10 @@ $\GlobalTypeProjection{\ProposerIndex} = \Mu{x}
 \Indent{1}\SendWeaklyL{\AQ}{\Accept . \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LTwoA}{\Proposal{\Value}}}.\End \oplus \Restart . x \oplus \Abort .\End}$
 
 $\GlobalTypeProjection{\ProposerIndex}$ defines the local type for proposers.
+First, the proposer sends a proposal number to all acceptors in its quorum in phase $\POneA$.
+It receives their responses in phase $\POneB$ and then branches in phase $\PTwoA$.
 We can see that the proposer communicates with all acceptors in its quorum in every phase.
+
 
 $\GlobalTypeProjection{\AcceptorIndex} = \Mu{x}
 \ReceiveUnreliableL{\ProposerIndex}{\LOneA}{\mathbb{N}} .
@@ -26,11 +29,13 @@ $\GlobalTypeProjection{\AcceptorIndex} = \Mu{x}
 \Indent{1}\ReceiveWeaklyL{\ProposerIndex}{\Accept . \ReceiveUnreliableL{\ProposerIndex}{\LTwoA}{\Proposal{\Value}}.\End \oplus \Restart . x \oplus \Abort .\End}$
 
 $\GlobalTypeProjection{\AcceptorIndex}$ defines the local type for acceptors, assuming a proposer $\ProposerIndex$.
-
+Since Paxos defines two roles that communicate with each other, their local types complement each other.
+An acceptor first receives a proposal number, then it responds with a $\Promise{\Value}$.
+Finally, it receives the proposers' branching choice.
 
 \section{Type Check}
 \subsection{System Initialization}
-$\Gamma = \GEnvEntry{\OuterSharedPoint}{\OuterGlobalType} \cdot \GEnvEntry{\SharedPoint{ac+1}}{\GlobalType} \cdot \GEnvEntry{\SharedPoint{ac+2}}{\GlobalType} \cdot \ldots \cdot \GEnvEntry{\SharedPoint{ac+pc}}{\GlobalType}$.
+$\Gamma = \GEnvEntry{\OuterSharedPoint}{\OuterGlobalType} \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+1}}{\GlobalType} \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+2}}{\GlobalType} \cdot \ldots \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+\ProposerCount}}{\GlobalType}$.
 
 \begin{prooftree}
 \AxiomC{$\SysProof{1}$}
@@ -40,23 +45,23 @@ $\Gamma = \GEnvEntry{\OuterSharedPoint}{\OuterGlobalType} \cdot \GEnvEntry{\Shar
 \UnaryInfC{$\Gamma\vdash \SessionAccept{\OuterSharedPoint}{1}{t} \ldots \vartriangleright \emptyset$}
 
 \AxiomC{$\SysProof{3}$}
-\UnaryInfC{$\Gamma\vdash \ParallelFor{1 \leq \AcceptorIndex \leq ac} \PaInitShort \vartriangleright \emptyset$}
+\UnaryInfC{$\Gamma\vdash \ParallelFor{1 \leq \AcceptorIndex \leq \AcceptorCount} \PaInitShort \vartriangleright \emptyset$}
 
 \RightLabel{$\RPar$}
-\BinaryInfC{$\Gamma\vdash \SessionAccept{\OuterSharedPoint}{1}{t} \ldots \Or \ParallelFor{1 \leq \AcceptorIndex \leq ac} \PaInitShort \vartriangleright \emptyset$}
+\BinaryInfC{$\Gamma\vdash \SessionAccept{\OuterSharedPoint}{1}{t} \ldots \Or \ParallelFor{1 \leq \AcceptorIndex \leq \AcceptorCount} \PaInitShort \vartriangleright \emptyset$}
 
 \RightLabel{$\RPar$}
-\BinaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{t}.\PpInitShort \Or \SessionAccept{\OuterSharedPoint}{1}{t} \ldots \Or \ParallelFor{1 \leq \AcceptorIndex \leq ac} \PaInitShort \vartriangleright \emptyset$}
+\BinaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{t}.\PpInitShort \Or \SessionAccept{\OuterSharedPoint}{1}{t} \ldots \Or \ParallelFor{1 \leq \AcceptorIndex \leq \AcceptorCount} \PaInitShort \vartriangleright \emptyset$}
 \end{prooftree}
 
 \subsubsection{$\SysProof{1}$}
 \begin{prooftree}
 \AxiomC{$\ProposerProof{}$}
-\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{ac+pc}}{ac+1}{s}.\Pp{} \vartriangleright \SEnvEntry{t}{2}{\OuterGlobalTypeProjection{2}}$}
+\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\AcceptorCount+\ProposerCount}}{\AcceptorCount+1}{s}.\Pp{} \vartriangleright \SEnvEntry{t}{2}{\OuterGlobalTypeProjection{2}}$}
 
 \LeftLabel{$\SysProof{1} =$}
 \RightLabel{$\RRec$}
-\UnaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{t}.\PpInit{ac+1}{\genAq{ac+pc}{ac}{pc}}{ac+pc}{ac+pc}{[]} \vartriangleright \emptyset$}
+\UnaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{t}.\PpInit{\AcceptorCount+1}{\genAq{\AcceptorCount+\ProposerCount}{\AcceptorCount}{\ProposerCount}}{\AcceptorCount+\ProposerCount}{\AcceptorCount+\ProposerCount}{[]} \vartriangleright \emptyset$}
 \end{prooftree}
 
 Since $\OuterGlobalTypeProjection{2} = \End$, $\SEnvEntry{t}{2}{\OuterGlobalTypeProjection{2}} = \emptyset$.
@@ -65,19 +70,19 @@ This is relevant later when continuing proof $\ProposerProof{}$.
 \subsubsection{$\SysProof{2}$}
 \begin{prooftree}
 \AxiomC{$\ProposerProof{}$}
-\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{ac+1}}{ac+1}{s}.\Pp{} \vartriangleright \emptyset$}
+\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\AcceptorCount+1}}{\AcceptorCount+1}{s}.\Pp{} \vartriangleright \emptyset$}
 
 \AxiomC{$\ldots$}
 
 \AxiomC{$\ProposerProof{}$}
-\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{ac+pc-1}}{ac+1}{s}.\Pp{} \vartriangleright \emptyset$}
+\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\AcceptorCount+\ProposerCount-1}}{\AcceptorCount+1}{s}.\Pp{} \vartriangleright \emptyset$}
 
 \RightLabel{$\RPar^{??}$}
-\TrinaryInfC{$\Gamma\vdash \ParallelFor{ac < k < ac+pc} \PpInit{ac+1}{\genAq{k}{ac}{pc}}{k}{k}{[]} \vartriangleright \SEnvEntry{t}{1}{G\upharpoonright_1}$}
+\TrinaryInfC{$\Gamma\vdash \ParallelFor{\AcceptorCount < k < \AcceptorCount+\ProposerCount} \PpInit{\AcceptorCount+1}{\genAq{k}{\AcceptorCount}{\ProposerCount}}{k}{k}{[]} \vartriangleright \SEnvEntry{t}{1}{G\upharpoonright_1}$}
 
 \LeftLabel{$\SysProof{2} =$}
 \RightLabel{$\RAcc$}
-\UnaryInfC{$\Gamma\vdash \SessionAccept{\OuterSharedPoint}{1}{t} . \ParallelFor{ac < k < ac+pc} \PpInitShort \vartriangleright \emptyset$}
+\UnaryInfC{$\Gamma\vdash \SessionAccept{\OuterSharedPoint}{1}{t} . \ParallelFor{\AcceptorCount < k < \AcceptorCount+\ProposerCount} \PpInitShort \vartriangleright \emptyset$}
 \end{prooftree}
 
 Because $\OuterGlobalTypeProjection{1} = \End$, $\SEnvEntry{t}{1}{\OuterGlobalTypeProjection{1}} = \emptyset$.
@@ -91,16 +96,16 @@ So $\Delta$ for each proposer is empty at this point.
 \UnaryInfC{$\Gamma\vdash\SessionAccept{\SharedPoint{k}}{j}{s}.\PaOne\vartriangleright\emptyset$}
 \AxiomC{$\ldots$}
 \RightLabel{$\RPar^*$}
-\BinaryInfC{$\Gamma\vdash\ParallelFor{ac < k \le ac + pc} \SessionAccept{\SharedPoint{k}}{ac}{s} . \PaOne\vartriangleright\emptyset$}
+\BinaryInfC{$\Gamma\vdash\ParallelFor{\AcceptorCount < k \le \AcceptorCount + \ProposerCount} \SessionAccept{\SharedPoint{k}}{\AcceptorCount}{s} . \PaOne\vartriangleright\emptyset$}
 \AxiomC{$\ldots$}
 
 \LeftLabel{$\SysProof{3} =$}
 \RightLabel{$\RPar^*$}
-\BinaryInfC{$\Gamma\vdash\ParallelFor{1 \leq \AcceptorIndex \leq ac} \left(\ParallelFor{ac < k \le ac + pc} \SessionAccept{\SharedPoint{k}}{\AcceptorIndex}{s} . \PaOne\right) \vartriangleright\emptyset$}
+\BinaryInfC{$\Gamma\vdash\ParallelFor{1 \leq \AcceptorIndex \leq \AcceptorCount} \left(\ParallelFor{\AcceptorCount < k \le \AcceptorCount + \ProposerCount} \SessionAccept{\SharedPoint{k}}{\AcceptorIndex}{s} . \PaOne\right) \vartriangleright\emptyset$}
 \end{prooftree}
 
 \subsection{Proposer}
-For simplicity, let $\ProposerIndex = ac + 1, \AQ = \genAq{y}{ac}{pc}, n = y, m = y, \VectorV = []$ where $ac < y \leq ac + pc$.
+For simplicity, let $\ProposerIndex = \AcceptorCount + 1, \AQ = \genAq{y}{\AcceptorCount}{\ProposerCount}, n = y, m = y, \VectorV = []$ where $\AcceptorCount < y \leq \AcceptorCount + \ProposerCount$.
 % From that we know that $\Gamma = \Gamma' \cdot i:\mathbb{N} \cdot n:\mathbb{N} \cdot m:\mathbb{N}$.
 % so just the arguments for a proposer y.
 
@@ -171,7 +176,7 @@ $prop = \ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}$
 \subsection{Acceptor}
 $\Gamma'=\Gamma\cdot\GEnvEntry{X}{x}$
 
-$i = ac + 1$
+$i = \AcceptorCount + 1$
 
 $\PaAccept = \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\bot}{pr'} .
 \If{pr' = \bot}\\
