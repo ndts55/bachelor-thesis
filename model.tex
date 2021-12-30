@@ -134,7 +134,7 @@ $\nFromProposal{p}$ retrieves the proposal number $n$ inside proposal $p$, which
 
 $\nFromProposal{p}$, $\greaterThan{a}{ma}$, and $\greaterEqual{a}{ma}$ are used to extract and compare proposal numbers in phase $\PTwoB$ of the acceptor.
 
-$\operatorname{gen\AQ} : \mathbb{N} \times \mathbb{N} \times \mathbb{N} \to \mathbb{N}$
+$\operatorname{gen\AQ} : \mathbb{N} \times \mathbb{N} \times \mathbb{N} \to \List{\mathbb{N}}$
 
 $\genAq{\ProposerIndex}{\AcceptorCount}{\ProposerCount}$ returns a randomly selected set $\AQ$ with $\AQ \subseteq A = \Curly{1, \dots, \AcceptorCount}$ and $|\AQ| > \frac{|A|}{2}$.
 $\AQ$ consists of any majority of acceptors.
@@ -144,8 +144,8 @@ We use this function when initiating the proposers to give them a quorum of acce
 \section{Processes}
 \subsection{System Initialization}
 % Idea: One shared-point per Proposer over which the session is initialized.
-$\Sys{\AcceptorCount}{\ProposerCount} = \SessionRequest{\OuterSharedPoint}{2}{t} . \PpInit{\AcceptorCount + 1}{\genAq{\AcceptorCount + \ProposerCount}{\AcceptorCount}{\ProposerCount}}{\AcceptorCount + \ProposerCount}{\AcceptorCount + \ProposerCount}{[]}\\
-\Or \SessionAccept{\OuterSharedPoint}{1}{t} . \ParallelFor{\AcceptorCount < k < \AcceptorCount + \ProposerCount} \PpInit{\AcceptorCount + 1}{\genAq{k}{\AcceptorCount}{\ProposerCount}}{k}{k}{[]} \\
+$\Sys{\AcceptorCount}{\ProposerCount} = \SessionRequest{\OuterSharedPoint}{2}{t} . \PpInit{\AcceptorCount + 1}{\genAq{\AcceptorCount + \ProposerCount}{\AcceptorCount}{\ProposerCount}}{\AcceptorCount + \ProposerCount}{\AcceptorCount + \ProposerCount}{\EmptyList}\\
+\Or \SessionAccept{\OuterSharedPoint}{1}{t} . \ParallelFor{\AcceptorCount < k < \AcceptorCount + \ProposerCount} \PpInit{\AcceptorCount + 1}{\genAq{k}{\AcceptorCount}{\ProposerCount}}{k}{k}{\EmptyList} \\
 \Or \ParallelFor{1 \leq j \leq \AcceptorCount} \PaInit{j}{\AcceptorCount + 1}{\AcceptorCount}{\ProposerCount}{n_{\AcceptorIndex}}{pr_{\AcceptorIndex}}$
 
 $\PpInit{\ProposerIndex}{\AQ}{n}{m}{\VectorV} = \SessionRequest{\SharedPoint{n}}{i}{s} . \Pp{} $
@@ -163,7 +163,7 @@ $\PpInit{\ProposerIndex}{\AQ}{n}{m}{\VectorV}$ is initialized with the proposer'
 Each proposer has the same role $\ProposerIndex = \AcceptorCount + 1$ but uses a different shared-point $\SharedPoint{n}$ according to its index $n$.
 $m$ is initialized to the same value as $n$ but is never updated.
 $\VectorV$ is used in the proposer to collect and evaluate the responses from the acceptors.
-It is always initialized with an empty list $[]$.
+It is always initialized with an empty list $\EmptyList$.
 Shared-point $\SharedPoint{n}$ is used to initiate a session.
 Afterwards, the process behaves like $\Pp{} $.
 
@@ -357,13 +357,13 @@ We set $\AcceptorCount = 3$, $\ProposerCount = 2$, and $V=\Curly{\ABC, \operator
 After inserting $\AcceptorCount$ and $\ProposerCount$ and applying $\RInit$ once for shared-point $a$ we have:
 
 $\Sys{\AcceptorCount}{\ProposerCount} = \Sys{3}{2} =
-\SessionAccept{\OuterSharedPoint}{1}{t}.\ParallelFor{3 < k < 5} \PpInit{4}{\genAq{k}{3}{2}}{k}{k}{[]}\\
-\Or \SessionRequest{\OuterSharedPoint}{2}{t}.\PpInit{4}{\genAq{5}{3}{2}}{5}{5}{[]}\\
+\SessionAccept{\OuterSharedPoint}{1}{t}.\ParallelFor{3 < k < 5} \PpInit{4}{\genAq{k}{3}{2}}{k}{k}{\EmptyList}\\
+\Or \SessionRequest{\OuterSharedPoint}{2}{t}.\PpInit{4}{\genAq{5}{3}{2}}{5}{5}{\EmptyList}\\
 \Or \ParallelFor{1 \le \AcceptorIndex \le 3} \PaInit{\AcceptorIndex}{4}{3}{2}{n_{\AcceptorIndex}}{pr_{\AcceptorIndex}}$
 
 % $\mapstostar \RInit\\
 % \Nu{t}\big (
-% \PpInit{4}{A_{Q,1}}{4}{4}{[]} \Or \PpInit{4}{A_{Q,2}}{5}{5}{[]}\\
+% \PpInit{4}{A_{Q,1}}{4}{4}{\EmptyList} \Or \PpInit{4}{A_{Q,2}}{5}{5}{\EmptyList}\\
 % \Or \PaInit{1}{4}{3}{2}{n_1}{pr_1} \Or \PaInit{2}{4}{3}{2}{n_2}{pr_2} \Or \PaInit{3}{4}{3}{2}{n_3}{pr_3}\\
 % \Or \OuterSessionQueues
 % \big )$
