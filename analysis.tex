@@ -1,14 +1,10 @@
 \chapter{Analysis}
 We take the model from the previous chapter, type-check it, and discuss what the type check means for agreement, validity, and termination of the Paxos algorithm.
-To execute the type check we project the global type to local types and use the typing rules given in \cite{ftmpst} to proof that our model can be derived from them.
+To execute the type check we project the global type to local types and use the typing rules given in \cite{ftmpst} to prove that our model can be derived from them.
 
 \section{Local Types}
-% TODO Elaborate on this.
-$\OuterGlobalTypeProjection{k} = \End$ for every $k$.
-
-% paxos has roles proposer and acceptor
-% therefore we have one local type for each
-% proposer i and acceptor j
+Because no communication takes place in the outer session, the  outer sessions type is $\OuterGlobalType = \End$.
+Every projection of $\OuterGlobalType$ to a local type is $\OuterGlobalTypeProjection{k} = \End$ for every $k$.
 
 For $1 \leq \AcceptorIndex \leq \AcceptorCount$ and $\AcceptorCount + 1 \leq \ProposerIndex \leq \AcceptorCount + \ProposerCount$ we define the projections of the global type $\GlobalType$.
 
@@ -34,9 +30,15 @@ An acceptor first receives a proposal number, then it responds with a $\Promise{
 Finally, it receives the proposers' branching choice.
 
 \section{Type Check}
-\subsection{System Initialization}
 $\Gamma = \GEnvEntry{\OuterSharedPoint}{\OuterGlobalType} \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+1}}{\GlobalType} \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+2}}{\GlobalType} \cdot \ldots \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+\ProposerCount}}{\GlobalType}$.
 
+$\Gamma$ contains the type for our shared-points $\OuterSharedPoint$ and $\SharedPoint{n}$ where $\AcceptorCount + 1 \leq n \leq \AcceptorCount + \ProposerCount$.
+
+We start the type-check with the global environment $\Gamma$ and the entry-point of the model $\Sys{\AcceptorCount}{\ProposerCount}$.
+Then, we apply the typing rules in \cite{ftmpst} in a proof tree and show that the model can be derived from the axioms $\RVar$ and $\REnd$.
+
+\subsection{System Initialization}
+We apply $\RPar$ and split off into three sub-proofs $\SysProof{1}$, $\SysProof{2}$, and $\SysProof{3}$.
 \begin{prooftree}
 \AxiomC{$\SysProof{1}$}
 \UnaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{t}\ldots \vartriangleright \emptyset$}
@@ -54,7 +56,10 @@ $\Gamma = \GEnvEntry{\OuterSharedPoint}{\OuterGlobalType} \cdot \GEnvEntry{\Shar
 \BinaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{t}.\PpInitShort \Or \SessionAccept{\OuterSharedPoint}{1}{t} \ldots \Or \ParallelFor{1 \leq \AcceptorIndex \leq \AcceptorCount} \PaInitShort \vartriangleright \emptyset$}
 \end{prooftree}
 
-\subsubsection{$\SysProof{1}$}
+In $\SysProof{1}$ we apply $\RRec$ once and defer the rest of the proof-tree.
+Note that, since $\OuterGlobalTypeProjection{2} = \End$, $\SEnvEntry{t}{2}{\OuterGlobalTypeProjection{2}} = \emptyset$.
+This is relevant later when continuing $\ProposerProof{}$.
+
 \begin{prooftree}
 \AxiomC{$\ProposerProof{}$}
 \UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\AcceptorCount+\ProposerCount}}{\AcceptorCount+1}{s}.\Pp{} \vartriangleright \SEnvEntry{t}{2}{\OuterGlobalTypeProjection{2}}$}
@@ -64,10 +69,12 @@ $\Gamma = \GEnvEntry{\OuterSharedPoint}{\OuterGlobalType} \cdot \GEnvEntry{\Shar
 \UnaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{t}.\PpInit{\AcceptorCount+1}{\genAq{\AcceptorCount+\ProposerCount}{\AcceptorCount}{\ProposerCount}}{\AcceptorCount+\ProposerCount}{\AcceptorCount+\ProposerCount}{[]} \vartriangleright \emptyset$}
 \end{prooftree}
 
-Since $\OuterGlobalTypeProjection{2} = \End$, $\SEnvEntry{t}{2}{\OuterGlobalTypeProjection{2}} = \emptyset$.
-This is relevant later when continuing proof $\ProposerProof{}$.
+Applying $\RAcc$ in $\SysProof{2}$ requires that $\GEnvEntry{\OuterSharedPoint}{\OuterGlobalType} \in \Gamma$.
+$\RPar$ is applied $\ProposerCount - 1$ times to separate all the proposer processes.
+Each individual proposer can be type-checked with the same proof-tree $\ProposerProof{}$.
+Because $\OuterGlobalTypeProjection{1} = \End$, $\SEnvEntry{t}{1}{\OuterGlobalTypeProjection{1}} = \emptyset$.
+The session environment $\Delta$ in $\ProposerProof{}$ is empty for every proposer.
 
-\subsubsection{$\SysProof{2}$}
 \begin{prooftree}
 \AxiomC{$\ProposerProof{}$}
 \UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\AcceptorCount+1}}{\AcceptorCount+1}{s}.\Pp{} \vartriangleright \emptyset$}
@@ -77,7 +84,7 @@ This is relevant later when continuing proof $\ProposerProof{}$.
 \AxiomC{$\ProposerProof{}$}
 \UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\AcceptorCount+\ProposerCount-1}}{\AcceptorCount+1}{s}.\Pp{} \vartriangleright \emptyset$}
 
-\RightLabel{$\RPar^{??}$}
+\RightLabel{$\RPar^{\ProposerCount - 1}$}
 \TrinaryInfC{$\Gamma\vdash \ParallelFor{\AcceptorCount < k < \AcceptorCount+\ProposerCount} \PpInit{\AcceptorCount+1}{\genAq{k}{\AcceptorCount}{\ProposerCount}}{k}{k}{[]} \vartriangleright \SEnvEntry{t}{1}{G\upharpoonright_1}$}
 
 \LeftLabel{$\SysProof{2} =$}
@@ -85,22 +92,25 @@ This is relevant later when continuing proof $\ProposerProof{}$.
 \UnaryInfC{$\Gamma\vdash \SessionAccept{\OuterSharedPoint}{1}{t} . \ParallelFor{\AcceptorCount < k < \AcceptorCount+\ProposerCount} \PpInitShort \vartriangleright \emptyset$}
 \end{prooftree}
 
-Because $\OuterGlobalTypeProjection{1} = \End$, $\SEnvEntry{t}{1}{\OuterGlobalTypeProjection{1}} = \emptyset$.
-So $\Delta$ for each proposer is empty at this point.
+$\RPar$ is applied $\AcceptorCount$ times to separate the individual acceptors and then $\ProposerCount$ times for each acceptor to separate the individual subprocesses.
+Since every subprocess of every acceptor behaves like $\PaOne$ and has the same local type, the same proof-tree $\AcceptorProof{}$ can be applied to each.
+Applying $\RAcc$ to every subprocess of every acceptor requires $\forall k\in\mathbb{N}: \left(\AcceptorCount + 1 \leq k \land k \leq \AcceptorCount + \ProposerCount \right) \to \GEnvEntry{\SharedPoint{k}}{\GlobalType} \in \Gamma$.
 
-\subsubsection{$\SysProof{3}$}
+Note that only one acceptor and one of its subprocesses is shown in $\SysProof{3}$.
+The rest has been left out to improve readability.
+
 \begin{prooftree}
 \AxiomC{$\AcceptorProof{}$}
-\UnaryInfC{$\Gamma\vdash \PaOne \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\GlobalTypeProjection{j}}$}
+\UnaryInfC{$\Gamma\vdash \PaOne \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\GlobalTypeProjection{\AcceptorIndex}}$}
 \RightLabel{$\RAcc$}
-\UnaryInfC{$\Gamma\vdash\SessionAccept{\SharedPoint{k}}{j}{s}.\PaOne\vartriangleright\emptyset$}
+\UnaryInfC{$\Gamma\vdash\SessionAccept{\SharedPoint{k}}{\AcceptorIndex}{s}.\PaOne\vartriangleright\emptyset$}
 \AxiomC{$\ldots$}
-\RightLabel{$\RPar^*$}
+\RightLabel{$\RPar^{\ProposerCount}$}
 \BinaryInfC{$\Gamma\vdash\ParallelFor{\AcceptorCount < k \le \AcceptorCount + \ProposerCount} \SessionAccept{\SharedPoint{k}}{\AcceptorCount}{s} . \PaOne\vartriangleright\emptyset$}
 \AxiomC{$\ldots$}
 
 \LeftLabel{$\SysProof{3} =$}
-\RightLabel{$\RPar^*$}
+\RightLabel{$\RPar^{\AcceptorCount}$}
 \BinaryInfC{$\Gamma\vdash\ParallelFor{1 \leq \AcceptorIndex \leq \AcceptorCount} \left(\ParallelFor{\AcceptorCount < k \le \AcceptorCount + \ProposerCount} \SessionAccept{\SharedPoint{k}}{\AcceptorIndex}{s} . \PaOne\right) \vartriangleright\emptyset$}
 \end{prooftree}
 
@@ -300,9 +310,9 @@ $\TaOneB = \SendUnreliableL{\ProposerIndex}{\LOneB}{\Promise{\Value}} . \TaBranc
 \AxiomC{}
 \RightLabel{$\REnd$}
 \UnaryInfC{$\Gamma'\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
-\RightLabel{$??$}
+\RightLabel{$\RSideEffect$}
 \UnaryInfC{$\Gamma'\vdash \update{n}{\Just{\nFromProposal{pr'}}}.\End \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
 \LeftLabel{$\AcceptorProof{update} =$}
-\RightLabel{$??$}
+\RightLabel{$\RSideEffect$}
 \UnaryInfC{$\Gamma'\vdash\update{pr}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
 \end{prooftree}
