@@ -8,21 +8,24 @@ Every projection of $\OuterGlobalType$ to a local type is $\OuterGlobalTypeProje
 
 For $1 \leq \AcceptorIndex \leq \AcceptorCount$ and $\AcceptorCount + 1 \leq \ProposerIndex \leq \AcceptorCount + \ProposerCount$ we define the projections of the global type $\GlobalType$.
 
-$\GlobalTypeProjection{\ProposerIndex} = \Mu{x}
+\begin{align*}
+&\GlobalTypeProjection{\ProposerIndex} = \Mu{x}
 \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}} .
 \DotForall{\AcceptorIndex\in\AQ}{\ReceiveUnreliableL{\AcceptorIndex}{\LOneB}{\Promise{\Value}}} .\\
-\Indent{1}\SendWeaklyL{\AQ}{\Accept . \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LTwoA}{\Proposal{\Value}}}.\End \oplus \Restart . x \oplus \Abort .\End}$
+&\Indent{1}\SendWeaklyL{\AQ}{\Accept . \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LTwoA}{\Proposal{\Value}}}.\End \oplus \Restart . x \oplus \Abort .\End}
+\end{align*}
 
 $\GlobalTypeProjection{\ProposerIndex}$ defines the local type for proposers.
 First, the proposer sends a proposal number to all acceptors in its quorum in phase $\POneA$.
 It receives their responses in phase $\POneB$ and then branches in phase $\PTwoA$.
 We can see that the proposer communicates with all acceptors in its quorum in every phase.
 
-
-$\GlobalTypeProjection{\AcceptorIndex} = \Mu{x}
+\begin{align*}
+&\GlobalTypeProjection{\AcceptorIndex} = \Mu{x}
 \ReceiveUnreliableL{\ProposerIndex}{\LOneA}{\mathbb{N}} .
 \SendUnreliableL{\ProposerIndex}{\LOneB}{\Promise{\Value}} .\\
-\Indent{1}\ReceiveWeaklyL{\ProposerIndex}{\Accept . \ReceiveUnreliableL{\ProposerIndex}{\LTwoA}{\Proposal{\Value}}.\End \oplus \Restart . x \oplus \Abort .\End}$
+&\Indent{1}\ReceiveWeaklyL{\ProposerIndex}{\Accept . \ReceiveUnreliableL{\ProposerIndex}{\LTwoA}{\Proposal{\Value}}.\End \oplus \Restart . x \oplus \Abort .\End}
+\end{align*}
 
 $\GlobalTypeProjection{\AcceptorIndex}$ defines the local type for acceptors, assuming a proposer $\ProposerIndex$.
 Since Paxos defines two roles that communicate with each other, their local types complement each other.
@@ -30,7 +33,7 @@ An acceptor first receives a proposal number, then it responds with a $\Promise{
 Finally, it receives the proposer's branching choice.
 
 \section{Type Check}
-$\Gamma = \GEnvEntry{\OuterSharedPoint}{\OuterGlobalType} \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+1}}{\GlobalType} \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+2}}{\GlobalType} \cdot \ldots \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+\ProposerCount}}{\GlobalType} \cdot \GEnvEntry{\AcceptorCount}{\mathbb{N}} \cdot \GEnvEntry{\ProposerCount}{\mathbb{N}}$.
+\[\Gamma = \GEnvEntry{\OuterSharedPoint}{\OuterGlobalType} \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+1}}{\GlobalType} \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+2}}{\GlobalType} \cdot \ldots \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+\ProposerCount}}{\GlobalType} \cdot \GEnvEntry{\AcceptorCount}{\mathbb{N}} \cdot \GEnvEntry{\ProposerCount}{\mathbb{N}}\]
 
 $\Gamma$ contains the type for our shared-points $\OuterSharedPoint$ and $\SharedPoint{n}$ where $\AcceptorCount + 1 \leq n \leq \AcceptorCount + \ProposerCount$.
 
@@ -123,9 +126,10 @@ $p$, $k$, $n$, and $m$ are natural numbers and $\AQ$ is a list of natural number
 
 To abbreviate the proposer's local type in the following proof-trees we define the following sub-formulae.
 
-$\TpAccept = \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LTwoA}{\Proposal{\Value}}}.\End$
-
-$\TpBranch = \SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . x \oplus \Abort .\End}$
+\begin{align*}
+&\TpAccept = \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LTwoA}{\Proposal{\Value}}}.\End\\
+&\TpBranch = \SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . x \oplus \Abort .\End}
+\end{align*}
 
 Note that $\GlobalTypeProjection{\ProposerIndex} = \Mu{x}
 \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}} .
@@ -133,22 +137,22 @@ Note that $\GlobalTypeProjection{\ProposerIndex} = \Mu{x}
 
 In order to shorten the proposer's process we define some variables.
 
-$e = \anyNack{\VectorV} \tOr \promiseCount{\VectorV} < \ceil{\frac{\ProposerIndex}{2}}$
-
-$pn = \proposalNumber{n}{m}$
-
-$prop = \ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}$
+\begin{align*}
+&e = \anyNack{\VectorV} \tOr \promiseCount{\VectorV} < \ceil{\frac{\ProposerIndex}{2}}\\
+&pn = \proposalNumber{n}{m}\\
+&prop = \ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}
+\end{align*}
 
 The actual values of $e$, $pn$, and $prop$ are not relevant for the type check.
 We observe that $\GammaSatisfiesType{e}{\Bool}$, $\GammaSatisfiesType{pn}{\mathbb{N}}$, and $\GammaSatisfiesType{prop}{\Proposal{\Value}}$.
 
 To further abbreviate the terms in the proof-trees we define two global environments $\Gamma'$ and $\Gamma''$.
 
-$\Gamma'=\Gamma\cdot\GEnvEntry{X}{x}$
+\[\Gamma'=\Gamma\cdot\GEnvEntry{X}{x}\]
 
 $\Gamma'$ contains $\Gamma$ and a type for the recursion variable $X$.
 
-$\Gamma'' = \Gamma' \cdot \GEnvEntry{v_{\AcceptorIndex}}{\Promise{\Value}}$ for $\AcceptorIndex\in\AQ$
+\[\Gamma'' = \Gamma' \cdot \GEnvEntry{v_{\AcceptorIndex}}{\Promise{\Value}},\forall\AcceptorIndex\in\AQ\]
 
 $\Gamma''$ contains $\Gamma'$ and types for the entries of $\VectorV$.
 These are added to the global environment when applying $\RUget$ in phase $\POneB$.
