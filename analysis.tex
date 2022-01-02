@@ -3,7 +3,7 @@ We take the model from the previous chapter, type-check it, and discuss what the
 To execute the type check we project the global type to local types and use the typing rules given in \cite{ftmpst} to prove that our model can be derived from them.
 
 \section{Local Types}
-Because no communication takes place in the outer session, the  outer sessions type is $\OuterGlobalType = \End$.
+Because no communication takes place in the outer session, the  outer session's type is $\OuterGlobalType = \End$.
 Every projection of $\OuterGlobalType$ to a local type is $\OuterGlobalTypeProjection{k} = \End$ for every $k$.
 
 For $1 \leq \AcceptorIndex \leq \AcceptorCount$ and $\AcceptorCount + 1 \leq \ProposerIndex \leq \AcceptorCount + \ProposerCount$ we define the projections of the global type $\GlobalType$.
@@ -27,7 +27,7 @@ $\GlobalTypeProjection{\AcceptorIndex} = \Mu{x}
 $\GlobalTypeProjection{\AcceptorIndex}$ defines the local type for acceptors, assuming a proposer $\ProposerIndex$.
 Since Paxos defines two roles that communicate with each other, their local types complement each other.
 An acceptor first receives a proposal number, then it responds with a $\Promise{\Value}$.
-Finally, it receives the proposers' branching choice.
+Finally, it receives the proposer's branching choice.
 
 \section{Type Check}
 $\Gamma = \GEnvEntry{\OuterSharedPoint}{\OuterGlobalType} \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+1}}{\GlobalType} \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+2}}{\GlobalType} \cdot \ldots \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+\ProposerCount}}{\GlobalType} \cdot \GEnvEntry{\AcceptorCount}{\mathbb{N}} \cdot \GEnvEntry{\ProposerCount}{\mathbb{N}}$.
@@ -117,7 +117,9 @@ The rest has been left out to improve readability.
 \subsection{Proposer}
 Let $\ProposerIndex = \AcceptorCount + 1, \AQ = \genAq{k}{\AcceptorCount}{\ProposerCount}, n = k, m = k, \VectorV = \EmptyList$ where $\AcceptorCount < k \leq \AcceptorCount + \ProposerCount$.
 This gives us the values for the arguments of $\PpInitName$.
-We observe that, $\Gamma\Vdash\GEnvEntry{p}{\mathbb{N}}$, $\Gamma\Vdash\GEnvEntry{k}{\mathbb{N}}$, $\Gamma\Vdash\GEnvEntry{n}{\mathbb{N}}$, $\Gamma\Vdash\GEnvEntry{m}{\mathbb{N}}$, and $\Gamma\Vdash\GEnvEntry{\AQ}{\List{\mathbb{N}}}$.
+We observe that $\GammaSatisfiesType{p}{\mathbb{N}}$, $\GammaSatisfiesType{k}{\mathbb{N}}$, $\GammaSatisfiesType{n}{\mathbb{N}}$, $\GammaSatisfiesType{m}{\mathbb{N}}$, and $\GammaSatisfiesType{\AQ}{\List{\mathbb{N}}}$.
+$p$, $k$, $n$, and $m$ are natural numbers and $\AQ$ is a list of natural numbers under global environment $\Gamma$.
+% TODO we require \GEnvEntry{\VectorV}{\List{\Promise{\Value}}}?
 
 To abbreviate the proposer's local type in the following proof-trees we define the following sub-formulae.
 
@@ -131,17 +133,28 @@ Note that $\GlobalTypeProjection{\ProposerIndex} = \Mu{x}
 
 In order to shorten the proposer's process we define some variables.
 
-$e = \anyNack{\VectorV} \tOr \promiseCount{\VectorV} < \ceil{\frac{i}{2}}$
+$e = \anyNack{\VectorV} \tOr \promiseCount{\VectorV} < \ceil{\frac{\ProposerIndex}{2}}$
 
 $pn = \proposalNumber{n}{m}$
 
 $prop = \ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}$
 
-% TODO we define some global environments to make it less long (synonym for shorten/abbreviate).
+The actual values of $e$, $pn$, and $prop$ are not relevant for the type check.
+We observe that $\GammaSatisfiesType{e}{\Bool}$, $\GammaSatisfiesType{pn}{\mathbb{N}}$, and $\GammaSatisfiesType{prop}{\Proposal{\Value}}$.
+
+To further abbreviate the terms in the proof-trees we define two global environments $\Gamma'$ and $\Gamma''$.
 
 $\Gamma'=\Gamma\cdot\GEnvEntry{X}{x}$
 
+$\Gamma'$ contains $\Gamma$ and a type for the recursion variable $X$.
+
 $\Gamma'' = \Gamma' \cdot \GEnvEntry{v_{\AcceptorIndex}}{\Promise{\Value}}$ for $\AcceptorIndex\in\AQ$
+
+$\Gamma''$ contains $\Gamma'$ and types for the entries of $\VectorV$.
+These are added to the global environment when applying $\RUget$ in phase $\POneB$.
+
+% with that cont where left off at (s1),(s2) -> (p)
+% note that in (s1) + (s2) we left off with empty session env
 
 \subsubsection{$\ProposerProof{}$}
 \begin{prooftree}
@@ -160,7 +173,7 @@ $\Gamma'' = \Gamma' \cdot \GEnvEntry{v_{\AcceptorIndex}}{\Promise{\Value}}$ for 
 \RightLabel{$\RUsend^{|\AQ|}$}
 \UnaryInfC{$\Gamma' \vdash \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{pn}} \ldots \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}}\ldots}$}
 
-\RightLabel{$?$}
+\RightLabel{$\RSideEffect$}
 \UnaryInfC{$\Gamma' \vdash \update{n}{n+1} \ldots \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}}\ldots}$}
 
 \RightLabel{$\RRec$}
