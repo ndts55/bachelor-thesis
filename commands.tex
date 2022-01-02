@@ -21,7 +21,7 @@
 
 % MPST
 %% General
-\newcommand{\DotForall}[2]{\left(\bigodot_{#1}\;#2\right)}
+\newcommand{\DotForall}[2]{\textstyle\left(\bigodot_{#1}\;#2\right)}
 \newcommand{\Mu}[1]{\left(\mu #1\right)}
 \newcommand{\AQ}[0]{A_Q}
 \newcommand{\End}[0]{0}
@@ -150,6 +150,8 @@
 % Type Check
 \newcommand{\SEnvEntry}[3]{#1\left[#2\right]:#3}
 \newcommand{\GEnvEntry}[2]{#1:#2}
+\newcommand{\EnvSatisfiesType}[3]{#1\Vdash\GEnvEntry{#2}{\mathbb{#3}}}
+\newcommand{\GammaSatisfiesType}[2]{\EnvSatisfiesType{\Gamma}{#1}{#2}}
 
 \newcommand{\ProofLabel}[1]{\Paren{#1}}
 \newcommand{\SysProof}[1]{\ProofLabel{S_{#1}}}
