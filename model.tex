@@ -9,17 +9,15 @@ We assume the following sorts.
 
 First, we have $\Bool$ which we define as a set.
 
-$\Bool = \Curly{\True, \False}$
+\[\Bool = \Curly{\True, \False}\]
 
 Second, we assume a set of values $\Value$.
 
 Then, we have some sorts which we define using a grammar.
-% explain type variable a
 Each of these definitions contains a type variable, which is a variable ranging over types.
 In this case the type variable in each definition is called $a$.
 
-% give some examples of values for each sort
-$\Maybe{a} = \Just{a} \Or \Nothing$
+\[\Maybe{a} = \Just{a} \Or \Nothing\]
 
 A value of type $\Maybe{a}$ can have the form $\Just{a}$ or $\Nothing$.
 Some examples include $\Just{4}$ of type $\Maybe{\mathbb{N}}$, $\Just{\False}$ of type $\Maybe{\Bool}$, and $\Nothing$.
@@ -28,7 +26,7 @@ The type is underspecified and is specified manually or through the context in w
 It can be of type $\Maybe{\mathbb{N}}$, $\Maybe{\Bool}$, or any other type $b$ in $\Maybe{b}$.
 We use $\Maybe{a}$ where optional values are needed.
 
-$\Proposal{a} = \ProposalC{\mathbb{N}}{a}$
+\[\Proposal{a} = \ProposalC{\mathbb{N}}{a}\]
 
 $\Proposal{a}$ only has one possible form, which is $\ProposalC{\mathbb{N}}{a}$.
 A proposal contains its proposal number of type $\mathbb{N}$ and its value of type $a$.
@@ -37,11 +35,11 @@ An example for a value of type $\Proposal{\Bool}$ could be $\ProposalC{1}{\True}
 Note that $\ProposalC{1}{\Just{1}}$ is of type $\Proposal{a}$ where $a = \Maybe{b}$ and $b = \mathbb{N}$.
 This sort models the proposals issued by the proposers in phase $\PTwoA$.
 
-$\Promise{a} = \Promise{\Maybe{\Proposal{a}}} \Or \Nack{\mathbb{N}}$
+\[\Promise{a} = \Promise{\Maybe{\Proposal{a}}} \Or \Nack{\mathbb{N}}\]
 
 $\Promise{a}$ has two possible forms.
 $\Promise{\Maybe{\Proposal{a}}}$ and $\Nack{\mathbb{N}}$.
-Note that $\Promise{\Maybe{\Proposal{a}}}$ is the same as $\Promise{c}$ where $c = \Maybe{b}$ and $b = \Proposal{a}$.
+$\Promise{\Maybe{\Proposal{a}}}$ is the same as $\Promise{c}$ where $c = \Maybe{b}$ and $b = \Proposal{a}$.
 Possible values include $\Nack{1}$ and $\Promise{\Just{\ProposalC{1}{{-1}}}}$ of type $\Promise{\mathbb{Z}}$.
 The actual type of $\Nack{1}$, much like that of $\Nothing$, is underspecified.
 Again, we have to specify the exact type manually or through context.
@@ -57,13 +55,15 @@ Since each proposer initiates its own session the global type can be defined for
 
 The last phase of Paxos contains no inter-process communication, so it is not modeled in the global type.
 
-$\GlobalType = \Mu{X}
+\begin{align*}
+&\GlobalType = \Mu{X}
 \DotForall{\AcceptorIndex \in \AQ}{\SendUnreliableG{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\mathbb{N}}} .
 \DotForall{\AcceptorIndex \in \AQ}{\SendUnreliableG{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Promise{\Value}}} .\\
-\Indent{1}\SendWeaklyG{\ProposerIndex}{\AQ}{
+&\Indent{1}\SendWeaklyG{\ProposerIndex}{\AQ}{
 \Accept.\DotForall{\AcceptorIndex \in \AQ}{\SendUnreliableG{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\Proposal{\Value}}}.\End \oplus
 \Restart.X \oplus
-\Abort.\End}$
+\Abort.\End}
+\end{align*}
 
 We can distinguish the individual phases of the Paxos algorithm by the labels $\LOneA$, $\LOneB$, and $\LTwoA$.
 
@@ -75,7 +75,7 @@ Should the proposer crash the algorithm ends for this particular proposer and qu
 \section{Functions}
 We define some functions which we use in the next section to define the processes.
 
-$\operatorname{proposalNumber} : \mathbb{N} \times \mathbb{N} \to \mathbb{N}$
+\[\operatorname{proposalNumber} : \mathbb{N} \times \mathbb{N} \to \mathbb{N}\]
 
 $\proposalNumber{n}{p}$ returns a proposal number for proposer $p$ when given a natural number $n$.
 It is used to pick a number for the prepare request in phase $\POneA$, which is also used in phase $\PTwoA$ in the actual proposal.
@@ -92,49 +92,55 @@ This way different proposers never issue a proposal with the same proposal numbe
 
 We require $\proposalNumber{n}{p}$ to be strictly increasing for each proposer $p$ so every proposer uses a higher proposal number than any it has already used.
 
-% Requirements:
-%  Different proposers choose their numbers from disjoint sets of numbers, so two different proposers never issue a proposal with the same number. 
-% Each proposer remembers (in stable storage) the highest-numbered proposal it has tried to issue, and begins phase 1 with a higher proposal number than any it has already used.
-
-$\operatorname{promiseValue} : \List{\Promise{a}} \to a$
+\[\operatorname{promiseValue} : \List{\Promise{a}} \to a\]
 
 $\promiseValue{ps}$ returns a fresh value if none of the promises in $ps$ contain a value. Otherwise, the best value is returned. Usually, that means the value with the highest associated proposal number.
 A promise contains a value $v$ if it is of the form $\Promise{\Just{v}}$.
 With this function we can model the picking of a value for a proposal in phase $\PTwoA$.
 
-$\operatorname{anyNack} : \List{\Promise{a}} \to \Bool\\
-\anyNack{\EmptyList} = \False\\
-\anyNack{\ListPattern{\Nack{\Wildcard}}{\Wildcard}} = \True\\
-\anyNack{\ListPattern{\Wildcard}{xs}} = \anyNack{xs}$
+\begin{align*}
+&\operatorname{anyNack} : \List{\Promise{a}} \to \Bool\\
+&\anyNack{\EmptyList} = \False\\
+&\anyNack{\ListPattern{\Nack{\Wildcard}}{\Wildcard}} = \True\\
+&\anyNack{\ListPattern{\Wildcard}{xs}} = \anyNack{xs}
+\end{align*}
 
 $\anyNack{ps}$ returns $\True$ if the list contains at least one promise of the form $\Nack{n}$.
 Otherwise, it returns $\False$.
 
-$\operatorname{promiseCount} : \List{\Promise{a}} \to \mathbb{N}\\
-\promiseCount{\EmptyList} = 0\\
-\promiseCount{\ListPattern{\Promise{\Wildcard}}{xs}} = 1 + \promiseCount{xs}\\
-\promiseCount{\ListPattern{\Wildcard}{xs}} = \promiseCount{xs}$
+\begin{align*}
+&\operatorname{promiseCount} : \List{\Promise{a}} \to \mathbb{N}\\
+&\promiseCount{\EmptyList} = 0\\
+&\promiseCount{\ListPattern{\Promise{\Wildcard}}{xs}} = 1 + \promiseCount{xs}\\
+&\promiseCount{\ListPattern{\Wildcard}{xs}} = \promiseCount{xs}
+\end{align*}
 
 $\promiseCount{ps}$ takes a list of promises $ps$ and calculates the number of promises in that list of that have the form $\Promise{m}$.
 
 $\anyNack{ps}$ and $\promiseCount{ps}$ are used in the proposer to decide which branch to take in phase $\PTwoA$.
 
-$\operatorname{gt}: a \to \Maybe{a} \to \Bool\\
-\greaterThan{\Wildcard}{\Nothing} = \True\\
-\greaterThan{a}{\Just{b}} = a > b$
+\begin{align*}    
+&\operatorname{gt}: a \to \Maybe{a} \to \Bool\\
+&\greaterThan{\Wildcard}{\Nothing} = \True\\
+&\greaterThan{a}{\Just{b}} = a > b
+\end{align*}
 
-$\operatorname{ge}: a \to \Maybe{a} \to \Bool\\
-\greaterEqual{\Wildcard}{\Nothing} = \True\\
-\greaterEqual{a}{\Just{b}} = a \ge b$
+\begin{align*}
+&\operatorname{ge}: a \to \Maybe{a} \to \Bool\\
+&\greaterEqual{\Wildcard}{\Nothing} = \True\\
+&\greaterEqual{a}{\Just{b}} = a \ge b
+\end{align*}
 
-$\operatorname{nFromProposal} : \Proposal{a} \to \mathbb{N}\\
-\nFromProposal{\ProposalC{n}{\Wildcard}} = n$
+\begin{align*}    
+&\operatorname{nFromProposal} : \Proposal{a} \to \mathbb{N}\\
+&\nFromProposal{\ProposalC{n}{\Wildcard}} = n
+\end{align*}
 
 $\nFromProposal{p}$ retrieves the proposal number $n$ inside proposal $p$, which has the form $\ProposalC{n}{pr}$.
 
 $\nFromProposal{p}$, $\greaterThan{a}{ma}$, and $\greaterEqual{a}{ma}$ are used to extract and compare proposal numbers in phase $\PTwoB$ of the acceptor.
 
-$\operatorname{gen\AQ} : \mathbb{N} \times \mathbb{N} \times \mathbb{N} \to \List{\mathbb{N}}$
+\[\operatorname{gen\AQ} : \mathbb{N} \times \mathbb{N} \times \mathbb{N} \to \List{\mathbb{N}}\]
 
 $\genAq{\ProposerIndex}{\AcceptorCount}{\ProposerCount}$ returns a randomly selected set $\AQ$ with $\AQ \subseteq A = \Curly{1, \dots, \AcceptorCount}$ and $|\AQ| > \frac{|A|}{2}$.
 $\AQ$ consists of any majority of acceptors.
@@ -143,14 +149,14 @@ We use this function when initiating the proposers to give them a quorum of acce
 
 \section{Processes}
 \subsection{System Initialization}
-% Idea: One shared-point per Proposer over which the session is initialized.
-$\Sys{\AcceptorCount}{\ProposerCount} = \SessionRequest{\OuterSharedPoint}{2}{t} . \PpInit{\AcceptorCount + 1}{\genAq{\AcceptorCount + \ProposerCount}{\AcceptorCount}{\ProposerCount}}{\AcceptorCount + \ProposerCount}{\AcceptorCount + \ProposerCount}{\EmptyList}\\
-\Or \SessionAccept{\OuterSharedPoint}{1}{t} . \ParallelFor{\AcceptorCount < k < \AcceptorCount + \ProposerCount} \PpInit{\AcceptorCount + 1}{\genAq{k}{\AcceptorCount}{\ProposerCount}}{k}{k}{\EmptyList} \\
-\Or \ParallelFor{1 \leq j \leq \AcceptorCount} \PaInit{j}{\AcceptorCount + 1}{\AcceptorCount}{\ProposerCount}{n_{\AcceptorIndex}}{pr_{\AcceptorIndex}}$
-
-$\PpInit{\ProposerIndex}{\AQ}{n}{m}{\VectorV} = \SessionRequest{\SharedPoint{n}}{i}{s} . \Pp{} $
-
-$\PaInit{\AcceptorIndex}{\ProposerIndex}{\AcceptorCount}{\ProposerCount}{n}{pr} = \ParallelFor{\AcceptorCount < k \le \AcceptorCount + \ProposerCount} \SessionAccept{\SharedPoint{k}}{\AcceptorIndex}{s} . \PaOne$
+\begin{align*}
+&\Sys{\AcceptorCount}{\ProposerCount} = \SessionRequest{\OuterSharedPoint}{2}{t} . \PpInit{\AcceptorCount + 1}{\genAq{\AcceptorCount + \ProposerCount}{\AcceptorCount}{\ProposerCount}}{\AcceptorCount + \ProposerCount}{\AcceptorCount + \ProposerCount}{\EmptyList}\\
+&\Or \SessionAccept{\OuterSharedPoint}{1}{t} . \ParallelFor{\AcceptorCount < k < \AcceptorCount + \ProposerCount} \PpInit{\AcceptorCount + 1}{\genAq{k}{\AcceptorCount}{\ProposerCount}}{k}{k}{\EmptyList} \\
+&\Or \ParallelFor{1 \leq j \leq \AcceptorCount} \PaInit{j}{\AcceptorCount + 1}{\AcceptorCount}{\ProposerCount}{n_{\AcceptorIndex}}{pr_{\AcceptorIndex}}\\
+\\
+&\PpInit{\ProposerIndex}{\AQ}{n}{m}{\VectorV} = \SessionRequest{\SharedPoint{n}}{i}{s} . \Pp{}\\
+&\PaInit{\AcceptorIndex}{\ProposerIndex}{\AcceptorCount}{\ProposerCount}{n}{pr} = \ParallelFor{\AcceptorCount < k \le \AcceptorCount + \ProposerCount} \SessionAccept{\SharedPoint{k}}{\AcceptorIndex}{s} . \PaOne
+\end{align*}
 
 $\Sys{\AcceptorCount}{\ProposerCount}$, $\PpInit{\ProposerIndex}{\AQ}{n}{m}{\VectorV}$, and $\PaInit{\AcceptorIndex}{\ProposerIndex}{\AcceptorCount}{\ProposerCount}{n}{pr}$ describe the system initialization.
 $\AcceptorCount$ and $\ProposerCount$ are the number of acceptors and proposers respectively.
@@ -178,12 +184,24 @@ Afterwards, each subprocess behaves like $\PaOne$.
 To define the proposer and the acceptor we introduce a function $\update{n}{m}$ which replaces the value inside $n$ with the value of $m$.
 We use this function to update the local variables of the processes.
 
-$\Pp{} {} = \Mu{X} \update{n}{n + 1} .\\
-\Indent{1}\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\proposalNumber{n}{m}}} .\\
-\Indent{1}\DotForall{\AcceptorIndex\in\AQ}{\ReceiveUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}{v_{\AcceptorIndex}}} .\\
-\Indent{1}\If{\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < \ceil{\frac{\ProposerIndex}{2}}}\\
-\Indent{2}\Then{\SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Restart}{X}}\\
-\Indent{2}\Else{\\\Indent{3}\SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Accept}{\\\Indent{3}\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}}}.\End}}$
+% $\Pp{} = \Mu{X} \update{n}{n + 1} .\\
+% \Indent{1}\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\proposalNumber{n}{m}}} .\\
+% \Indent{1}\DotForall{\AcceptorIndex\in\AQ}{\ReceiveUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}{v_{\AcceptorIndex}}} .\\
+% \Indent{1}\If{\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < \ceil{\frac{\ProposerIndex}{2}}}\\
+% \Indent{2}\Then{\SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Restart}{X}}\\
+% \Indent{2}\Else{\\\Indent{3}\SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Accept}{\\\Indent{3}\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}}}.\End}}$
+
+\begin{align*}
+&\Pp{} = \Mu{X} \update{n}{n + 1} .\\
+&\Indent{1}\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\proposalNumber{n}{m}}} .\\
+&\Indent{1}\DotForall{\AcceptorIndex\in\AQ}{\ReceiveUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}{v_{\AcceptorIndex}}} .\\
+&\Indent{1}\If{\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < \ceil{\frac{\ProposerIndex}{2}}}\\
+&\Indent{2}\Then{\SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Restart}{X}}\\
+&\Indent{2}\Else{\\
+&\Indent{3}\SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Accept}{\\
+&\Indent{3}\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}}}.\End
+}}
+\end{align*}
 
 At the start of the recursion $n$ is incremented to make sure every run of the recursion uses a different $n$ and thus a different proposal number.
 The proposal number is sent to every acceptor in $\AQ$ and their replies are gathered in $\VectorV$ through $v_{\AcceptorIndex}$.
@@ -192,23 +210,44 @@ If any $\Nack{x}$ was received or the number of $\Promise{y}$ received is less t
 Otherwise, the proposer sends its proposal to the acceptors and terminates.
 
 \subsection{Acceptor}
-$\PaOne = \Mu{X} \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\bot}{n'} .\\
-\Indent{1}\If{n' = \bot}\\
-\Indent{2}\Then{\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}.\PaTwo}\\
-\Indent{2}\Else{\\
-\Indent{3}\If{\greaterThan{n'}{n}}\\
-\Indent{3}\Then{\update{n}{n'}.\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Promise{pr}}.\PaTwo}\\
-\Indent{3}\Else{\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{n}}.\PaTwo}}$
+% $\PaOne = \Mu{X} \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\bot}{n'} .\\
+% \Indent{1}\If{n' = \bot}\\
+% \Indent{2}\Then{\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}.\PaTwo}\\
+% \Indent{2}\Else{\\
+% \Indent{3}\If{\greaterThan{n'}{n}}\\
+% \Indent{3}\Then{\update{n}{n'}.\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Promise{pr}}.\PaTwo}\\
+% \Indent{3}\Else{\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{n}}.\PaTwo}}$
 
-$\PaTwo = \ReceiveWeaklyP{s}{\ProposerIndex}{\AcceptorIndex}{\Accept . \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\bot}{pr'} .\\
-\Indent{2}\If{pr' = \bot}\\
-\Indent{3}\Then{\End}\\
-\Indent{3}\Else{\\
-\Indent{4}\If{\greaterEqual{\nFromProposal{pr'}}{n}}\\
-\Indent{5}\Then{\update{pr}{pr'} . \update{n}{\Just{\nFromProposal{pr'}}}.\End}\\
-\Indent{5}\Else{\End}}\\
-\Indent{1} \oplus \Restart.X\\
-\Indent{1} \oplus \Abort.\End}$
+% $\PaTwo = \ReceiveWeaklyP{s}{\ProposerIndex}{\AcceptorIndex}{\Accept . \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\bot}{pr'} .\\
+% \Indent{2}\If{pr' = \bot}\\
+% \Indent{3}\Then{\End}\\
+% \Indent{3}\Else{\\
+% \Indent{4}\If{\greaterEqual{\nFromProposal{pr'}}{n}}\\
+% \Indent{5}\Then{\update{pr}{pr'} . \update{n}{\Just{\nFromProposal{pr'}}}.\End}\\
+% \Indent{5}\Else{\End}}\\
+% \Indent{1} \oplus \Restart.X\\
+% \Indent{1} \oplus \Abort.\End}$
+
+\begin{align*}
+&\PaOne = \Mu{X} \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\bot}{n'} .\\
+&\Indent{1}\If{n' = \bot}\\
+&\Indent{2}\Then{\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}.\PaTwo}\\
+&\Indent{2}\Else{\\
+&\Indent{3}\If{\greaterThan{n'}{n}}\\
+&\Indent{3}\Then{\update{n}{n'}}.\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Promise{pr}}.\PaTwo\\
+&\Indent{3}\Else{\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{n}}.\PaTwo}
+}
+\\\\
+&\PaTwo = \ReceiveWeaklyP{s}{\ProposerIndex}{\AcceptorIndex}{\Accept . \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\bot}{pr'} .\\
+&\Indent{2}\If{pr' = \bot}\\
+&\Indent{3}\Then{\End}\\
+&\Indent{3}\Else{\\
+&\Indent{4}\If{\greaterEqual{\nFromProposal{pr'}}{n}}\\
+&\Indent{5}\Then{\update{pr}{pr'} . \update{n}{\Just{\nFromProposal{pr'}}}.\End}\\
+&\Indent{5}\Else{\End}}\\
+&\Indent{1} \oplus \Restart.X\\
+&\Indent{1} \oplus \Abort.\End}
+\end{align*}
 
 For each proposer an acceptor has a corresponding subprocess, which behaves like $\PaOne$.
 These subprocesses access the same values for $n$ and $pr$.
@@ -271,7 +310,8 @@ First, we will take a look at the example scenario.
 Then we will examine the scenario using reduction rules starting at system initialization.
 
 \begin{figure}
-\begin{tikzpicture}[node distance=2cm, >=stealth', arrt/.style={above, font=\footnotesize}, arr/.style={->, thick}]
+\begin{center}
+\begin{tikzpicture}[node distance=2.5cm, >=stealth', arrt/.style={above, font=\footnotesize}, arr/.style={->, thick}]
     \def\InitialOffset{0.4}
     \def\StepSize{0.7}
     \newcommand{\Step}[1]{\InitialOffset + #1 * \StepSize}
@@ -331,6 +371,7 @@ Then we will examine the scenario using reduction rules starting at system initi
         \node[font=\footnotesize] at ($(notes) - (0, \Step{\r})$) {$(\r)$};
     }
 \end{tikzpicture}
+\end{center}
 \caption{Example scenario with $3$ acceptors and $2$ proposers.}
 \label{fig:scenario}
 \end{figure}
@@ -356,82 +397,46 @@ We set $\AcceptorCount = 3$, $\ProposerCount = 2$, and $V=\Curly{\ABC, \operator
 \subsubsection{System Initialization}
 After inserting $\AcceptorCount$ and $\ProposerCount$ and applying $\RInit$ once for shared-point $a$ we have:
 
-$\Sys{\AcceptorCount}{\ProposerCount} = \Sys{3}{2} =
-\SessionAccept{\OuterSharedPoint}{1}{t}.\ParallelFor{3 < k < 5} \PpInit{4}{\genAq{k}{3}{2}}{k}{k}{\EmptyList}\\
-\Or \SessionRequest{\OuterSharedPoint}{2}{t}.\PpInit{4}{\genAq{5}{3}{2}}{5}{5}{\EmptyList}\\
-\Or \ParallelFor{1 \le \AcceptorIndex \le 3} \PaInit{\AcceptorIndex}{4}{3}{2}{n_{\AcceptorIndex}}{pr_{\AcceptorIndex}}$
-
-% $\mapstostar \RInit\\
-% \Nu{t}\big (
-% \PpInit{4}{A_{Q,1}}{4}{4}{\EmptyList} \Or \PpInit{4}{A_{Q,2}}{5}{5}{\EmptyList}\\
-% \Or \PaInit{1}{4}{3}{2}{n_1}{pr_1} \Or \PaInit{2}{4}{3}{2}{n_2}{pr_2} \Or \PaInit{3}{4}{3}{2}{n_3}{pr_3}\\
-% \Or \OuterSessionQueues
-% \big )$
-
-% $=\\
-% % Is this step really necessary?
-% \Nu{t}\big (
-% \SessionRequest{\SharedPoint{4}}{4}{s}.\Pp{} \Or \SessionRequest{\SharedPoint{5}}{4}{r}.\Pp{} \\
-% \Or \ParallelFor{3 < n \le 5} \SessionAccept{\SharedPoint{n}}{1}{s} . \Pa\\
-% \Or \ParallelFor{3 < n \le 5} \SessionAccept{\SharedPoint{n}}{2}{s} . \Pa\\
-% \Or \ParallelFor{3 < n \le 5} \SessionAccept{\SharedPoint{n}}{3}{s} . \Pa\\
-% \Or \OuterSessionQueues
-% \big )$
-
-$\mapstostar
-\Nu{t}\big (
+\begin{align*}
+&\Sys{\AcceptorCount}{\ProposerCount} = \Sys{3}{2} =\\
+&\SessionAccept{\OuterSharedPoint}{1}{t}.\ParallelFor{3 < k < 5} \PpInit{4}{\genAq{k}{3}{2}}{k}{k}{\EmptyList}\\
+&\Or \SessionRequest{\OuterSharedPoint}{2}{t}.\PpInit{4}{\genAq{5}{3}{2}}{5}{5}{\EmptyList}\\
+&\Or \ParallelFor{1 \le \AcceptorIndex \le 3} \PaInit{\AcceptorIndex}{4}{3}{2}{n_{\AcceptorIndex}}{pr_{\AcceptorIndex}}
+\\\\
+&\mapstostar \Nu{t}\big (
 \SessionRequest{\SharedPoint{4}}{4}{s}.\Pp{} \comment{= \Proposer{4}}\\
-\Or \SessionRequest{\SharedPoint{5}}{4}{r}.\Pp{} \comment{= \Proposer{5}}\\
-\Or \Paren{\SessionAccept{\SharedPoint{4}}{1}{s}.\PaOne \Or \SessionAccept{\SharedPoint{5}}{1}{r}.\PaOne} \comment{= \Acceptor{1}}\\
-\Or \Paren{\SessionAccept{\SharedPoint{4}}{2}{s}.\PaOne \Or \SessionAccept{\SharedPoint{5}}{2}{r}.\PaOne} \comment{= \Acceptor{2}}\\
-\Or \Paren{\SessionAccept{\SharedPoint{4}}{3}{s}.\PaOne \Or \SessionAccept{\SharedPoint{5}}{3}{r}.\PaOne} \comment{= \Acceptor{3}}\\
-\Or \OuterSessionQueues
-\big )$
+&\Or \SessionRequest{\SharedPoint{5}}{4}{r}.\Pp{} \comment{= \Proposer{5}}\\
+&\Or \Paren{\SessionAccept{\SharedPoint{4}}{1}{s}.\PaOne \Or \SessionAccept{\SharedPoint{5}}{1}{r}.\PaOne} \comment{= \Acceptor{1}}\\
+&\Or \Paren{\SessionAccept{\SharedPoint{4}}{2}{s}.\PaOne \Or \SessionAccept{\SharedPoint{5}}{2}{r}.\PaOne} \comment{= \Acceptor{2}}\\
+&\Or \Paren{\SessionAccept{\SharedPoint{4}}{3}{s}.\PaOne \Or \SessionAccept{\SharedPoint{5}}{3}{r}.\PaOne} \comment{= \Acceptor{3}}\\
+&\Or \OuterSessionQueues
+\big )
+\end{align*}
 
 Note that the outer session created via shared-point $\OuterSharedPoint$ isn't strictly necessary in the model.
 We apply $\RInit$ once for shared-point $\SharedPoint{4}$ and once again for shared-point $\SharedPoint{5}$ to obtain:
 
-$\mapstostar
-\NuChannels\big (\\
-\Mu{X} \update{n}{5} . \DotForall{\AcceptorIndex\in \{1,2\}}{\SendUnreliableP{s}{4}{\AcceptorIndex}{\LOneA}{\proposalNumber{n}{4}}}\dots \comment{= \Proposer{4}}\\
-\Or \Mu{X} \update{n}{6} . \DotForall{\AcceptorIndex\in \{2,3\}}{\SendUnreliableP{r}{4}{\AcceptorIndex}{\LOneA}{\proposalNumber{n}{5}}}\dots \comment{= \Proposer{5}}\\
-\Or \Paren{
+\begin{align*}
+&\mapstostar \NuChannels\big (\\
+&\Mu{X} \update{n}{5} . \DotForall{\AcceptorIndex\in \{1,2\}}{\SendUnreliableP{s}{4}{\AcceptorIndex}{\LOneA}{\proposalNumber{n}{4}}}\dots \comment{= \Proposer{4}}\\
+&\Or \Mu{X} \update{n}{6} . \DotForall{\AcceptorIndex\in \{2,3\}}{\SendUnreliableP{r}{4}{\AcceptorIndex}{\LOneA}{\proposalNumber{n}{5}}}\dots \comment{= \Proposer{5}}\\
+&\Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
 } \comment{= \Acceptor{1}}\\
-\Or \Paren{
+&\Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots}
     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots}
 } \comment{= \Acceptor{2}}\\
-\Or \Paren{
+&\Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
 } \comment{= \Acceptor{3}}\\
-\Or \InnerSessionQueues{s}
+&\Or \InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
 \Or \OuterSessionQueues
-\big )$
-
-% $=\\
-% \NuChannels\big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots\\
-% \Or \Mu{X} \SendUnreliableP{r}{4}{2}{\LOneA}{\proposalNumber{6}{5}}.\SendUnreliableP{r}{4}{3}{\LOneA}{\proposalNumber{6}{5}}\dots\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots}
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
-% }\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
+\big )
+\end{align*}
 
 Note that each process is shortened to only show the next few steps instead of the entire process.
 
@@ -441,73 +446,52 @@ In this case $\Proposer{5}$ communicates with $\Acceptor{2}$ and $\Acceptor{3}$.
 We apply $\RUsend$ and $\RUget$ twice to send $\proposalNumber{6}{5} = 10$ to $\Acceptor{2}$ and $\Acceptor{3}$.
 % corresponds to (1)
 
-$\mapstostar
+\begin{align*}
+&\mapstostar
 \NuChannels \big (\\
-\Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
-\Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{\LOneB}{\bot}{v_2}.\ReceiveUnreliableP{r}{3}{4}{\LOneB}{\bot}{v_3}\dots \comment{= \Proposer{5}}\\
-\Or \Paren{
+&\Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
+&\Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{\LOneB}{\bot}{v_2}.\ReceiveUnreliableP{r}{3}{4}{\LOneB}{\bot}{v_3}\dots \comment{= \Proposer{5}}\\
+&\Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
 } \comment{=\Acceptor{1}}\\
-\Or \Paren{
+&\Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots}
     \Or \Mu{X} \If{10 = \bot} \Then{\SendUnreliableP{s}{2}{4}{\LOneB}{\bot}.\PaTwo} \Else{\dots}
 } \comment{=\Acceptor{2}}\\
-\Or \Paren{
+&\Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
     \Or \Mu{X} \If{10 = \bot} \Then{\SendUnreliableP{s}{3}{4}{\LOneB}{\bot}.\PaTwo} \Else{\dots}
 } \comment{=\Acceptor{3}}\\
-\Or \InnerSessionQueues{s}
+&\Or \InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
 \Or \OuterSessionQueues
-\big )$
+\big )
+\end{align*}
 
 Since $10 \neq \bot$ both $\Acceptor{2}$ and $\Acceptor{3}$ move into their respective $\Else$ branches.
 
-$=
-\NuChannels \big (\\
-\Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
-\Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{\LOneB}{\bot}{v_2}.\ReceiveUnreliableP{r}{3}{4}{\LOneB}{\bot}{v_3}\dots \comment{= \Proposer{5}}\\
-\Or \Paren{
+\begin{align*}
+&= \NuChannels \big (\\
+&\Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
+&\Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{\LOneB}{\bot}{v_2}.\ReceiveUnreliableP{r}{3}{4}{\LOneB}{\bot}{v_3}\dots \comment{= \Proposer{5}}\\
+&\Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
 } \comment{=\Acceptor{1}}\\
-\Or \Paren{
+&\Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots}
     \Or \Mu{X} \If{\greaterThan{10}{\Nothing}} \Then{\dots} \Else{\dots}
 } \comment{=\Acceptor{2}}\\
-\Or \Paren{
+&\Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
     \Or \Mu{X} \If{\greaterThan{10}{\Nothing}} \Then{\dots} \Else{\dots}
 } \comment{=\Acceptor{3}}\\
-\Or \InnerSessionQueues{s}
+&\Or \InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
 \Or \OuterSessionQueues
-\big )$
-
-% % A1: n=Nothing, pr=Nothing
-% % A2: n=10, pr=Nothing
-% % A3: n=Nothing, pr=Nothing
-% $=\\
-% \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots\\
-% \Or \Mu{X} \SendUnreliableP{r}{4}{3}{\LOneA}{\proposalNumber{6}{5}}.\ReceiveUnreliableP{r}{2}{4}{\LOneB}{\bot}{v_2}\dots\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \SendUnreliableP{r}{2}{4}{\LOneB}{\Promise{\Nothing}}.\PaTwo
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
-% }\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
+\big )
+\end{align*}
 
 Because $\greaterThan{10}{\Nothing}$ returns $\True$, $\Acceptor{2}$ and $\Acceptor{3}$ move into their respective $\Then$ branches.
 After executing $\update{n}{10}$, $\Acceptor{2}$ and $\Acceptor{3}$ are ready to send their responses to $\Proposer{5}$.
@@ -515,255 +499,80 @@ After executing $\update{n}{10}$, $\Acceptor{2}$ and $\Acceptor{3}$ are ready to
 % A1: n=Nothing, pr=Nothing
 % A2: n=10, pr=Nothing
 % A3: n=10, pr=Nothing
-$=
-\NuChannels \big (\\
-\Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
-\Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{\LOneB}{\bot}{v_2}.\ReceiveUnreliableP{r}{3}{4}{\LOneB}{\bot}{v_3}\dots \comment{= \Proposer{5}}\\
-\Or \Paren{
+\begin{align*}
+&= \NuChannels \big (\\
+&\Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
+&\Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{\LOneB}{\bot}{v_2}.\ReceiveUnreliableP{r}{3}{4}{\LOneB}{\bot}{v_3}\dots \comment{= \Proposer{5}}\\
+&\Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
 } \comment{= \Acceptor{1}}\\
-\Or \Paren{
+&\Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots}
     \Or \Mu{X} \SendUnreliableP{r}{2}{4}{\LOneB}{\Promise{\Nothing}}.\PaTwo
 } \comment{= \Acceptor{2}}\\
-\Or \Paren{
+&\Or \Paren{
     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
     \Or \Mu{X} \SendUnreliableP{r}{3}{4}{\LOneB}{\Promise{\Nothing}}.\PaTwo
 } \comment{= \Acceptor{3}}\\
-\Or \InnerSessionQueues{s}
+&\Or \InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
 \Or \OuterSessionQueues
-\big )$
+\big )
+\end{align*}
 
 We apply $\RUsend$ and $\RUget$ twice to do just that.
 Note that we also apply $\RUskip$ to $\Acceptor{1}$, evaluate its branches, and apply $\RUsend$ to $\Acceptor{1}$ and then $\Rml$ to $\Proposer{5}$ to discard the dummy message.
 All three acceptors move into $\PaTwo$.
 % corresponds to (2) - (3)
 
-% $\mapstostar (USkip)\\
-% \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots\\
-% \Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{\LOneB}{\bot}{v_2}.\ReceiveUnreliableP{r}{3}{4}{\LOneB}{\bot}{v_3}\dots\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \If{\bot = \bot} \Then{\PaTwo} \Else{\dots}
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \SendUnreliableP{r}{2}{4}{\LOneB}{\Promise{\Nothing}}.\PaTwo
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \SendUnreliableP{r}{3}{4}{\LOneB}{\Promise{\Nothing}}.\PaTwo
-% }\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
-
-% $=\\
-% \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots\\
-% \Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{\LOneB}{\bot}{v_2}.\ReceiveUnreliableP{r}{3}{4}{\LOneB}{\bot}{v_3}\dots\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\Accept \dots \oplus \Restart .X \oplus \Abort .\End}
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \SendUnreliableP{r}{2}{4}{\LOneB}{\Promise{\Nothing}}.\PaTwo
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \SendUnreliableP{r}{3}{4}{\LOneB}{\Promise{\Nothing}}.\PaTwo
-% }\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
-
-% $\mapstostar (USend + UGet)\\
-% \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots\\
-% \Or \Mu{X} \ReceiveUnreliableP{r}{3}{4}{\LOneB}{\bot}{v_3}.\If{\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < 1} \Then{\dots}\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\BeginPaCont}
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{2}{\BeginPaCont}
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \SendUnreliableP{r}{3}{4}{\LOneB}{\Promise{\Nothing}}.\PaTwo
-% }\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
-
-% $\mapstostar (USend + UGet)\\
-% \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots\\
-% \Or \Mu{X} \If{\False \tOr 2 < 1} \Then{\dots} \Else{\SendWeaklyP{r}{4}{\Curly{2,3}}{\Accept}{\dots}}\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\BeginPaCont}
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{2}{\BeginPaCont}
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont}
-% }\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
-
-$\mapstostar
-\NuChannels \big (\\
-\Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
-\Or \Mu{X} \SendWeaklyP{r}{4}{\Curly{2,3}}{\Accept}{\SendUnreliableP{r}{4}{2}{\LTwoA}{\ProposalC{10}{\ABC}}}\dots \comment{= \Proposer{5}}\\
-\Or \Paren{
+\begin{align*}
+&\mapstostar \NuChannels \big (\\
+&\Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
+&\Or \Mu{X} \SendWeaklyP{r}{4}{\Curly{2,3}}{\Accept}{\SendUnreliableP{r}{4}{2}{\LTwoA}{\ProposalC{10}{\ABC}}}\dots \comment{= \Proposer{5}}\\
+&\Or \Paren{
     \Mu{X} \dots
     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\BeginPaCont}
 } \comment{= \Acceptor{1}}\\
-\Or \Paren{
+&\Or \Paren{
     \Mu{X} \dots
     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{2}{\BeginPaCont}
 } \comment{= \Acceptor{2}}\\
-\Or \Paren{
+&\Or \Paren{
     \Mu{X} \dots
     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont}
 } \comment{= \Acceptor{3}}\\
-\Or \InnerSessionQueues{s}
+&\Or \InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
 \Or \OuterSessionQueues
-\big )$
+\big )
+\end{align*}
 
 $\Proposer{5}$ broadcasts its decision $\Accept$ to $\Acceptor{2}$ and $\Acceptor{3}$.
 By applying $\RWsel$ once, $\RWbran$ twice we obtain:
 % corresponds to (4)
 
-$\mapstostar
-\NuChannels \big (\\
-\Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
-\Or \Mu{X} \SendUnreliableP{r}{4}{2}{\LTwoA}{\ProposalC{10}{\ABC}}.\SendUnreliableP{r}{4}{3}{\LTwoA}{\ProposalC{10}{\ABC}}\dots \comment{= \Proposer{5}}\\
-\Or \Paren{
+\begin{align*}
+&\mapstostar \NuChannels \big (\\
+&\Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
+&\Or \Mu{X} \SendUnreliableP{r}{4}{2}{\LTwoA}{\ProposalC{10}{\ABC}}.\SendUnreliableP{r}{4}{3}{\LTwoA}{\ProposalC{10}{\ABC}}\dots \comment{= \Proposer{5}}\\
+&\Or \Paren{
     \Mu{X} \dots
     \Or \Mu{X} \ReceiveWeaklyP{r}{4}{1}{\BeginPaCont}
 } \comment{= \Acceptor{1}}\\
-\Or \Paren{
+&\Or \Paren{
     \Mu{X} \dots
     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{2}{\LTwoA}{\bot}{pr'}.\If{\dots}
 } \comment{= \Acceptor{2}}\\
-\Or \Paren{
+&\Or \Paren{
     \Mu{X} \dots
     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{\LTwoA}{\bot}{pr'}.\If{\dots}
 } \comment{= \Acceptor{3}}\\
-\Or \InnerSessionQueues{s}
+&\Or \InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
 \Or \OuterSessionQueues
-\big )$
-
-% $\mapstostar (WSkip)\\
-% \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots\\
-% \Or \Mu{X} \SendUnreliableP{r}{4}{2}{\LTwoA}{\ProposalC{\proposalNumber{5}{6}}{\promiseValue{\VectorV}}}.\\\Indent{2}\SendUnreliableP{r}{4}{3}{\LTwoA}{\ProposalC{\proposalNumber{5}{6}}{\promiseValue{\VectorV}}}\dots\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} end
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{2}{\LTwoA}{\bot}{pr'}.\If{\dots}
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{\LTwoA}{\bot}{pr'}.\If{\dots}
-% }\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
-
-% $\mapstostar (USend + UGet)\\
-% \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots\\
-% \Or \Mu{X} \SendUnreliableP{r}{4}{3}{\LTwoA}{\ProposalC{\proposalNumber{5}{6}}{\promiseValue{\VectorV}}}.\End\\
-% \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \If{\ProposalC{10}{\ABC} = \bot} \Then{X} \Else{\dots}
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \ReceiveUnreliableP{r}{4}{3}{\LTwoA}{\bot}{pr'}.\If{\dots}
-% }\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
-
-% $\mapstostar (USend + UGet)\\
-% \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots\\
-% \Or \Mu{X} end\\
-% \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \If{\ProposalC{10}{\ABC} = \bot} \Then{X} \Else{\dots}
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} \If{\ProposalC{10}{\ABC} = \bot} \Then{X} \Else{\dots}
-% }\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
-
-% $=\\
-% \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots\\
-% \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}\\
-% \Or (
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \\\Indent{2}\Or \Mu{X} \If{\greaterEqual{10}{10}} \Then{\update{pr}{pr'}.\update{n}{\Just{10}}.X} \Else{\dots}
-% )\\
-% \Or (
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \\\Indent{2}\Or \Mu{X} \If{\greaterEqual{10}{10}} \Then{\update{pr}{pr'}.\update{n}{\Just{10}}.X} \Else{\dots}
-% )\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
-
-% % A1: n=Nothing, pr=Nothing
-% % A2: n=10, pr=Proposal 10 abc
-% % A3: n=10, pr=Proposal 10 abc
-% $=\\
-% \NuChannels \big (
-% \Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots\\
-% \Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} X
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots}
-%     \Or \Mu{X} X
-% }\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
+\big )
+\end{align*}
 
 Now $\Proposer{5}$ can send its proposal to $\Acceptor{2}$ and $\Acceptor{3}$ and terminate.
 To do so we apply $\RUsend$ and $\RUget$ twice.
@@ -771,16 +580,17 @@ $\Acceptor{2}$ and $\Acceptor{3}$ accept the proposal and the respective subproc
 Note that we apply $\RWskip$ in $\Acceptor{1}$ and terminate that subprocess as well.
 % corresponds to (5)
 
-$\mapstostar
-\NuChannels \big (\\
-\Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
-\Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots} \comment{= \Acceptor{1}}\\
-\Or \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots} \comment{= \Acceptor{2}}\\
-\Or \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots} \comment{= \Acceptor{3}}\\
-\Or \InnerSessionQueues{s}
+\begin{align*}
+&\mapstostar \NuChannels \big (\\
+&\Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
+&\Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots} \comment{= \Acceptor{1}}\\
+&\Or \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots} \comment{= \Acceptor{2}}\\
+&\Or \Mu{X} \ReceiveUnreliableP{s}{4}{3}{\LOneA}{\bot}{n'}.\If{\dots} \comment{= \Acceptor{3}}\\
+&\Or \InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
 \Or \OuterSessionQueues
-\big )$
+\big )
+\end{align*}
 
 At this point the local variables of $\Acceptor{2}$ and $\Acceptor{3}$ are $n = 10$ and $pr = \ProposalC{10}{\ABC}$.
 $\Acceptor{1}$ has not updated its local variables $n = \Nothing$ and $pr = \Nothing$.
@@ -791,137 +601,63 @@ $\Proposer{4}$ then decides to restart the algorithm.
 We apply $\RUsend$ and $\RUget$ twice.
 We also apply $\RUskip$ once in $\Acceptor{3}$.
 
-$\mapstostar
-\NuChannels \big (\\
-\Mu{X} \ReceiveUnreliableP{s}{1}{4}{\LOneB}{\bot}{v_1}.\ReceiveUnreliableP{s}{2}{4}{\LOneB}{\bot}{v_2}\dots \comment{= \Proposer{4}}\\
-\Or \Mu{X} \If{5 = \bot} \Then{\PaTwo} \Else{\dots} \comment{= \Acceptor{1}}\\
-\Or \Mu{X} \If{5 = \bot} \Then{\PaTwo} \Else{\dots} \comment{= \Acceptor{2}}\\
-\Or \Mu{X} \If{\bot = \bot} \Then{\PaTwo} \Else{\dots} \comment{= \Acceptor{3}}\\
-\Or \InnerSessionQueues{s}
+\begin{align*}
+&\mapstostar \NuChannels \big (\\
+&\Mu{X} \ReceiveUnreliableP{s}{1}{4}{\LOneB}{\bot}{v_1}.\ReceiveUnreliableP{s}{2}{4}{\LOneB}{\bot}{v_2}\dots \comment{= \Proposer{4}}\\
+&\Or \Mu{X} \If{5 = \bot} \Then{\PaTwo} \Else{\dots} \comment{= \Acceptor{1}}\\
+&\Or \Mu{X} \If{5 = \bot} \Then{\PaTwo} \Else{\dots} \comment{= \Acceptor{2}}\\
+&\Or \Mu{X} \If{\bot = \bot} \Then{\PaTwo} \Else{\dots} \comment{= \Acceptor{3}}\\
+&\Or \InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
 \Or \OuterSessionQueues
-\big )$
+\big )
+\end{align*}
 
 $\Acceptor{3}$ moves directly to $\PaTwo$ whereas $\Acceptor{1}$ and $\Acceptor{2}$ send their responses to $\Proposer{4}$ before moving to $\PaTwo$.
 $\Acceptor{1}$ also updates its local variable $n = 5$.
 
-% $=\\
-% \NuChannels \big (
-% \Mu{X} \ReceiveUnreliableP{s}{1}{4}{\LOneB}{\bot}{v_1}.\ReceiveUnreliableP{s}{2}{4}{\LOneB}{\bot}{v_2}\dots\\
-% \Or \Mu{X} \If{\greaterThan{5}{\Nothing}} \Then{\update{n}{5}\dots}\Else{\dots}\\
-% \Or \Paren{
-%     \Mu{X} \If{\greaterThan{5}{\Just{10}}} \Then{\dots} \Else{\SendUnreliableP{s}{2}{4}{\LOneB}{\Nack{10}}.\PaTwo}
-%     \Or \Mu{X} X
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont}
-%     \Or \Mu{X} X
-% }\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
-
 % A1: n=5, pr=Nothing
 % A2: n=10, pr=Proposal 10 abc
 % A3: n=10, pr=Proposal 10 abc
-$=
-\NuChannels \big (\\
-\Mu{X} \ReceiveUnreliableP{s}{1}{4}{\LOneB}{\bot}{v_1}.\ReceiveUnreliableP{s}{2}{4}{\LOneB}{\bot}{v_2}\dots \comment{= \Proposer{4}}\\
-\Or \Mu{X} \SendUnreliableP{s}{1}{4}{\LOneB}{\Promise{\Nothing}}.\PaTwo \comment{= \Acceptor{1}}\\
-\Or \Mu{X} \SendUnreliableP{s}{2}{4}{\LOneB}{\Nack{10}}.\PaTwo \comment{= \Acceptor{2}}\\
-\Or \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont} \comment{= \Acceptor{3}}\\
-\Or \InnerSessionQueues{s}
+\begin{align*}
+&= \NuChannels \big (\\
+&\Mu{X} \ReceiveUnreliableP{s}{1}{4}{\LOneB}{\bot}{v_1}.\ReceiveUnreliableP{s}{2}{4}{\LOneB}{\bot}{v_2}\dots \comment{= \Proposer{4}}\\
+&\Or \Mu{X} \SendUnreliableP{s}{1}{4}{\LOneB}{\Promise{\Nothing}}.\PaTwo \comment{= \Acceptor{1}}\\
+&\Or \Mu{X} \SendUnreliableP{s}{2}{4}{\LOneB}{\Nack{10}}.\PaTwo \comment{= \Acceptor{2}}\\
+&\Or \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont} \comment{= \Acceptor{3}}\\
+&\Or \InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
 \Or \OuterSessionQueues
-\big )$
-
-% $\mapstostar (USend + UGet, USend + UGet)\\
-% \NuChannels \big (
-% \Mu{X} \If{\True \tOr 1 < 1} \Then{\SendWeaklyP{s}{4}{\Curly{1,2}}{\Restart}{X}} \Else{\dots}\\
-% \Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}
-%     \Or \Mu{X} X
-% }\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont}
-%     \Or \Mu{X} X
-% }\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
+\big )
+\end{align*}
 
 Applying $\RUsend$ and $\RUget$ twice and evaluating the branching in $\Proposer{4}$ yields:
 
-$\mapstostar
-\NuChannels \big (\\
-\Mu{X} \SendWeaklyP{s}{4}{\Curly{1,2}}{\Restart}{X}\\
-\Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
-\Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
-\Or \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont}\\
-\Or \InnerSessionQueues{s}
+\begin{align*}
+&\mapstostar \NuChannels \big (\\
+&\Mu{X} \SendWeaklyP{s}{4}{\Curly{1,2}}{\Restart}{X} \comment{= \Proposer{4}}\\
+&\Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont} \comment{= \Acceptor{1}}\\
+&\Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont} \comment{= \Acceptor{2}}\\
+&\Or \Mu{X} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont} \comment{= \Acceptor{3}}\\
+&\Or \InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
 \Or \OuterSessionQueues
-\big )$
-
-% $\mapstostar (WSel + WBran, WSkip)\\
-% \NuChannels \big (
-% \Mu{X} X\\
-% \Or \Mu{X} X\\
-% \Or \Paren{
-%     \Mu{X} X
-%     \Or \Mu{X} X
-% }\\
-% \Or \Paren{
-%     \Mu{X} end
-%     \Or \Mu{X} X
-% }\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
+\big )
+\end{align*}
 
 $\Proposer{4}$ sends its decision to restart the algorithm to $\Acceptor{1}$ and $\Acceptor{2}$ by applying $\RWsel$ once and $\RWbran$ twice.
 $\Acceptor{3}$ terminates after applying $\RWskip$.
 
-$\mapstostar
-\NuChannels \big (\\
-\Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{15}.\SendUnreliableP{s}{4}{2}{\LOneA}{15}\dots \comment{= \Proposer{4}}\\
-\Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots} \comment{= \Acceptor{1}}\\
-\Or \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots} \comment{= \Acceptor{2}}\\
-\Or \InnerSessionQueues{s}
+\begin{align*}
+&\mapstostar \NuChannels \big (\\
+&\Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{15}.\SendUnreliableP{s}{4}{2}{\LOneA}{15}\dots \comment{= \Proposer{4}}\\
+&\Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots} \comment{= \Acceptor{1}}\\
+&\Or \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LOneA}{\bot}{n'}.\If{\dots} \comment{= \Acceptor{2}}\\
+&\Or \InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
 \Or \OuterSessionQueues
-\big )$
-
-% $\mapstostar (USend + UGet, USend + UGet)\\
-% \NuChannels \big (
-% \Mu{X} \ReceiveUnreliableP{s}{1}{4}{\LOneB}{\bot}{v_1}.\ReceiveUnreliableP{s}{2}{4}{\LOneB}{\bot}{v_2}.\If{\dots}\\
-% \Or \Mu{X} \If{15 = \bot} \Then{\PaTwo} \Else{\dots}\\
-% \Or \Paren{
-%     \Mu{X} \If{15 = \bot} \Then{\PaTwo} \Else{\dots}
-%     \Or \Mu{X} X
-% }\\
-% \Or \Mu{X} X\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
-
-% % A1: n=5, pr=Nothing
-% % A2: n=10, pr=Proposal 10 abc
-% % A3: n=10, pr=Proposal 10 abc
-% $\mapstostar
-% \NuChannels \big (\\
-% \Mu{X} \ReceiveUnreliableP{s}{1}{4}{\LOneB}{\bot}{v_1}.\ReceiveUnreliableP{s}{2}{4}{\LOneB}{\bot}{v_2}.\If{\dots}\\
-% \Or \Mu{X} \If{\greaterThan{15}{\Just{5}}} \Then{\update{n}{15}\dots} \Else{\dots}\\
-% \Or \Mu{X} \If{\greaterThan{15}{\Just{10}}} \Then{\update{n}{15}\dots} \Else{\dots}\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
+\big )
+\end{align*}
 
 \subsubsection{The Happy Path, Again}
 
@@ -931,50 +667,35 @@ By applying $\RUsend$ and $\RUget$ and evaluating the branches in the remaining 
 % A1: n=15, pr=Nothing
 % A2: n=15, pr=Proposal 10 abc
 % A3: n=10, pr=Proposal 10 abc
-$\mapstostar
-\NuChannels \big (\\
-\Mu{X} \ReceiveUnreliableP{s}{1}{4}{\LOneB}{\bot}{v_1}.\ReceiveUnreliableP{s}{2}{4}{\LOneB}{\bot}{v_2}.\If{\dots} \comment{= \Proposer{4}}\\
-\Or \Mu{X} \SendUnreliableP{s}{1}{4}{\LOneB}{\Promise{\Nothing}}.\PaTwo \comment{= \Acceptor{1}}\\
-\Or \Mu{X} \SendUnreliableP{s}{2}{4}{\LOneB}{\Promise{\ProposalC{10}{abc}}}.\PaTwo \comment{= \Acceptor{2}}\\
-\Or \InnerSessionQueues{s}
+\begin{align*}
+&\mapstostar \NuChannels \big (\\
+&\Mu{X} \ReceiveUnreliableP{s}{1}{4}{\LOneB}{\bot}{v_1}.\ReceiveUnreliableP{s}{2}{4}{\LOneB}{\bot}{v_2}.\If{\dots} \comment{= \Proposer{4}}\\
+&\Or \Mu{X} \SendUnreliableP{s}{1}{4}{\LOneB}{\Promise{\Nothing}}.\PaTwo \comment{= \Acceptor{1}}\\
+&\Or \Mu{X} \SendUnreliableP{s}{2}{4}{\LOneB}{\Promise{\ProposalC{10}{abc}}}.\PaTwo \comment{= \Acceptor{2}}\\
+&\Or \InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
 \Or \OuterSessionQueues
-\big )$
+\big )
+\end{align*}
 
 Note that, at this point, $\Acceptor{1}$ and $\Acceptor{2}$ have updated their respective $n$ to $15$.
 
 Because $\Acceptor{2}$ has already accepted a proposal, it responds to $\Proposer{4}$'s prepare request with that proposal.
 Twice more we apply $\RUsend$ and $\RUget$ and evaluate the branch in $\Proposer{4}$ to obtain:
 
-% % A1: n=15, pr=Nothing
-% % A2: n=15, pr=Proposal 10 abc
-% % A3: n=10, pr=Proposal 10 abc
-% $\mapstostar (USend + UGet, USend + UGet)\\
-% \NuChannels \big (
-% \Mu{X} \If{\False \tOr 2 < 1} \Then{\dots} \Else{\SendWeaklyP{s}{4}{\Curly{1,2}}{\Accept}{\dots}}\\
-% \Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}\\
-% \Or \Paren{
-%     \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont}
-%     \Or \Mu{X} X
-% }\\
-% \Or \Mu{X} X\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
-
 % A1: n=15, pr=Nothing
 % A2: n=15, pr=Proposal 10 abc
 % A3: n=10, pr=Proposal 10 abc
-$\mapstostar
-\NuChannels \big (\\
-\Mu{X} \SendWeaklyP{s}{4}{\Curly{1,2}}{\Accept}{\dots} \comment{= \Proposer{4}}\\
-\Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont} \comment{= \Acceptor{1}}\\
-\Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont} \comment{= \Acceptor{2}}\\
-\Or \InnerSessionQueues{s}
+\begin{align*}
+&\mapstostar \NuChannels \big (\\
+&\Mu{X} \SendWeaklyP{s}{4}{\Curly{1,2}}{\Accept}{\dots} \comment{= \Proposer{4}}\\
+&\Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont} \comment{= \Acceptor{1}}\\
+&\Or \Mu{X} \ReceiveWeaklyP{s}{4}{1}{\BeginPaCont} \comment{= \Acceptor{2}}\\
+&\Or \InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
 \Or \OuterSessionQueues
-\big )$
+\big )
+\end{align*}
 
 $\Proposer{4}$ has received enough promises to send its own proposal.
 The value for that proposal is $\ABC$ because that is the value of the highest-numbered proposal $\Proposer{4}$ received as a response to its prepare request.
@@ -983,77 +704,29 @@ First, we apply $\RWsel$ and $\RWbran$.
 % A1: n=15, pr=Nothing
 % A2: n=15, pr=Proposal 10 abc
 % A3: n=10, pr=Proposal 10 abc
-$\mapstostar
-\NuChannels \big (\\
-\Mu{X} \SendUnreliableP{s}{4}{1}{\LTwoA}{\ProposalC{15}{\ABC}}.
+\begin{align*}
+&\mapstostar \NuChannels \big (\\
+&\Mu{X} \SendUnreliableP{s}{4}{1}{\LTwoA}{\ProposalC{15}{\ABC}}.
 \SendUnreliableP{s}{4}{2}{\LTwoA}{\ProposalC{15}{\ABC}}.\End \comment{= \Proposer{4}}\\
-\Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LTwoA}{\bot}{pr'}.\If{\dots}\comment{= \Acceptor{1}}\\
-\Or \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LTwoA}{\bot}{pr'}.\If{\dots}\comment{= \Acceptor{2}}\\
-\Or \InnerSessionQueues{s}
+&\Or \Mu{X} \ReceiveUnreliableP{s}{4}{1}{\LTwoA}{\bot}{pr'}.\If{\dots}\comment{= \Acceptor{1}}\\
+&\Or \Mu{X} \ReceiveUnreliableP{s}{4}{2}{\LTwoA}{\bot}{pr'}.\If{\dots}\comment{= \Acceptor{2}}\\
+&\Or \InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
 \Or \OuterSessionQueues
-\big )$
+\big )
+\end{align*}
 
 Then we apply $\RUsend$ and $\RUget$ to send the proposal from $\Proposer{4}$ to the acceptors.
 $\Proposer{4}$ terminates and the acceptors accept the received proposal and then terminate as well.
 
-% % A1: n=15, pr=Nothing
-% % A2: n=15, pr=Proposal 10 abc
-% % A3: n=10, pr=Proposal 10 abc
-% $\mapstostar (USend + UGet, USend + UGet)\\
-% \NuChannels \big (
-% \Mu{X} end\\
-% \Or \Mu{X} \If{\ProposalC{15}{\ProposalC{15}{abc}} = \bot} \Then{\dots} \Else{\dots}\\
-% \Or \Paren{
-%     \Mu{X} \If{\ProposalC{15}{\ProposalC{15}{abc}} = \bot} \Then{\dots} \Else{\dots}
-%     \Or \Mu{X} X
-% }\\
-% \Or \Mu{X} X\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
-
-% % A1: n=15, pr=Nothing
-% % A2: n=15, pr=Proposal 10 abc
-% % A3: n=10, pr=Proposal 10 abc
-% $=\\
-% \NuChannels \big (
-% \Or \Mu{X} \If{\greaterEqual{15}{\Just{15}}}\\\Indent{2}\Then{\update{pr}{\ProposalC{15}{abc}}.\update{n}{15}.X} \Else{\dots}\\
-% \Or (
-%     \Mu{X} \If{\greaterEqual{15}{\Just{15}}}\\\Indent{2}\Then{\update{pr}{\ProposalC{15}{abc}}.\update{n}{15}.X} \Else{\dots}
-%     \Or \Mu{X} X
-% )\\
-% \Or \Mu{X} X\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
-
-% % A1: n=15, pr=Proposal 15 abc
-% % A2: n=15, pr=Proposal 15 abc
-% % A3: n=10, pr=Proposal 10 abc
-% $=\\
-% \NuChannels \big (
-% \Or \Mu{X} X\\
-% \Or \Paren{
-%     \Mu{X} X
-%     \Or \Mu{X} X
-% }\\
-% \Or \Mu{X} X\\
-% \Or \InnerSessionQueues{s}
-% \Or \InnerSessionQueues{r}
-% \Or \OuterSessionQueues
-% \big )$
-
 % A1: n=15, pr=Proposal 15 abc
 % A2: n=15, pr=Proposal 15 abc
 % A3: n=10, pr=Proposal 10 abc
-$\mapstostar
+\[\mapstostar
 \NuChannels \big (\InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
 \Or \OuterSessionQueues
-\big )$
+\big )\]
 
 Afterwards $\Acceptor{1}$ and $\Acceptor{2}$ have $n = 15$ and $pr = \ProposalC{15}{\ABC}$ and $\Acceptor{3}$ has $n = 10$ and $pr = \ProposalC{10}{\ABC}$.
 All acceptors have accepted the value $\ABC$.
