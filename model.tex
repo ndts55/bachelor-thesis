@@ -312,7 +312,7 @@ Then we will examine the scenario using reduction rules starting at system initi
 
 \begin{figure}
 \begin{center}
-\begin{tikzpicture}[node distance=2.5cm, >=stealth', arrt/.style={above, font=\footnotesize}, arr/.style={->, thick}]
+\begin{tikzpicture}[node distance=2.5cm, >=stealth', arrt/.style={above, font=\footnotesize}, arr/.style={->, thick}, lifeline/.style={dashed, black!35}]
     \def\InitialOffset{0.4}
     \def\StepSize{0.7}
     \newcommand{\Step}[1]{\InitialOffset + #1 * \StepSize}
@@ -326,11 +326,11 @@ Then we will examine the scenario using reduction rules starting at system initi
     \node[right = of p4] (p5) {$\Proposer{5}$};
     \node[left = of a1] (notes) {};
 
-    \draw[dashed] (a1) -- ($(a1) - (0, \FullHeight)$);
-    \draw[dashed] (a2) -- ($(a2) - (0, \FullHeight)$);
-    \draw[dashed] (a3) -- ($(a3) - (0, \FullHeight)$);
-    \draw[dashed] (p4) -- ($(p4) - (0, \Step{14.5})$);
-    \draw[dashed] (p5) -- ($(p5) - (0, \Step{5.5})$);
+    \draw[lifeline] (a1) -- ($(a1) - (0, \FullHeight)$);
+    \draw[lifeline] (a2) -- ($(a2) - (0, \FullHeight)$);
+    \draw[lifeline] (a3) -- ($(a3) - (0, \FullHeight)$);
+    \draw[lifeline] (p4) -- ($(p4) - (0, \Step{14.5})$);
+    \draw[lifeline] (p5) -- ($(p5) - (0, \Step{5.5})$);
     
     \draw[arr] ($(p5) - (0, \Step{1})$) -- node[arrt] {$\proposalNumber{6}{5} = 10$} ($(a2) - (0, \Step{1})$);
     \draw[arr] ($(p5) - (0, \Step{1})$) -- ($(a3) - (0, \Step{1})$);
