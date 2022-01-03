@@ -255,7 +255,7 @@ This means that updating these values with $\update{n}{m}$ updates them for all 
 
 Each subprocess can communicate with one proposer.
 Thus, if that proposer does not or can not communicate with a particular subprocess of an acceptor then there is no need for that subprocess.
-It is possible that an acceptor participates in a proposers' session but is not contained in the proposers' quorum of acceptors $\AQ$, in which case the proposer does not communicate with that acceptor.
+It is possible that an acceptor participates in a proposer's session but is not contained in the proposer's quorum of acceptors $\AQ$, in which case the proposer does not communicate with that acceptor.
 It is also possible for a proposer to crash or otherwise terminate, in which case the proposer can not communicate with that acceptor.
 
 Each subprocess starts out by potentially receiving a proposal number $n'$ from the corresponding proposer.
