@@ -1,6 +1,6 @@
 \chapter{Analysis}
 We take the model from the previous chapter, type-check it, and discuss what the type check means for agreement, validity, and termination of the Paxos algorithm.
-To execute the type check we project the global type to local types and use the typing rules given in \cite{ftmpst} to prove that our model can be derived from them.
+To execute the type check we project the global type to local types and use the typing rules given in \cite{ftmpst} to prove that our model is well-typed.
 
 \section{Local Types}
 Because no communication takes place in the outer session, the  outer session's type is $\OuterGlobalType = \End$.
@@ -396,4 +396,4 @@ We defer the proof in the middle to keep $\AcceptorProofAccept$ readable.
 \UnaryInfC{$\GammaXNP\vdash\update{pr}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
 \end{prooftree}
 Finally, we apply $\RSideEffect$ twice and $\REnd$ once.
-This concludes the type check and proves that the model from the previous chapter can be derived from axioms $\RVar$ and $\REnd$.
+This concludes the type check and proves that the model is well-typed.
