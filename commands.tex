@@ -1,6 +1,7 @@
 % General typesetting stuff
 \newcommand{\Curly}[1]{\left\{#1\right\}}
 \newcommand{\Paren}[1]{\left(#1\right)}
+% TODO Use TUD Design blue instead of predefined teal.
 \newcommand{\comment}[1]{\;\textcolor{teal}{#1}}
 \def\IndentationSize{0.5em}
 \newcommand{\Indent}[1]{\hspace*{\IndentationSize * #1}}
@@ -150,6 +151,10 @@
 % Type Check
 \newcommand{\SEnvEntry}[3]{#1\left[#2\right]:#3}
 \newcommand{\GEnvEntry}[2]{#1:#2}
+\newcommand{\GammaX}[0]{\Gamma'}
+\newcommand{\GammaXV}[0]{\GammaX'}
+\newcommand{\GammaXN}[0]{\GammaX'}
+\newcommand{\GammaXNP}[0]{\GammaXN'}
 \newcommand{\EnvSatisfiesType}[3]{#1\Vdash\GEnvEntry{#2}{\mathbb{#3}}}
 \newcommand{\GammaSatisfiesType}[2]{\EnvSatisfiesType{\Gamma}{#1}{#2}}
 
@@ -160,7 +165,8 @@
 
 \newcommand{\ProposerProofTrue}[0]{\ProposerProof{t}}
 \newcommand{\ProposerProofFalse}[0]{\ProposerProof{f}}
-\newcommand{\AcceptorProofCont}[0]{\AcceptorProof{c}}
+\newcommand{\AcceptorProofOne}[0]{\AcceptorProof{1}}
+\newcommand{\AcceptorProofTwo}[0]{\AcceptorProof{2}}
 \newcommand{\AcceptorProofTrue}[0]{\AcceptorProof{t}}
 \newcommand{\AcceptorProofFalse}[0]{\AcceptorProof{f}}
 \newcommand{\AcceptorProofAccept}[0]{\AcceptorProof{\Accept}}
