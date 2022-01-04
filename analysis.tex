@@ -397,3 +397,56 @@ We defer the proof in the middle to keep $\AcceptorProofAccept$ readable.
 \end{prooftree}
 Finally, we apply $\RSideEffect$ twice and $\REnd$ once.
 This concludes the type check and proves that the model is well-typed.
+
+\section{Termination, Agreement, Validity}
+% Termination
+% % Eventually, every correct process decides some value.
+% Validity
+% % If all the correct processes proposed the same value v, then any correct process must decide v.
+% Agreement
+% % Every correct process must agree on the same value.
+\subsection{Termination}
+% def: all non-failing participants eventually decide
+The implementation satisfies termination.
+
+\subsection{Agreement}
+% def: all decision values are the same
+The implementation satisfies agreement.
+
+\subsection{Validity}
+% def: each decision value is an initial (or rather proposed) value of a participant
+% The implementation satisfies validity.
+To prove validity for our model we examine the communication structure and the origins of the accepted values.
+% global type + well-typedness = communication structure is as specfied
+Because the model is well-typed we know the communication structure is as specified in global type $\GlobalType$.
+% Because of the global type and the communication protocol it ensures following session fidelity in Theorem 4—there are no communication mismatches and the received messages are of the expected sort—, then validity holds globally.
+From \cite{ftmpst} we know that validity then holds globally if it holds for each local process.
+
+% labels over which values are sent: l1b, l2a
+Labels $\LOneB$ and $\LTwoA$ are used to send values that can be accepted.
+
+% l1b
+Label $\LOneB$ is used to send messages of sort $\Promise{\Value}$.
+% % acceptors send their previous knowledge to proposer, if available
+These messages are sent from the acceptors to a proposer and may contain the acceptors' accepted proposal.
+Should an acceptor previously have accepted a proposal, that proposal then contains the accepted value.
+% % this is either an initial accepted value or an accepted value that was proposed by a proposer
+The accepted proposal $pr$ is either the acceptor's initial accepted proposal $pr_{\AcceptorIndex}$ or a proposal that was previously proposed by a proposer.
+$pr$ is sent over $\LOneB$ without alteration.
+The proposer receiving these messages stores them in $\VectorV$ without changing their values.
+
+% l2a
+Proposers send a message of sort $\Proposal{\Value}$ to their quorum of acceptors over label $\LTwoA$.
+% % promiseValue returns value from input list (which contains either initial or proposed values; received in l1b) or a fresh value, that is then proposed
+To do so, proposers pick the best value from a proposal in $\VectorV$, if any is available, with $\promiseValueName$.
+An entry in $\VectorV$ contains a proposal $prop$ if it is of the form $\Promise{\Just{prop}}$.
+These proposals are either some acceptor's initial accepted proposal or a proposal proposed by a proposer.
+Not all entries in $\VectorV$ contain a proposal but if at least one does, $\promiseValueName$ returns the value of one of them.
+If no entry in $\VectorV$ contains a proposal a fresh value is chosen and returned.
+% % the return value of promiseValue is not altered before proposing
+In both cases the return value of $\promiseValueName$ is not altered before being sent over label $\LTwoA$, which constitutes proposing that value.
+% % acceptors update their accepted value without alteration
+Acceptors that receive and accept this proposal store it without alteration.
+
+% l1a is not used to transmit choosable values
+Since label $\LOneA$ is not used to transmit values that can be accepted, we conclude that validity holds for each local process and thus globally.
