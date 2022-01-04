@@ -281,8 +281,8 @@ Then the subprocess terminates.
 If the acceptor does not receive a proposal or the proposal number of $pr'$ is less than $n$ the subprocess terminates without updating $n$ or $pr$.
 
 \section{Failure Patterns}
-Chandra and Toueg introduce a class of failure detectors $\FailureDetectorClass$, which is called \emph{eventually weak} in \cite{failure_detectors}.
-Failure detectors in $\FailureDetectorClass$ satisfy the following properties: (1) eventually every process that crashes is permanently suspected by some correct process and (2) eventually some correct process is never suspected by any correct process.
+Chandra and Toueg introduce a class of failure detectors $\FailureDetectorClass$, which is called \emph{eventually strong} in \cite{failure_detectors}.
+Failure detectors in $\FailureDetectorClass$ satisfy the following properties: (1) eventually every process that crashes is permanently suspected by every correct process and (2) eventually some correct process is never suspected by any correct process.
 
 In all three phases modeled in the global type it is possible to suspect senders.
 In phases $\POneA$ and $\PTwoA$, with labels $\LOneA$ and $\LTwoA$ respectively, the acceptors may suspect some proposers.
@@ -300,7 +300,7 @@ For Paxos to work a majority of acceptors needs to be alive.
 That means that the number of failed acceptors $f$ needs to satisfy $n > 2f$ where $n$ is the total number of acceptors, except in one case where there are 2 acceptors.
 Then, at most one acceptor may crash \cite{lower_bounds}.
 For acceptors $\FPcrash$ returns $\True$ if, and only if, at least one more acceptor may crash, i.e. $n > 2(f + 1)$ is satisfied.
-For proposers $\FPcrash$ is implemented with a failure detector in $\FailureDetectorClass$.
+Let $\SetOfPermanentlySuspectedProcesses$ be the set of permanently suspected processes. For proposers $\FPcrash$ returns $\True$ if $\AQ\setminus\SetOfPermanentlySuspectedProcesses$ is not a quorum, i.e. if the set of acceptors in $\AQ$ that are not permanently suspected is not enough to form a majority of acceptors.
 
 In Paxos there is no need to reject outdated messages so $\FPuget$ is implemented with a constant $\True$.
 
