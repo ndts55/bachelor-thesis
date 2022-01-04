@@ -409,12 +409,21 @@ This concludes the type check and proves that the model is well-typed.
 % def: all non-failing participants eventually decide
 The implementation satisfies termination.
 
+% global type + well-typedness = progress (either loops or terminates)
+% that's all I have...
+
 \subsection{Agreement}
-% def: all decision values are the same
-The implementation satisfies agreement.
+% def: every correct process must agree on the same value
+Any proposer $\ProposerIndex$ requires that the set of correct acceptors in its quorum of acceptors is itself a quorum, i.e. an accepting set with which a value can be chosen \cite{lower_bounds}.
+Should message loss occur in labels $\LOneA$ or $\LOneB$, $\ProposerIndex$ restarts the algorithm.
+This broadcast is weakly reliable and thus only fails when $\ProposerIndex$ crashes or terminates because $\FPwskip$ disallows suspicion of correct live proposers in acceptors.
+Given the definition of $\promiseValueName$, $\ProposerIndex$ will only propose a fresh value if none of the acceptors have accepted a proposal yet.
+At least one acceptor in every other proposer's quorum is contained in $\ProposerIndex$'s quorum.
+Thus, if a majority of acceptors accept $\ProposerIndex$'s proposal it is sent to every other proposer when they reach phase $\POneB$.
+These proposers then propagate the accepted value by proposing it again but with a higher proposal number.
+This way all correct acceptors accept the same value.
 
 \subsection{Validity}
-% def: each decision value is an initial (or rather proposed) value of a participant
 % The implementation satisfies validity.
 To prove validity for our model we examine the communication structure and the origins of the accepted values.
 % global type + well-typedness = communication structure is as specfied
