@@ -75,7 +75,7 @@ Should the proposer crash the algorithm ends for this particular proposer and qu
 \section{Functions}
 We define some functions which we use in the next section to define the processes.
 
-\[\operatorname{proposalNumber} : \mathbb{N} \times \mathbb{N} \to \mathbb{N}\]
+\[\proposalNumberName : \mathbb{N} \times \mathbb{N} \to \mathbb{N}\]
 
 $\proposalNumber{n}{p}$ returns a proposal number for proposer $p$ when given a natural number $n$.
 It is used to pick a number for the prepare request in phase $\POneA$, which is also used in phase $\PTwoA$ in the actual proposal.
@@ -92,14 +92,14 @@ This way different proposers never issue a proposal with the same proposal numbe
 
 We require $\proposalNumber{n}{p}$ to be strictly increasing for each proposer $p$ so every proposer uses a higher proposal number than any it has already used.
 
-\[\operatorname{promiseValue} : \List{\Promise{a}} \to a\]
+\[\promiseValueName : \List{\Promise{a}} \to a\]
 
 $\promiseValue{ps}$ returns a fresh value if none of the promises in $ps$ contain a value. Otherwise, the best value is returned. Usually, that means the value with the highest associated proposal number.
 A promise contains a value $v$ if it is of the form $\Promise{\Just{v}}$.
 With this function we can model the picking of a value for a proposal in phase $\PTwoA$.
 
 \begin{align*}
-&\operatorname{anyNack} : \List{\Promise{a}} \to \Bool\\
+&\anyNackName : \List{\Promise{a}} \to \Bool\\
 &\anyNack{\EmptyList} = \False\\
 &\anyNack{\ListPattern{\Nack{\Wildcard}}{\Wildcard}} = \True\\
 &\anyNack{\ListPattern{\Wildcard}{xs}} = \anyNack{xs}
@@ -109,7 +109,7 @@ $\anyNack{ps}$ returns $\True$ if the list contains at least one promise of the 
 Otherwise, it returns $\False$.
 
 \begin{align*}
-&\operatorname{promiseCount} : \List{\Promise{a}} \to \mathbb{N}\\
+&\promiseCountName : \List{\Promise{a}} \to \mathbb{N}\\
 &\promiseCount{\EmptyList} = 0\\
 &\promiseCount{\ListPattern{\Promise{\Wildcard}}{xs}} = 1 + \promiseCount{xs}\\
 &\promiseCount{\ListPattern{\Wildcard}{xs}} = \promiseCount{xs}
@@ -120,19 +120,19 @@ $\promiseCount{ps}$ takes a list of promises $ps$ and calculates the number of p
 $\anyNack{ps}$ and $\promiseCount{ps}$ are used in the proposer to decide which branch to take in phase $\PTwoA$.
 
 \begin{align*}    
-&\operatorname{gt}: a \to \Maybe{a} \to \Bool\\
+&\greaterThanName : a \to \Maybe{a} \to \Bool\\
 &\greaterThan{\Wildcard}{\Nothing} = \True\\
 &\greaterThan{a}{\Just{b}} = a > b
 \end{align*}
 
 \begin{align*}
-&\operatorname{ge}: a \to \Maybe{a} \to \Bool\\
+&\greaterEqualName : a \to \Maybe{a} \to \Bool\\
 &\greaterEqual{\Wildcard}{\Nothing} = \True\\
 &\greaterEqual{a}{\Just{b}} = a \ge b
 \end{align*}
 
 \begin{align*}    
-&\operatorname{nFromProposal} : \Proposal{a} \to \mathbb{N}\\
+&\nFromProposalName : \Proposal{a} \to \mathbb{N}\\
 &\nFromProposal{\ProposalC{n}{\Wildcard}} = n
 \end{align*}
 
@@ -140,7 +140,7 @@ $\nFromProposal{p}$ retrieves the proposal number $n$ inside proposal $p$, which
 
 $\nFromProposal{p}$, $\greaterThan{a}{ma}$, and $\greaterEqual{a}{ma}$ are used to extract and compare proposal numbers in phase $\PTwoB$ of the acceptor.
 
-\[\operatorname{gen\AQ} : \mathbb{N} \times \mathbb{N} \times \mathbb{N} \to \List{\mathbb{N}}\]
+\[\genAqName : \mathbb{N} \times \mathbb{N} \times \mathbb{N} \to \List{\mathbb{N}}\]
 
 $\genAq{\ProposerIndex}{\AcceptorCount}{\ProposerCount}$ returns a randomly selected set $\AQ$ with $\AQ \subseteq A = \Curly{1, \dots, \AcceptorCount}$ and $|\AQ| > \frac{|A|}{2}$.
 $\AQ$ consists of any majority of acceptors.
