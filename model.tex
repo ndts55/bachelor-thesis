@@ -171,7 +171,10 @@ $m$ is initialized to the same value as $n$ but is never updated.
 $\VectorV$ is used in the proposer to collect and evaluate the responses from the acceptors.
 It is always initialized with an empty list $\EmptyList$.
 Shared-point $\SharedPoint{n}$ is used to initiate a session.
-Afterwards, the process behaves like $\Pp{} $.
+Afterwards, the process behaves like $\Pp{}$.
+We assume a mechanism for electing a distinguished proposer, which acts as the leader \cite{lamport2001paxos}.
+The leader is the only proposer that can try issuing proposers.
+A new leader is elected via the same mechanism when the previous leader terminates or crashes.
 
 $\PaInit{\AcceptorIndex}{\ProposerIndex}{\AcceptorCount}{\ProposerCount}{n}{pr}$ is initialized with the acceptor's index $\AcceptorIndex$, the proposer index $\ProposerIndex$, which is always $\AcceptorCount + 1$, $\AcceptorCount$, $\ProposerCount$, initial knowledge for the highest promised proposal number $n$, if available, and initial knowledge for the most recently accepted proposal $pr$, if available.
 $n$ is of type $\Maybe{\mathbb{N}}$ and $pr$ is of type $\Maybe{\Paren{\Proposal{\Value}}}$ thus both can be $\Nothing$.
@@ -181,7 +184,6 @@ We observe that each subprocess in an acceptor accesses a different channel $s$,
 Afterwards, each subprocess behaves like $\PaOne$.
 
 \subsection{Proposer}
-% TODO "We assume leader election for proposers", or similar.
 To define the proposer and the acceptor we introduce a function $\update{n}{m}$ which replaces the value inside $n$ with the value of $m$.
 We use this function to update the local variables of the processes.
 
@@ -355,6 +357,7 @@ Then we will examine the scenario using reduction rules starting at system initi
 
 \subsection{Scenario}
 Figure \ref{fig:scenario} provides an overview where $\Acceptor{1}$, $\Acceptor{2}$, and $\Acceptor{3}$ are the acceptors and $\Proposer{4}$ and $\Proposer{5}$ are the proposers.
+$\Proposer{5}$ is elected to be the leader.
 In steps $\Paren{1}$ to $\Paren{5}$, $\Proposer{5}$ completes the Paxos algorithm with $\Acceptor{2}$ and $\Acceptor{3}$ and terminates.
 
 At this point $\Acceptor{2}$ has promised not to accept any proposal numbered less than $10$ and has accepted the value $\ABC$.
@@ -552,6 +555,7 @@ By applying $\RWsel$ once, $\RWbran$ twice we obtain:
 \end{align*}
 
 Now $\Proposer{5}$ can send its proposal to $\Acceptor{2}$ and $\Acceptor{3}$ and terminate.
+$\Proposer{4}$ will be the new leader.
 To do so we apply $\RUsend$ and $\RUget$ twice.
 $\Acceptor{2}$ and $\Acceptor{3}$ accept the proposal and the respective subprocesses terminate.
 Note that we apply $\RWskip$ in $\Acceptor{1}$ and terminate that subprocess as well.
