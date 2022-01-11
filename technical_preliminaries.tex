@@ -1,9 +1,21 @@
 \chapter{Technical Preliminaries}
+In this chapter we will introduce the Paxos consensus algorithm, Multiparty Session Types (\MPST), Fault-Tolerant Multiparty Session Types (\FTMPST), and some notation.
+% FTMPST, Paxos, Some Notation
+\section{Paxos}
 
-First, we define the sorts, some additional notation, and use them to define the global type.
-Afterwards we define some sets and functions to create the processes.
+\section{Multiparty Session Types}
+% TODO Introduce text from KP properly.
+Multiparty Session Types (\MPST) are used to statically ensure correctly coordinated behavior in systems without global control (\cite{hondaYoshidaCarbone16,CoppoEtal15}).
+One important such property is progress, \ie the absence of deadlock. Like with every other static typing approach, the main advantage is their efficiency, \ie they avoid the problem of state space explosion.
 
-% TODO extend syntax to include function calls -> proofs are 'straight-forward'
-% TODO type variable syntax for declaration of sorts
-% TODO describe Paxos
-% TODO Quorum definition (with all the definition it relies on)?
+\MPST are designed to abstractly capture the structure of communication protocols.
+They describe global behaviors as \emph{sessions}, \ie units of
+conversations \cite{hondaYoshidaCarbone16,BettiniEtal08,BocciEtal10}. The participants of such sessions are called \emph{roles}.
+\emph{Global types} specify protocols from a global point of view.
+These types are used to reason about processes formulated
+in a \emph{session calculus}. Most of the existing session calculi are
+variants of the $ \pi $-calculus \cite{MilnerParrowWalker92}.
+
+\section{Fault-Tolerant Multiparty Session Types}
+
+\section{Additional Notation}

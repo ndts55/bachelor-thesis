@@ -1,6 +1,6 @@
 \chapter{Analysis}
 We take the model from the previous chapter, type-check it, and discuss what the type check means for agreement, validity, and termination of the Paxos algorithm.
-To execute the type check we project the global type to local types and use the typing rules given in \cite{ftmpst} to prove that our model is well-typed.
+To execute the type check we project the global type to local types and use the typing rules given in \cite{PetersEtal21} to prove that our model is well-typed.
 
 \section{Local Types}
 Because no communication takes place in the outer session, the  outer session's type is $\OuterGlobalType = \End$.
@@ -38,7 +38,7 @@ Finally, it receives the proposer's branching choice.
 $\Gamma$ contains the type for our shared-points $\OuterSharedPoint$ and $\SharedPoint{n}$ where $\AcceptorCount + 1 \leq n \leq \AcceptorCount + \ProposerCount$.
 
 We start the type-check with the global environment $\Gamma$ and the entry-point of the model $\Sys{\AcceptorCount}{\ProposerCount}$.
-Then, we apply the typing rules in \cite{ftmpst} in a proof tree and show that the model can be derived from the axioms $\RVar$ and $\REnd$.
+Then, we apply the typing rules in \cite{PetersEtal21} in a proof tree and show that the model can be derived from the axioms $\RVar$ and $\REnd$.
 
 \subsection{System Initialization}
 % (S0)
@@ -419,20 +419,20 @@ In this case the proposer will be unable to issue a valid proposal.
 Because $\FPcrash$ returns $\True$ if $\AQ\setminus\SetOfPermanentlySuspectedProcesses$, where $\SetOfPermanentlySuspectedProcesses$ is the set of processes permanently suspected by a failure detector in $\FailureDetectorClass$, is not a quorum, the proposer eventually crashes.
 Proposers either complete the Paxos algorithm after phase $\PTwoA$ or crash.
 
-In \cite{lamport2001paxos} \citeauthor{lamport2001paxos} describes a scenario in which two proposers loop endlessly, never having their proposals accepted:
+In \cite{Lamport01} \citeauthor{Lamport01} describes a scenario in which two proposers loop endlessly, never having their proposals accepted:
 Proposer $p$ completes phase 1 for a proposal number $n_1$. Another proposer $q$ then completes phase 1 for a proposal number $n_2 > n_1$.
 Proposer $p$'s phase 2 accept requests for a proposal numbered $n_1$ are ignored because the acceptors have all promised not to accept any new proposal numbered less than $n_2$.
 So, proposer $p$ then begins and completes phase 1 for a new proposal number $n_3 > n_2$, causing the second phase 2 accept requests of proposer $q$ to be ignored.
 And so on.
 
-From \cite{lamport2001paxos} we know that this problem is solved by electing a single distinguished proposer to be the leader.
+From \cite{Lamport01} we know that this problem is solved by electing a single distinguished proposer to be the leader.
 The leader eventually picks a proposal number high enough for its proposal to be accepted.
 The model assumes some sort of leader selection.
 A new leader is elected when the previous leader terminates.
 
 \subsection{Agreement}
 % def: every correct process must agree on the same value
-Any proposer $\ProposerIndex$ requires that the set of correct acceptors in its quorum of acceptors is itself a quorum, i.e. an accepting set with which a value can be chosen \cite{lower_bounds}.
+Any proposer $\ProposerIndex$ requires that the set of correct acceptors in its quorum of acceptors is itself a quorum, i.e. an accepting set with which a value can be chosen \cite{Lamport06}.
 Should message loss occur in labels $\LOneA$ or $\LOneB$, $\ProposerIndex$ restarts the algorithm.
 This broadcast is weakly reliable and thus only fails when $\ProposerIndex$ crashes or terminates because $\FPwskip$ disallows suspicion of correct live proposers in acceptors.
 Given the definition of $\promiseValueName$, $\ProposerIndex$ will only propose a fresh value if none of the acceptors have accepted a proposal yet.
@@ -447,7 +447,7 @@ To prove validity for our model we examine the communication structure and the o
 % global type + well-typedness = communication structure is as specfied
 Because the model is well-typed we know the communication structure is as specified in global type $\GlobalType$.
 % Because of the global type and the communication protocol it ensures following session fidelity in Theorem 4—there are no communication mismatches and the received messages are of the expected sort—, then validity holds globally.
-From \cite{ftmpst} we know that validity then holds globally if it holds for each local process.
+From \cite{PetersEtal21} we know that validity then holds globally if it holds for each local process.
 
 % labels over which values are sent: l1b, l2a
 Labels $\LOneB$ and $\LTwoA$ are used to send values that can be accepted.

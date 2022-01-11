@@ -5,18 +5,18 @@ For example in state machine replication or when deciding which database transac
 For such a distributed system to behave correctly the consensus algorithm needs to be correct.
 Thus, analyzing consensus algorithms is important.
 
-To achieve consensus, consensus algorithms must satisfy the following properties: termination, validity, and agreement \cite{dist_sys}.
+To achieve consensus, consensus algorithms must satisfy the following properties: termination, validity, and agreement \cite{CoulourisEtal01}.
 Proving these properties can be complicated.
 Model checking tools lead to big state-spaces so static analysis is preferable.
-For static analysis Multiparty Session Types are particularly interesting because session typing can ensure protocol conformance and the absence of communication errors and deadlocks \cite{mpstbd}.
+For static analysis Multiparty Session Types are particularly interesting because session typing can ensure protocol conformance and the absence of communication errors and deadlocks \cite{ScalasEtal18}.
 
 Due to the presence of faulty processes and unreliable communication consensus algorithms are designed to be fault-tolerant.
 % to better analyze we can't disregard fault-tolerance
 % so we need a fault-tolerant extension to MPST
 Modelling fault-tolerance is not possible using Multiparty Session Types, thus a fault-tolerant extension is necessary.
-\citeauthor{ftmpst} developed such an extension called Fault-Tolerant Multiparty Session Types.
+\citeauthor{PetersEtal21} developed such an extension called Fault-Tolerant Multiparty Session Types.
 
-In this work we will use Fault-Tolerant Multiparty Session Types to analyze the consensus algorithm Paxos, as described in \cite{lamport2001paxos}.
+In this work we will use Fault-Tolerant Multiparty Session Types to analyze the consensus algorithm Paxos, as described in \cite{Lamport01}.
 
 % TODO talk about Paxos, overview of what it is and what it does
 % TODO give outline of the following chapters
@@ -24,11 +24,11 @@ In this work we will use Fault-Tolerant Multiparty Session Types to analyze the 
 % \section{Task}
 % \IMRADlabel{methods}
 % The task for the upcoming work can be split into two subtasks.
-% First, fault-tolerant Multiparty Session Types\cite{ftmpst} are used for the analysis of Paxos\cite{lamport2001paxos}.
+% First, fault-tolerant Multiparty Session Types\cite{PetersEtal21} are used for the analysis of Paxos\cite{Lamport01}.
 % Second, the applicability of fault-tolerant Multiparty Session Types to such analyses is evaluated.
 
 % For the first subtask a model of the Paxos algorithm will be constructed.
-% This model will be manually verified using the reduction rules for (fault-tolerant) Multiparty Session Types\cite{mp_async_st,ftmpst}.
+% This model will be manually verified using the reduction rules for (fault-tolerant) Multiparty Session Types\cite{HondaEtal08,PetersEtal21}.
 
 % The second part will be an evaluation of the applicability of fault-tolerant Multiparty Session Types to such analyses.
 % Both the model and its verification from the previous part are evaluated to determine how well fault-tolerant Multiparty Session Types are suited to real-world analyses.

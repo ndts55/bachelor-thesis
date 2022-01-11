@@ -144,7 +144,7 @@ $\nFromProposal{p}$, $\greaterThan{a}{ma}$, and $\greaterEqual{a}{ma}$ are used 
 
 $\genAq{\ProposerIndex}{\AcceptorCount}{\ProposerCount}$ returns a randomly selected set $\AQ$ with $\AQ \subseteq A = \Curly{1, \dots, \AcceptorCount}$ and $|\AQ| > \frac{|A|}{2}$.
 $\AQ$ consists of any majority of acceptors.
-In Paxos a majority of acceptors forms a quorum, i.e. an accepting set with which a value can be chosen \cite{lower_bounds}.
+In Paxos a majority of acceptors forms a quorum, i.e. an accepting set with which a value can be chosen \cite{Lamport06}.
 We use this function when initiating the proposers to give them a quorum of acceptors with which they communicate.
 
 \section{Processes}
@@ -172,7 +172,7 @@ $\VectorV$ is used in the proposer to collect and evaluate the responses from th
 It is always initialized with an empty list $\EmptyList$.
 Shared-point $\SharedPoint{n}$ is used to initiate a session.
 Afterwards, the process behaves like $\Pp{}$.
-We assume a mechanism for electing a distinguished proposer, which acts as the leader \cite{lamport2001paxos}.
+We assume a mechanism for electing a distinguished proposer, which acts as the leader \cite{Lamport01}.
 The leader is the only proposer that can try issuing proposers.
 A new leader is elected via the same mechanism when the previous leader terminates or crashes.
 
@@ -259,7 +259,7 @@ Then the subprocess terminates.
 If the acceptor does not receive a proposal or the proposal number of $pr'$ is less than $n$ the subprocess terminates without updating $n$ or $pr$.
 
 \section{Failure Patterns}
-Chandra and Toueg introduce a class of failure detectors $\FailureDetectorClass$, which is called \emph{eventually strong} in \cite{failure_detectors}.
+Chandra and Toueg introduce a class of failure detectors $\FailureDetectorClass$, which is called \emph{eventually strong} in \cite{ChandraToueg96}.
 Failure detectors in $\FailureDetectorClass$ satisfy the following properties: (1) eventually every process that crashes is permanently suspected by every correct process and (2) eventually some correct process is never suspected by any correct process.
 
 In all three phases modeled in the global type it is possible to suspect senders.
@@ -276,7 +276,7 @@ For the weakly reliable broadcast in phase $\PTwoA$, the failure pattern $\FPwsk
 
 For Paxos to work a majority of acceptors needs to be alive.
 That means that the number of failed acceptors $f$ needs to satisfy $n > 2f$ where $n$ is the total number of acceptors, except in one case where there are 2 acceptors.
-Then, at most one acceptor may crash \cite{lower_bounds}.
+Then, at most one acceptor may crash \cite{Lamport06}.
 For acceptors $\FPcrash$ returns $\True$ if, and only if, at least one more acceptor may crash, i.e. $n > 2(f + 1)$ is satisfied.
 Let $\SetOfPermanentlySuspectedProcesses$ be the set of processes permanently suspected by a failure detector in $\FailureDetectorClass$. For proposers $\FPcrash$ returns $\True$ if $\AQ\setminus\SetOfPermanentlySuspectedProcesses$ is not a quorum, i.e. if the set of acceptors in $\AQ$ that are not permanently suspected is not enough to form a majority of acceptors.
 
