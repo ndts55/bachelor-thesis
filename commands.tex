@@ -1,7 +1,6 @@
 % General typesetting stuff
 \newcommand{\Curly}[1]{\left\{#1\right\}}
 \newcommand{\Paren}[1]{\left(#1\right)}
-% TODO Use TUD Design blue instead of predefined teal.
 \newcommand{\comment}[1]{\;\textcolor{teal}{#1}}
 \def\IndentationSize{0.5em}
 \newcommand{\Indent}[1]{\hspace*{\IndentationSize * #1}}
@@ -70,8 +69,8 @@
 \newcommand{\FailureDetectorClass}[0]{\Diamond\mathscr{S}}
 
 % Paxos Process
-\newcommand{\AcceptorCount}[0]{c^A}
-\newcommand{\ProposerCount}[0]{c^P}
+\newcommand{\AcceptorCount}[0]{c_A}
+\newcommand{\ProposerCount}[0]{c_P}
 \newcommand{\Accept}[0]{\mathnormal{Accept}}
 \newcommand{\Restart}[0]{\mathnormal{Restart}}
 \newcommand{\Abort}[0]{\mathnormal{Abort}}
