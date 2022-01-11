@@ -124,7 +124,6 @@ Let $\ProposerIndex = \AcceptorCount + 1, \AQ = \genAq{k}{\AcceptorCount}{\Propo
 This gives us the values for the arguments of $\PpInitName$.
 We observe that $\GammaSatisfiesType{p}{\mathbb{N}}$, $\GammaSatisfiesType{k}{\mathbb{N}}$, $\GammaSatisfiesType{n}{\mathbb{N}}$, $\GammaSatisfiesType{m}{\mathbb{N}}$, and $\GammaSatisfiesType{\AQ}{\List{\mathbb{N}}}$.
 $p$, $k$, $n$, and $m$ are natural numbers and $\AQ$ is a list of natural numbers under global environment $\Gamma$.
-% TODO we require \GEnvEntry{\VectorV}{\List{\Promise{\Value}}}?
 
 To abbreviate the proposer's local type in the following proof-trees we define the following sub-formulae.
 
@@ -406,11 +405,30 @@ This concludes the type check and proves that the model is well-typed.
 % Agreement
 % % Every correct process must agree on the same value.
 \subsection{Termination}
-% def: all non-failing participants eventually decide
-The implementation satisfies termination.
+The global type and well-typedness ensure the absence of deadlocks.
+This means that the processes either loop forever or terminate.
+Acceptors terminate if all of their sub-processes terminate.
+Each sub-process of an acceptor corresponds to one proposer.
+A sub-process can only terminate via the weakly reliable broadcast in $\PaTwo$, which depends on the corresponding proposer.
+If that proposer crashes or its quorum does not include the acceptor, the sub-process terminates because $\FPwskip$ returns $\True$ and the default branch is $\Abort$, which terminates immediately.
+The termination of a sub-process with a correct proposer requires the termination of that proposer.
+Thus, we need to prove that correct proposers terminate to prove termination for our model.
 
-% global type + well-typedness = progress (either loops or terminates)
-% that's all I have...
+If the set of acceptors in a proposer's quorum $\AQ$ that are correct is not enough to form a majority of acceptors, that proposer repeatedly restarts the algorithm.
+In this case the proposer will be unable to issue a valid proposal.
+Because $\FPcrash$ returns $\True$ if $\AQ\setminus\SetOfPermanentlySuspectedProcesses$, where $\SetOfPermanentlySuspectedProcesses$ is the set of processes permanently suspected by a failure detector in $\FailureDetectorClass$, is not a quorum, the proposer eventually crashes.
+Proposers either complete the Paxos algorithm after phase $\PTwoA$ or crash.
+
+In \cite{lamport2001paxos} \citeauthor{lamport2001paxos} describes a scenario in which two proposers loop endlessly, never having their proposals accepted:
+Proposer $p$ completes phase 1 for a proposal number $n_1$. Another proposer $q$ then completes phase 1 for a proposal number $n_2 > n_1$.
+Proposer $p$'s phase 2 accept requests for a proposal numbered $n_1$ are ignored because the acceptors have all promised not to accept any new proposal numbered less than $n_2$.
+So, proposer $p$ then begins and completes phase 1 for a new proposal number $n_3 > n_2$, causing the second phase 2 accept requests of proposer $q$ to be ignored.
+And so on.
+
+From \cite{lamport2001paxos} we know that this problem is solved by electing a single distinguished proposer to be the leader.
+The leader eventually picks a proposal number high enough for its proposal to be accepted.
+The model assumes some sort of leader selection.
+A new leader is elected when the previous leader terminates.
 
 \subsection{Agreement}
 % def: every correct process must agree on the same value
