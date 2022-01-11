@@ -1,0 +1,222 @@
+\newcommand{\TODO}[1]{\textcolor{red}{#1}}
+\DeclareUnicodeCharacter{2212}{-}
+
+% \newtheorem{condition}[corollary]{Condition}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  abbreviations and key words  %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% makros for text
+\newcommand{\ie}{i.e.,\xspace}
+\newcommand{\eg}{e.g.\xspace}
+\newcommand{\wrt}{w.r.t.\ }
+\newcommand{\cf}{cf.\ }
+\newcommand{\MPST}{MPST\xspace}
+\newcommand{\piCal}{$ \pi $-calculus\xspace}
+\newcommand{\PiCal}{$ \pi $-Calculus\xspace}
+\newcommand{\strongR}{strong\-ly re\-li\-ab\-le\xspace}
+\newcommand{\StrongR}{Strong\-ly Re\-li\-ab\-le\xspace}
+\newcommand{\weakR}{weak\-ly re\-li\-ab\-le\xspace}
+\newcommand{\WeakR}{Weak\-ly Re\-li\-ab\-le\xspace}
+\newcommand{\unrel}{un\-re\-li\-ab\-le\xspace}
+\newcommand{\Unrel}{Un\-re\-li\-ab\-le\xspace}
+
+% makros for formulas
+\newcommand{\iR}{\operatorname{r}}
+\newcommand{\iU}{\operatorname{u}}
+\newcommand{\iW}{\operatorname{w}}
+\newcommand{\Set}[2][]{\left\lbrace #1 #2 #1 \right\rbrace}
+\newcommand{\nat}{\mathbb{N}}
+\newcommand{\deff}{\; \triangleq \;}
+\newcommand{\deffTerms}{\; \mathop{::=} \;}
+\newcommand{\sepTerms}{\hspace{0.75em} | \hspace{0.75em}}
+\newcommand{\logdot}{. \;}
+\newcommand{\Subst}[2]{{\Set{ \nicefrac{#1}{#2} }}}
+\newcommand{\Length}[1]{\left| #1 \right|}
+\newcommand{\indexSet}[1][I]{\mathrm{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  multiparty session types  %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% names, variables, channels, ...
+\newcommand{\default}{\operatorname{d}}
+\newcommand{\roles}{\mathcal{R}}
+\newcommand{\Role}[1][r]{\mathsf{#1}}
+\newcommand{\Roles}[1]{\operatorname{R}\!\left( #1 \right)}
+\newcommand{\Actors}[1]{\operatorname{A}\!\left( #1 \right)}
+\newcommand{\labels}{\mathcal{L}}
+\newcommand{\Label}[1][l]{\mathit{#1}}
+\newcommand{\LabelD}{\Label_{\operatorname{d}}}
+\newcommand{\LabelB}{\Label_{\operatorname{b}}}
+\newcommand{\names}{\mathcal{N}}
+\newcommand{\FreeNames}[1]{\operatorname{FN}\!\left( #1 \right)}
+\newcommand{\BoundNames}[1]{\operatorname{BN}\!\left( #1 \right)}
+\newcommand{\Args}[1][x]{\mathit{#1}}
+\newcommand{\Chan}[1][s]{\mathit{#1}}
+\newcommand{\typeVars}{\mathcal{V}_{\operatorname{T}}}
+\newcommand{\TypeV}[1][t]{\mathit{#1}}
+\newcommand{\procVars}{\mathcal{V}_{\operatorname{P}}}
+\newcommand{\ProcV}[1][X]{\mathit{#1}}
+\newcommand{\atomicTypes}{\mathcal{A}}
+\newcommand{\AtomicType}[1]{\mathrm{#1}}
+\newcommand{\sorts}{\mathcal{S}}
+\newcommand{\Sort}[1][S]{\mathrm{#1}}
+\newcommand{\expressions}{\mathcal{E}}
+\newcommand{\Expr}[1][e]{#1}
+\newcommand{\bool}{\mathbb{B}}
+\newcommand{\true}{\mathtt{t}}
+\newcommand{\false}{\mathtt{f}}
+
+% global types
+\newcommand{\globalTypes}{\mathcal{G}}
+\newcommand{\GT}[1][G]{#1}
+\newcommand{\GTD}{\GT_{\operatorname{d}}}
+\newcommand{\GTB}{\GT_{\operatorname{b}}}
+\newcommand{\GComR}[4]{#1 \to_{\iR} #2{:}{\left< #3 \right>}.#4}
+\newcommand{\GComU}[5]{#1 \to_{\iU} #2{:}#3{\left< #4 \right>}.#5}
+\newcommand{\GComUS}[4]{#1 \to_{\iU} #2{:}#3{\left< #4 \right>}}
+\newcommand{\GBranR}[3]{#1 \to_{\iR} #2{:}{#3}}
+\newcommand{\GBranW}[3]{#1 \to_{\iW} #2{:}{#3}}
+\newcommand{\GPar}[2]{#1 \; || \; #2}
+\newcommand{\GRep}[2]{{\left( \mu #1 \right)} #2}
+\newcommand{\GEnd}{\mathtt{end}}
+\newcommand{\GDel}[6]{#1 \to #2{:}{\left< \Typed{\AT{#3}{#4}}{#5} \right>}.#6}
+
+% local types
+\newcommand{\localTypes}{\mathcal{T}}
+\newcommand{\LT}[1][T]{#1}
+\newcommand{\LTD}{\LT_{\operatorname{d}}}
+\newcommand{\LTB}{\LT_{\operatorname{b}}}
+\newcommand{\LSendR}[3]{{\left[ #1 \right]}\mathsf{!}_{\iR}{\left< #2 \right>}.#3}
+\newcommand{\LGetR}[3]{{\left[ #1 \right]}\mathsf{?}_{\iR}{\left< #2 \right>}.#3}
+\newcommand{\LSendU}[4]{{\left[ #1 \right]}\mathsf{!}_{\iU}#2{\left< #3 \right>}.#4}
+\newcommand{\LGetU}[4]{{\left[ #1 \right]}\mathsf{?}_{\iU}#2{\left< #3 \right>}.#4}
+\newcommand{\LSelR}[2]{{\left[ #1 \right]}\mathsf{!}_{\iR}{#2}}
+\newcommand{\LBranR}[2]{{\left[ #1 \right]}\mathsf{?}_{\iR}{#2}}
+\newcommand{\LSelW}[2]{{\left[ #1 \right]}\mathsf{!}_{\iW}{#2}}
+\newcommand{\LBranW}[2]{{\left[ #1 \right]}\mathsf{?}_{\iW}{#2}}
+\newcommand{\LRep}[2]{{\left( \mu #1 \right)} #2}
+\newcommand{\LEnd}{\mathtt{end}}
+\newcommand{\LDelA}[5]{{\left[ #1 \right]}\mathsf{!}{\left< \Typed{\AT{#2}{#3}}{#4} \right>}.#5}
+\newcommand{\LDelB}[5]{{\left[ #1 \right]}\mathsf{?}{\left< \Typed{\AT{#2}{#3}}{#4} \right>}.#5}
+
+% session calculus
+\newcommand{\processes}{\mathcal{P}}
+\newcommand{\PT}[1][P]{\ensuremath{\mathit{#1}}}
+\newcommand{\PTD}[1][P]{\PT[#1]_{\operatorname{d}}}
+\newcommand{\PTB}[1][P]{\PT[#1]_{\operatorname{b}}}
+\newcommand{\PReq}[4]{\overline{#1}{\left[ #2 \right]}{\left( #3 \right)}.#4}
+\newcommand{\PAcc}[4]{#1{\left[ #2 \right]}{\left( #3 \right)}.#4}
+\newcommand{\PSendR}[5]{#1{\left[ #2, #3 \right]}\mathsf{!}_{\iR}{\left< #4 \right>}.#5}
+\newcommand{\PGetR}[5]{#1{\left[ #2, #3 \right]}\mathsf{?}_{\iR}{\left( #4 \right)}.#5}
+\newcommand{\PSendU}[6]{#1{\left[ #2, #3 \right]}\mathsf{!}_{\iU}#4{\left< #5 \right>}.#6}
+\newcommand{\PSendUS}[5]{#1{\left[ #2, #3 \right]}\mathsf{!}_{\iU}#4{\left< #5 \right>}}
+\newcommand{\PGetU}[7]{#1{\left[ #2, #3 \right]}\mathsf{?}_{\iU}#4{\left< #5 \right>}{\left( #6 \right)}.#7}
+\newcommand{\PGetUS}[6]{#1{\left[ #2, #3 \right]}\mathsf{?}_{\iU}#4{\left< #5 \right>}{\left( #6 \right)}}
+\newcommand{\PSelR}[5]{#1{\left[ #2, #3 \right]}\mathsf{!}_{\iR}#4.#5}
+\newcommand{\PBranR}[4]{#1{\left[ #2, #3 \right]}\mathsf{?}_{\iR}{#4}}
+\newcommand{\PSelW}[5]{#1{\left[ #2, #3 \right]}\mathsf{!}_{\iW}#4.#5}
+\newcommand{\PSelWS}[4]{#1{\left[ #2, #3 \right]}\mathsf{!}_{\iW}#4}
+\newcommand{\PBranW}[4]{#1{\left[ #2, #3 \right]}\mathsf{?}_{\iW}{#4}}
+\newcommand{\myif}{\mathtt{if}}
+\newcommand{\mythen}{\mathtt{then}}
+\newcommand{\myelse}{\mathtt{else}}
+\newcommand{\PITE}[3]{\myif \; #1 \; \mythen \; #2 \; \myelse \; #3}
+\newcommand{\PPar}[2]{#1 \mid #2}
+\newcommand{\PDelA}[5]{#1{\left[ #2, #3 \right]}\mathsf{!}{\left<\!{\left< #4 \right>}\!\right>}.#5}
+\newcommand{\PDelB}[5]{#1{\left[ #2, #3 \right]}\mathsf{?}{\left(\!{\left( #4 \right)}\!\right)}.#5}
+\newcommand{\PRes}[2]{{\left( \nu #1 \right)} #2}
+\newcommand{\PRep}[2]{{\left( \mu #1 \right)} #2}
+\newcommand{\PEnd}{\mathbf{0}}
+\newcommand{\PCrash}{\bot}
+\newcommand{\Queue}[1][M]{\mathrm{#1}}
+\newcommand{\MQ}[4]{#1_{#2 \to #3}{:}#4}
+\newcommand{\MQS}[3]{#1_{#2 \to #3}}
+\newcommand{\emptyList}{[\,]}
+
+% semantics of processes
+\newcommand{\step}{\longmapsto}
+\newcommand{\steps}{\longmapsto^*}
+\newcommand{\stepsP}{\longmapsto^+}
+\newcommand{\nStep}{\; \not\!\!\longmapsto}
+\newcommand{\compL}[1][\;]{#1\dot{=}#1}
+\newcommand{\nCompL}[1][\;]{#1\not\!\!\dot{=}#1}
+\newcommand{\Eval}[1]{{\operatorname{eval}}{\left( #1 \right)}}
+\newcommand{\fpUGet}{\mathtt{FP}_{\mathtt{uget}}}
+\newcommand{\fpUSkip}{\mathtt{FP}_{\mathtt{uskip}}}
+\newcommand{\fpML}{\mathtt{FP}_{\mathtt{ml}}}
+\newcommand{\fpWSkip}{\mathtt{FP}_{\mathtt{wskip}}}
+\newcommand{\fpCrash}{\mathtt{FP}_{\mathtt{crash}}}
+
+% messages
+\newcommand{\messages}{\mathcal{M}}
+\newcommand{\messageTypes}{\mathcal{MT}}
+\newcommand{\MT}[1][MT]{\mathrm{#1}}
+\newcommand{\MessR}[1]{{\left< #1 \right>^{\iR}}}
+\newcommand{\MessU}[2]{#1{\left< #2 \right>^{\iU}}}
+\newcommand{\MessBR}[1]{#1^{\iR}}
+\newcommand{\MessBW}[1]{#1^{\iW}}
+
+% well-typedness
+\newcommand{\AT}[2]{#1{\left[ #2 \right]}}
+\newcommand{\Typed}[2]{#1{:}#2}
+\newcommand{\compS}{\cdot}
+\newcommand{\Proj}[2]{{#1}{\restriction_{#2}}}
+\newcommand{\Unreliable}[1]{{\operatorname{nsr}}{\left( #1 \right)}}
+
+%%%%%%%%%%%%%%
+%  Examples  %
+%%%%%%%%%%%%%%
+
+% example to explain the syntax
+\newcommand{\GDice}{\GT_{\text{dice}, \iR}}
+\newcommand{\GDiceUC}{\GT_{\text{dice}, \iU}}
+\newcommand{\GDiceW}{\GT_{\text{dice}}}
+\newcommand{\LDice}[1]{\LT_{\Role[#1]:\text{dice}, \iR}}
+\newcommand{\LDiceW}[1]{\LT_{\Role[#1]:\text{dice}}}
+\newcommand{\PDice}{\PT_{\text{dice}}}
+\newcommand{\PDiceD}{\PT_{\Role[3]}}
+\newcommand{\PDiceP}{\PT_{\Role[i]}}
+\newcommand{\PDiceQ}{\PT_{\Role[2]}}
+\newcommand{\PDiceR}{\PT_{\Role[1]}}
+\newcommand{\PDiceUC}{\PT_{\text{dice}, \iU}}
+\newcommand{\PDiceDUC}{\PT_{\Role[3], \iU}}
+\newcommand{\PDicePUC}{\PT_{\Role[i], \iU}}
+\newcommand{\PDiceQUC}{\PT_{\Role[2], \iU}}
+
+% large example
+\newcommand{\GTLE}[2][G]{\GT[#1]_{\operatorname{sub}}\!\left( #2 \right)}
+\newcommand{\GTLEC}[2][G]{\GT[#1]_{\operatorname{ct}}\!\left( #2 \right)}
+\newcommand{\SortBel}{\ensuremath{\Sort_{\mathrm{belief}}}}
+\newcommand{\SortAck}{\ensuremath{\Sort_{\mathrm{ack}}}}
+\newcommand{\RCSys}{\PT[Sys]\!\left( \Role[n], \InitKnowledge \right)}
+%\newcommand{\RCP}[3][P]{\PT[#1]_{\operatorname{p_{1}}}\!\left( #2, #3 \right)}
+\newcommand{\RCP}[2][i]{\PT[P]\!\left( \Role[#1], \Role[n], #2  \right)}
+\newcommand{\RCPe}[2][i]{\PT[P]\!\left( #1, \Role[3], #2  \right)}
+\newcommand{\RCPi}{\PT[P]_{\operatorname{1}}\!\left( \Role[i], \Role[n], r, \Knowledge \right)}
+\newcommand{\RCPio}[2][C]{\PT[P]_{\operatorname{1}}^{\operatorname{#1}}\!\left( \Role[#2], \Role[n], \Role[c], \Knowledge \right)}
+\newcommand{\RCPioe}[4][C]{\PT[P]_{\operatorname{1}}^{\operatorname{#1}}\!\left( #2, \Role[3], #3, #4 \right)}
+\newcommand{\RCPiio}[3][C]{\PT[P]_{\operatorname{2}}^{\operatorname{#1}}\!\left( \Role[#2], \Role[n], \Role[c], #3 \right)}
+\newcommand{\RCPiioe}[4][C]{\PT[P]_{\operatorname{2}}^{\operatorname{#1}}\!\left( #2, \Role[3], #3, #4 \right)}
+\newcommand{\RCPiiio}[2][C]{\PT[P]_{\operatorname{3}}^{\operatorname{#1}}\!\left( \Role[#2], \Role[n], \Role[c], \Knowledge \right)}
+\newcommand{\RCPiiioe}[4][C]{\PT[P]_{\operatorname{3}}^{\operatorname{#1}}\!\left( #2, \Role[3], #3, #4 \right)}
+\newcommand{\RCPiiin}[4][NC]{\PT[P]_{\operatorname{3}}^{\operatorname{#1}}\!\left( \Role[#2], \Role[n], \Role[c], #3, #4 \right)}
+\newcommand{\RCPiiine}[5][NC]{\PT[P]_{\operatorname{3}}^{\operatorname{#1}}\!\left( #2, \Role[3], #3, #4, #5 \right)}
+\newcommand{\RCPiv}{\PT[P]_{\operatorname{4}}\!\left( \Role[i], \Role[n], r, \Knowledge \right)}
+\newcommand{\RCPive}[3]{\PT[P]_{\operatorname{4}}\!\left( #1, \Role[3], #2, #3 \right)}
+\newcommand{\RCPivo}[2][C]{\PT[P]_{\operatorname{4}}^{\operatorname{#1}}\!\left( \Role[#2], \Role[n], \Role[c], \Knowledge \right)}
+\newcommand{\RCPivoe}[4][C]{\PT[P]_{\operatorname{4}}^{\operatorname{#1}}\!\left( #2, \Role[3], #3, #4 \right)}
+\newcommand{\InitKnowledge}[1][]{\ensuremath{\vec{V^{0}_{\Role[#1]}}}} % todo, sieht scheiße aus
+\newcommand{\Knowledge}{\ensuremath{\vec{V}}} %todo
+\newcommand{\KnowledgeE}[2][]{\ensuremath{\vec{V_{#2}^{#1}}}}
+\newcommand{\FuncBest}{\ensuremath{\operatorname{best}}}
+\newcommand{\FuncReceived}{\ensuremath{\operatorname{received}}}
+\newcommand{\FuncCountAck}{\ensuremath{\operatorname{ack}}}
+\newcommand{\FuncUpdate}{\ensuremath{\operatorname{update}}}
+\newcommand{\ceilTwo}[1]{\ensuremath{\bigg\lceil#1\bigg\rceil}}
+\newcommand{\FDS}{\ensuremath{\Diamond \mathcal{S}}\xspace}
+\newcommand{\PTMQ}[1][P]{\ensuremath{\PT[#1]_{\mathit{MQ}}}}
+\newcommand{\ATE}[2]{\AT[]{\Chan[#1]\!}{\Role[#2]}}
+\newcommand{\ImplMajor}{\ensuremath{\big\lceil\frac{\Role[n]-1}{2}\big\rceil}\xspace}
