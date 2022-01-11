@@ -181,15 +181,9 @@ We observe that each subprocess in an acceptor accesses a different channel $s$,
 Afterwards, each subprocess behaves like $\PaOne$.
 
 \subsection{Proposer}
+% TODO "We assume leader election for proposers", or similar.
 To define the proposer and the acceptor we introduce a function $\update{n}{m}$ which replaces the value inside $n$ with the value of $m$.
 We use this function to update the local variables of the processes.
-
-% $\Pp{} = \Mu{X} \update{n}{n + 1} .\\
-% \Indent{1}\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\proposalNumber{n}{m}}} .\\
-% \Indent{1}\DotForall{\AcceptorIndex\in\AQ}{\ReceiveUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}{v_{\AcceptorIndex}}} .\\
-% \Indent{1}\If{\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < \ceil{\frac{\ProposerIndex}{2}}}\\
-% \Indent{2}\Then{\SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Restart}{X}}\\
-% \Indent{2}\Else{\\\Indent{3}\SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Accept}{\\\Indent{3}\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\ProposalC{\proposalNumber{n}{m}}{\promiseValue{\VectorV}}}}.\End}}$
 
 \begin{align*}
 &\Pp{} = \Mu{X} \update{n}{n + 1} .\\
@@ -210,24 +204,6 @@ If any $\Nack{x}$ was received or the number of $\Promise{y}$ received is less t
 Otherwise, the proposer sends its proposal to the acceptors and terminates.
 
 \subsection{Acceptor}
-% $\PaOne = \Mu{X} \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\bot}{n'} .\\
-% \Indent{1}\If{n' = \bot}\\
-% \Indent{2}\Then{\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}.\PaTwo}\\
-% \Indent{2}\Else{\\
-% \Indent{3}\If{\greaterThan{n'}{n}}\\
-% \Indent{3}\Then{\update{n}{n'}.\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Promise{pr}}.\PaTwo}\\
-% \Indent{3}\Else{\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{n}}.\PaTwo}}$
-
-% $\PaTwo = \ReceiveWeaklyP{s}{\ProposerIndex}{\AcceptorIndex}{\Accept . \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\bot}{pr'} .\\
-% \Indent{2}\If{pr' = \bot}\\
-% \Indent{3}\Then{\End}\\
-% \Indent{3}\Else{\\
-% \Indent{4}\If{\greaterEqual{\nFromProposal{pr'}}{n}}\\
-% \Indent{5}\Then{\update{pr}{pr'} . \update{n}{\Just{\nFromProposal{pr'}}}.\End}\\
-% \Indent{5}\Else{\End}}\\
-% \Indent{1} \oplus \Restart.X\\
-% \Indent{1} \oplus \Abort.\End}$
-
 \begin{align*}
 &\PaOne = \Mu{X} \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\bot}{n'} .\\
 &\Indent{1}\If{n' = \bot}\\
@@ -294,13 +270,13 @@ Thus, $\FPml$ is also implemented with a failure detector in $\FailureDetectorCl
 $\FPml\left(s,\ProposerIndex,\AcceptorIndex,l\right)$ returns $\True$ if $\ProposerIndex$ is a proposer, $\AcceptorIndex$ is an acceptor that is not contained in the proposers' quorum of acceptors, and $l = \LOneB$.
 Since any proposer only communicates with the acceptors in its quorum, we can discard any messages from acceptors outside it.
 
-For the weakly reliable broadcast in phase $\PTwoA$, the failure pattern $\FPwskip$ returns $\True$ if, and only if, the corresponding proposer crashed or otherwise terminated.
+For the weakly reliable broadcast in phase $\PTwoA$, the failure pattern $\FPwskip$ returns $\True$ for sub-processes of acceptors if, and only if, the corresponding proposer crashed, otherwise terminated, or the corresponding proposer's quorum does not include that particular acceptor.
 
 For Paxos to work a majority of acceptors needs to be alive.
 That means that the number of failed acceptors $f$ needs to satisfy $n > 2f$ where $n$ is the total number of acceptors, except in one case where there are 2 acceptors.
 Then, at most one acceptor may crash \cite{lower_bounds}.
 For acceptors $\FPcrash$ returns $\True$ if, and only if, at least one more acceptor may crash, i.e. $n > 2(f + 1)$ is satisfied.
-Let $\SetOfPermanentlySuspectedProcesses$ be the set of permanently suspected processes. For proposers $\FPcrash$ returns $\True$ if $\AQ\setminus\SetOfPermanentlySuspectedProcesses$ is not a quorum, i.e. if the set of acceptors in $\AQ$ that are not permanently suspected is not enough to form a majority of acceptors.
+Let $\SetOfPermanentlySuspectedProcesses$ be the set of processes permanently suspected by a failure detector in $\FailureDetectorClass$. For proposers $\FPcrash$ returns $\True$ if $\AQ\setminus\SetOfPermanentlySuspectedProcesses$ is not a quorum, i.e. if the set of acceptors in $\AQ$ that are not permanently suspected is not enough to form a majority of acceptors.
 
 In Paxos there is no need to reject outdated messages so $\FPuget$ is implemented with a constant $\True$.
 
