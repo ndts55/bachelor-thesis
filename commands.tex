@@ -1,5 +1,17 @@
 \input{fault-tolerant-MPST.sty}
 
+\newtheoremstyle{paxos}{}{}{\itshape}{}{\bfseries}{}{.5em}{\thmnote{#3}}
+\theoremstyle{paxos}
+% \theoremstyle{definition}
+\newtheorem*{paxostheoremenv}{P}%{\bfseries}{\itshape}
+
+\theoremstyle{definition}
+\newtheorem{phase}{Phase}
+
+\newcommand{\PaxosTheoremConstructor}[2]{\operatorname{P#1^{#2}}}
+\newcommand{\PaxosTheorem}[1]{\PaxosTheoremConstructor{#1}{}}
+\newcommand{\PaxosSubtheorem}[2]{\PaxosTheoremConstructor{#1}{#2}}
+
 % General typesetting stuff
 \newcommand{\Curly}[1]{\left\{#1\right\}}
 \newcommand{\Paren}[1]{\left(#1\right)}
