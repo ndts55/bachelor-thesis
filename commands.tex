@@ -2,8 +2,8 @@
 
 \newtheoremstyle{paxos}{}{}{\itshape}{}{\bfseries}{}{.5em}{\thmnote{#3}}
 \theoremstyle{paxos}
-% \theoremstyle{definition}
-\newtheorem*{paxostheoremenv}{P}%{\bfseries}{\itshape}
+\newtheorem*{paxostheoremenv}{}
+\newtheorem*{reductionrule}{}
 
 \theoremstyle{definition}
 \newtheorem{phase}{Phase}
@@ -151,6 +151,14 @@
 \newcommand{\ListPattern}[2]{\Paren{#1 \mathtt{\#} #2}}
 \newcommand{\SetOfProposers}[0]{\mathbb{P}}
 \newcommand{\SetOfPermanentlySuspectedProcesses}[0]{\mathbb{F}}
+\newcommand{\Function}[3]{#1 : #2 \to #3}
+\newcommand{\GenericFunction}[0]{f}
+\newcommand{\Domain}[0]{X}
+\newcommand{\Image}[0]{\emptyset}
+\newcommand{\Element}[0]{x}
+\newcommand{\Elements}[0]{\left(\Element_1,\ldots,\Element_n\right)}
+\newcommand{\GenericFunctionCall}[0]{\GenericFunction\Elements}
+\newcommand{\SetOfFunctions}[0]{F_{\Domain, \Image}}
 
 % Example run
 \newcommand{\Nu}[1]{\left(\nu #1\right)}
@@ -161,7 +169,7 @@
 \newcommand{\ABC}[0]{\operatorname{abc}}
 
 % Reduction / Typing Rules
-\newcommand{\Rule}[1]{\Paren{\operatorname{#1}}}
+\newcommand{\Rule}[1]{\ensuremath{\Paren{\operatorname{#1}}}\xspace}
 \newcommand{\RInit}[0]{\Rule{Init}}
 \newcommand{\RUsend}[0]{\Rule{USend}}
 \newcommand{\RUget}[0]{\Rule{UGet}}
@@ -179,7 +187,7 @@
 \newcommand{\RPar}[0]{\Rule{Par}}
 \newcommand{\RRec}[0]{\Rule{Rec}}
 \newcommand{\RVar}[0]{\Rule{Var}}
-\newcommand{\RSideEffect}[0]{\Rule{??}}
+\newcommand{\RSideEffect}[0]{\Rule{Func}}
 
 % Type Check
 \newcommand{\SEnvEntry}[3]{#1\left[#2\right]:#3}
@@ -204,7 +212,7 @@
 \newcommand{\AcceptorProofFalse}[0]{\AcceptorProof{f}}
 \newcommand{\AcceptorProofAccept}[0]{\AcceptorProof{\Accept}}
 
-\newcommand{\Type}[2]{\operatorname{T^{#1}_{#2}}}
+\newcommand{\Type}[2]{\ensuremath{\operatorname{T^{#1}_{#2}}}}
 \newcommand{\Tp}[1]{\Type{P}{#1}}
 \newcommand{\Ta}[1]{\Type{A}{#1}}
 \newcommand{\TpBranch}[0]{\Tp{branch}}
