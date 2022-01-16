@@ -107,8 +107,8 @@
 \newcommand{\SessionRequest}[3]{\overline{#1}\left[#2\right]\left(#3\right)}
 \newcommand{\SessionAccept}[3]{#1\left[#2\right]\left(#3\right)}
 \newcommand{\ParallelFor}[1]{\Pi_{#1}\;}
-\newcommand{\Acceptor}[1]{\operatorname{A_{#1}}}
-\newcommand{\Proposer}[1]{\operatorname{P_{#1}}}
+\newcommand{\Acceptor}[1]{\ensuremath{\operatorname{A_{#1}}}}
+\newcommand{\Proposer}[1]{\ensuremath{\operatorname{P_{#1}}}}
 
 % Functions
 \newcommand{\proposalNumberName}[0]{\operatorname{proposalNumber}}
@@ -140,9 +140,9 @@
 % Math and Programming
 \newcommand{\ceil}[1]{\Big\lceil #1 \Big\rceil}
 \newcommand{\VectorV}[0]{\overrightarrow{V}}
-\newcommand{\If}[1]{\operatorname{if}\; #1}
-\newcommand{\Then}[1]{\operatorname{then}\; #1}
-\newcommand{\Else}[1]{\operatorname{else}\; #1}
+\newcommand{\If}[1]{\operatorname{if}\xspace #1}
+\newcommand{\Then}[1]{\operatorname{then}\xspace #1}
+\newcommand{\Else}[1]{\operatorname{else}\xspace #1}
 \newcommand{\tOr}[0]{\text{ or }}
 \newcommand{\mapstostar}[0]{\longmapsto^*}
 \newcommand{\Wildcard}[0]{\mathtt{\_}}
@@ -188,6 +188,8 @@
 \newcommand{\RRec}[0]{\Rule{Rec}}
 \newcommand{\RVar}[0]{\Rule{Var}}
 \newcommand{\RSideEffect}[0]{\Rule{Func}}
+\newcommand{\RIfT}[0]{\Rule{If-T}}
+\newcommand{\RIfF}[0]{\Rule{If-F}}
 
 % Type Check
 \newcommand{\SEnvEntry}[3]{#1\left[#2\right]:#3}

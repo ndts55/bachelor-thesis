@@ -449,10 +449,10 @@ We apply $\RUsend$ and $\RUget$ twice to send $\proposalNumber{6}{5} = 10$ to $\
 \big )
 \end{align*}
 
-Since $10 \neq \bot$ both $\Acceptor{2}$ and $\Acceptor{3}$ move into their respective $\Else$ branches.
+Since $10 \neq \bot$ both $\Acceptor{2}$ and $\Acceptor{3}$ move into their respective $\Else$ branches by applying $\RIfF$.
 
 \begin{align*}
-&= \NuChannels \big (\\
+&\mapstostar \NuChannels \big (\\
 &\Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
 &\Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{\LOneB}{\bot}{v_2}.\ReceiveUnreliableP{r}{3}{4}{\LOneB}{\bot}{v_3}\dots \comment{= \Proposer{5}}\\
 &\Or \Paren{
@@ -473,14 +473,14 @@ Since $10 \neq \bot$ both $\Acceptor{2}$ and $\Acceptor{3}$ move into their resp
 \big )
 \end{align*}
 
-Because $\greaterThan{10}{\Nothing}$ returns $\True$, $\Acceptor{2}$ and $\Acceptor{3}$ move into their respective $\Then$ branches.
-After executing $\update{n}{10}$, $\Acceptor{2}$ and $\Acceptor{3}$ are ready to send their responses to $\Proposer{5}$.
+Because $\greaterThan{10}{\Nothing}$ returns $\True$, $\Acceptor{2}$ and $\Acceptor{3}$ move into their respective $\Then$ branches by applying $\RIfT$.
+After executing $\update{n}{10}$ with $\RSideEffect$, $\Acceptor{2}$ and $\Acceptor{3}$ are ready to send their responses to $\Proposer{5}$.
 
 % A1: n=Nothing, pr=Nothing
 % A2: n=10, pr=Nothing
 % A3: n=10, pr=Nothing
 \begin{align*}
-&= \NuChannels \big (\\
+&\mapstostar \NuChannels \big (\\
 &\Mu{X} \SendUnreliableP{s}{4}{1}{\LOneA}{\proposalNumber{5}{4}}.\SendUnreliableP{s}{4}{2}{\LOneA}{\proposalNumber{5}{4}}\dots \comment{= \Proposer{4}}\\
 &\Or \Mu{X} \ReceiveUnreliableP{r}{2}{4}{\LOneB}{\bot}{v_2}.\ReceiveUnreliableP{r}{3}{4}{\LOneB}{\bot}{v_3}\dots \comment{= \Proposer{5}}\\
 &\Or \Paren{
@@ -502,7 +502,7 @@ After executing $\update{n}{10}$, $\Acceptor{2}$ and $\Acceptor{3}$ are ready to
 \end{align*}
 
 We apply $\RUsend$ and $\RUget$ twice to do just that.
-Note that we also apply $\RUskip$ to $\Acceptor{1}$, evaluate its branches, and apply $\RUsend$ to $\Acceptor{1}$ and then $\Rml$ to $\Proposer{5}$ to discard the dummy message.
+Note that we also apply $\RUskip$, $\RIfT$, and then \RUsend to $\Acceptor{1}$ and then $\Rml$ to $\Proposer{5}$ to discard the dummy message.
 All three acceptors move into $\PaTwo$.
 % corresponds to (2) - (3)
 
@@ -594,14 +594,15 @@ We also apply $\RUskip$ once in $\Acceptor{3}$.
 \big )
 \end{align*}
 
+We can apply \RIfT to \Acceptor{3} and \RIfF to \Acceptor{1} and \Acceptor{2}.
 $\Acceptor{3}$ moves directly to $\PaTwo$ whereas $\Acceptor{1}$ and $\Acceptor{2}$ send their responses to $\Proposer{4}$ before moving to $\PaTwo$.
-$\Acceptor{1}$ also updates its local variable $n = 5$.
+$\Acceptor{1}$ also updates its local variable $n = 5$ via $\RSideEffect$.
 
 % A1: n=5, pr=Nothing
 % A2: n=10, pr=Proposal 10 abc
 % A3: n=10, pr=Proposal 10 abc
 \begin{align*}
-&= \NuChannels \big (\\
+&\mapstostar \NuChannels \big (\\
 &\Mu{X} \ReceiveUnreliableP{s}{1}{4}{\LOneB}{\bot}{v_1}.\ReceiveUnreliableP{s}{2}{4}{\LOneB}{\bot}{v_2}\dots \comment{= \Proposer{4}}\\
 &\Or \Mu{X} \SendUnreliableP{s}{1}{4}{\LOneB}{\Promise{\Nothing}}.\PaTwo \comment{= \Acceptor{1}}\\
 &\Or \Mu{X} \SendUnreliableP{s}{2}{4}{\LOneB}{\Nack{10}}.\PaTwo \comment{= \Acceptor{2}}\\
@@ -612,7 +613,7 @@ $\Acceptor{1}$ also updates its local variable $n = 5$.
 \big )
 \end{align*}
 
-Applying $\RUsend$ and $\RUget$ twice and evaluating the branching in $\Proposer{4}$ yields:
+Applying $\RUsend$ and $\RUget$ twice and \RIfT in $\Proposer{4}$ yields:
 
 \begin{align*}
 &\mapstostar \NuChannels \big (\\
@@ -643,7 +644,7 @@ $\Acceptor{3}$ terminates after applying $\RWskip$.
 \subsubsection{The Happy Path, Again}
 
 This time $\Proposer{4}$ uses a high enough proposal number so that $\Acceptor{1}$ and $\Acceptor{2}$ both promise not to accept any proposal numbered less than that.
-By applying $\RUsend$ and $\RUget$ and evaluating the branches in the remaining acceptors we arrive at:
+By applying $\RUsend$ in the remaining proposer and $\RUget$, $\RIfF$, $\RIfT$, $\RSideEffect$ in the remaining acceptors we arrive at:
 
 % A1: n=15, pr=Nothing
 % A2: n=15, pr=Proposal 10 abc
@@ -662,7 +663,7 @@ By applying $\RUsend$ and $\RUget$ and evaluating the branches in the remaining 
 Note that, at this point, $\Acceptor{1}$ and $\Acceptor{2}$ have updated their respective $n$ to $15$.
 
 Because $\Acceptor{2}$ has already accepted a proposal, it responds to $\Proposer{4}$'s prepare request with that proposal.
-Twice more we apply $\RUsend$ and $\RUget$ and evaluate the branch in $\Proposer{4}$ to obtain:
+Twice more we apply $\RUsend$, $\RUget$, and $\RIfF$ in $\Proposer{4}$ to obtain:
 
 % A1: n=15, pr=Nothing
 % A2: n=15, pr=Proposal 10 abc
@@ -698,7 +699,9 @@ First, we apply $\RWsel$ and $\RWbran$.
 \end{align*}
 
 Then we apply $\RUsend$ and $\RUget$ to send the proposal from $\Proposer{4}$ to the acceptors.
-$\Proposer{4}$ terminates and the acceptors accept the received proposal and then terminate as well.
+$\Proposer{4}$ terminates.
+We apply $\RIfF$, $\RIfT$, and $\RSideEffect$ twice to the acceptors.
+With that, \Acceptor{1} and \Acceptor{2} have accepted \Proposer{4}'s proposal.
 
 % A1: n=15, pr=Proposal 15 abc
 % A2: n=15, pr=Proposal 15 abc
