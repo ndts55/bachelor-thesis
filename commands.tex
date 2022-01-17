@@ -7,6 +7,9 @@
 
 \theoremstyle{definition}
 \newtheorem{phase}{Phase}
+\newtheorem*{assumption}{Assumption}
+\newtheorem*{asyncdef}{Definition}
+\newtheorem{algorithmdef}{A}
 
 \newcommand{\PaxosTheoremConstructor}[2]{\operatorname{P#1^{#2}}}
 \newcommand{\PaxosTheorem}[1]{\PaxosTheoremConstructor{#1}{}}
@@ -222,3 +225,14 @@
 \newcommand{\TaOneB}[0]{\Ta{1b}}
 \newcommand{\TaBranch}[0]{\Ta{branch}}
 \newcommand{\TaAccept}[0]{\Ta{acc}}
+
+\newcommand{\agent}[1]{\ensuremath{#1_{agent}}\xspace}
+\newcommand{\num}[1]{\ensuremath{#1_{num}}\xspace}
+\newcommand{\rcvd}[1]{\ensuremath{#1_{rcvd}}\xspace}
+\newcommand{\msg}[1]{\ensuremath{#1_{msg}}\xspace}
+\newcommand{\proposed}[1]{\ensuremath{#1_{proposed}}\xspace}
+\newcommand{\learned}[1]{\ensuremath{#1_{learned}}\xspace}
+\newcommand{\preceqOf}[1]{\ensuremath{\preceq_{#1}}\xspace}
+\newcommand{\preceqS}[0]{\preceqOf{S}}
+\newcommand{\Agents}[1]{\ensuremath{\operatorname{Agents}\left(#1\right)}}
+\newcommand{\Alg}[0]{\ensuremath{Alg}\xspace}
