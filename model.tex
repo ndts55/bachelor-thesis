@@ -14,14 +14,14 @@ First, we have $\Bool$ which we define as a set.
 Second, we assume a set of values $\Value$.
 
 Then, we have some sorts which we define using a grammar.
-Each of these definitions contains a type variable, which is a variable ranging over types.
-In this case the type variable in each definition is called $a$.
+Each of these definitions contains a type parameter, which is a variable ranging over types.
+In this case the type parameter in each definition is called $a$.
 
 \[\Maybe{a} = \Just{a} \Or \Nothing\]
 
 A value of type $\Maybe{a}$ can have the form $\Just{a}$ or $\Nothing$.
 Some examples include $\Just{4}$ of type $\Maybe{\mathbb{N}}$, $\Just{\False}$ of type $\Maybe{\Bool}$, and $\Nothing$.
-$\Nothing$ itself does not dictate an exact type because its definition does not include the type variable $a$.
+$\Nothing$ itself does not dictate an exact type because its definition does not include the type parameter $a$.
 The type is underspecified and is specified manually or through the context in which $\Nothing$ is used.
 It can be of type $\Maybe{\mathbb{N}}$, $\Maybe{\Bool}$, or any other type $b$ in $\Maybe{b}$.
 We use $\Maybe{a}$ where optional values are needed.
