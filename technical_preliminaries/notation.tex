@@ -39,3 +39,22 @@ The sorts of the arguments given correspond to the sorts of the arguments expect
 Applying \RSideEffect does not affect the global environment $\Gamma$ or the session environment $\Delta$.
 
 The addition of function calls as prefixes has no significant impact on any proofs in \cite{PetersEtal21}.
+
+\subsection{Type Parameters}
+To simplify the definition of sorts we introduce a notation to define sorts using a grammar and type parameters by way of example.
+
+Let \TypeParamA and \TypeParamB be any specified sorts.
+We define a sort $\Sab$.
+
+\[\Sab = \textstyle\Big(\bigcup_{v_a\in\TypeParamA}\{A\; v_a\}\Big) \cup \Big(\bigcup_{v_b\in\TypeParamB}\{B\; v_b\}\Big) \cup \Big(\bigcup_{v_a\in\TypeParamA , v_b\in\TypeParamB}\{C\; v_a\; v_b\}\Big)\cup\{D\}\cup\Big(\bigcup_{n\in\mathbb{N}}\{E\; n\}\Big)\]
+
+The values in \Sab are either of the form $A\;\TypeParamA$, $B\;\TypeParamB$, $C\;\TypeParamA\;\TypeParamB$, $D$, or $E\;\mathbb{N}$.
+$A$, $B$, $C$, $D$, and $E$ are constructors.
+$A$, $B$, and $E$ each take one value, $C$ takes two, and $D$ takes none.
+Note that $E$ does not take a value of \TypeParamA or \TypeParamB but still constructs a value in $\Sab$.
+
+We write $\Sab = A\;\TypeParamA \Or B\;\TypeParamB \Or C\;\TypeParamA\;\TypeParamB \Or D \Or E\;\mathbb{N}$ to define the same sort \Sab with type parameters \TypeParamA and $\TypeParamB$.
+We say $S$ of \TypeParamA and \TypeParamB is either an $A$ of $\TypeParamA$, a $B$ of $\TypeParamB$, a $C$ of \TypeParamA and $\TypeParamB$, a $D$, or an $E$ of $\mathbb{N}$.
+
+Other examples include the sort $\Maybe{a} = \left(\bigcup_{v_a\in a}\{\Just{v_a}\}\right) \cup \{\Nothing\}$ which can be abbreviated with $\Maybe{a} = \Just{a}\Or\Nothing$
+and the sort $\Proposal{a} = \left(\bigcup_{n\in\mathbb{N}, v_a\in a}\{\ProposalC{n}{v_a}\}\right)$ which can be written as $\Proposal{a} = \ProposalC{\mathbb{N}}{a}$
