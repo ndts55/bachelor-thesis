@@ -19,7 +19,7 @@
 \newcommand{\Curly}[1]{\left\{#1\right\}}
 \newcommand{\Paren}[1]{\left(#1\right)}
 \newcommand{\comment}[1]{\;\textcolor{teal}{#1}}
-\def\IndentationSize{0.5em}
+\def\IndentationSize{0.75em}
 \newcommand{\Indent}[1]{\hspace*{\IndentationSize * #1}}
 
 % Technical Preliminaries
@@ -68,13 +68,13 @@
 \newcommand{\OuterGlobalType}[0]{\operatorname{G}}
 \newcommand{\GlobalType}[0]{\operatorname{G_{\ProposerIndex, A_Q}}}
 \newcommand{\SendUnreliableG}[4]{#1 \to_u #2 : #3 \left\langle #4 \right\rangle}
-\newcommand{\SendWeaklyG}[3]{\left(#1 \to_w #2 : #3\right)}
+\newcommand{\SendWeaklyG}[3]{#1 \to_w #2 : \Curly{#3}}
 
 %% Local Type
 \newcommand{\SendUnreliableL}[3]{\left[#1\right]!_u #2 \left\langle #3 \right\rangle}
 \newcommand{\ReceiveUnreliableL}[3]{\left[#1\right]?_u #2 \left\langle #3 \right\rangle}
-\newcommand{\SendWeaklyL}[2]{\left(\left[#1\right]!_w #2\right)}
-\newcommand{\ReceiveWeaklyL}[2]{\left(\left[#1\right]?_w #2\right)}
+\newcommand{\SendWeaklyL}[2]{\left[#1\right]!_w \Curly{#2}}
+\newcommand{\ReceiveWeaklyL}[3]{\left[#1\right]?_w \Curly{#2}_{#3}} % TODO Geschweifte Klammern nach : bis zum Ende
 \newcommand{\OuterGlobalTypeProjection}[1]{\OuterGlobalType \upharpoonright_{#1}}
 \newcommand{\GlobalTypeProjection}[1]{\GlobalType \upharpoonright_{#1}}
 
@@ -82,7 +82,7 @@
 \newcommand{\SendUnreliableP}[5]{#1\left[#2, #3\right]!_u #4 \left\langle #5 \right\rangle}
 \newcommand{\ReceiveUnreliableP}[6]{#1\left[#2, #3\right]?_u #4 \left\langle #5 \right\rangle \left(#6\right)}
 \newcommand{\SendWeaklyP}[5]{#1\left[#2, #3\right]!_w #4.#5}
-\newcommand{\ReceiveWeaklyP}[4]{#1\left[#2, #3\right]?_w #4}
+\newcommand{\ReceiveWeaklyP}[4]{#1\left[#2, #3\right]?_w \big\{#4\big\}}
 
 % Failure Patterns
 \newcommand{\FPuget}[0]{\mathtt{FP_{uget}}}
@@ -205,7 +205,7 @@
 \newcommand{\GammaXV}[0]{\GammaX'}
 \newcommand{\GammaXN}[0]{\GammaX'}
 \newcommand{\GammaXNP}[0]{\GammaXN'}
-\newcommand{\EnvSatisfiesType}[3]{#1\Vdash\GEnvEntry{#2}{\mathbb{#3}}}
+\newcommand{\EnvSatisfiesType}[3]{#1\Vdash\GEnvEntry{#2}{#3}}
 \newcommand{\GammaSatisfiesType}[2]{\EnvSatisfiesType{\Gamma}{#1}{#2}}
 
 \newcommand{\ProofLabel}[1]{\Paren{#1}}
