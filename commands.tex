@@ -65,16 +65,18 @@
 \newcommand{\AcceptorIndex}[0]{a}
 \newcommand{\OuterSharedPoint}[0]{o}
 \newcommand{\SharedPoint}[1]{b_{#1}}
+\newcommand{\OuterSessionChannel}[0]{z}
 \newcommand{\OuterGlobalType}[0]{\operatorname{G}}
 \newcommand{\GlobalType}[0]{\operatorname{G_{\ProposerIndex, A_Q}}}
 \newcommand{\SendUnreliableG}[4]{#1 \to_u #2 : #3 \left\langle #4 \right\rangle}
 \newcommand{\SendWeaklyG}[3]{#1 \to_w #2 : \Curly{#3}}
+\newcommand{\RecursionVariableType}[0]{t}
 
 %% Local Type
 \newcommand{\SendUnreliableL}[3]{\left[#1\right]!_u #2 \left\langle #3 \right\rangle}
 \newcommand{\ReceiveUnreliableL}[3]{\left[#1\right]?_u #2 \left\langle #3 \right\rangle}
 \newcommand{\SendWeaklyL}[2]{\left[#1\right]!_w \Curly{#2}}
-\newcommand{\ReceiveWeaklyL}[3]{\left[#1\right]?_w \Curly{#2}_{#3}} % TODO Geschweifte Klammern nach : bis zum Ende
+\newcommand{\ReceiveWeaklyL}[3]{\left[#1\right]?_w \Curly{#2}_{#3}}
 \newcommand{\OuterGlobalTypeProjection}[1]{\OuterGlobalType \upharpoonright_{#1}}
 \newcommand{\GlobalTypeProjection}[1]{\GlobalType \upharpoonright_{#1}}
 
@@ -83,6 +85,7 @@
 \newcommand{\ReceiveUnreliableP}[6]{#1\left[#2, #3\right]?_u #4 \left\langle #5 \right\rangle \left(#6\right)}
 \newcommand{\SendWeaklyP}[5]{#1\left[#2, #3\right]!_w #4.#5}
 \newcommand{\ReceiveWeaklyP}[4]{#1\left[#2, #3\right]?_w \big\{#4\big\}}
+\newcommand{\RecursionVariable}[0]{X}
 
 % Failure Patterns
 \newcommand{\FPuget}[0]{\mathtt{FP_{uget}}}
@@ -160,8 +163,9 @@
 \newcommand{\SetOfPermanentlySuspectedProcesses}[0]{\mathbb{F}}
 \newcommand{\Function}[3]{#1 : #2 \to #3}
 \newcommand{\GenericFunction}[0]{f}
-\newcommand{\Domain}[0]{X}
-\newcommand{\Image}[0]{\emptyset}
+\newcommand{\DomainName}[0]{X}
+\newcommand{\Domain}[0]{\tilde{\DomainName}}
+\newcommand{\Image}[0]{\bot}
 \newcommand{\Element}[0]{x}
 \newcommand{\Elements}[0]{\left(\Element_1,\ldots,\Element_n\right)}
 \newcommand{\GenericFunctionCall}[0]{\GenericFunction\Elements}
@@ -171,7 +175,7 @@
 \newcommand{\Nu}[1]{\left(\nu #1\right)}
 \newcommand{\OuterSessionQueues}[0]{\ParallelFor{1 \le k,l \le 2, k \neq l} t_{k\to l}:[]}
 \newcommand{\InnerSessionQueues}[1]{\ParallelFor{1 \le k,l \le 4, k \neq l} #1_{k\to l}:[]}
-\newcommand{\NuChannels}[0]{\Nu{t}\Nu{s}\Nu{r}}
+\newcommand{\NuChannels}[0]{\Nu{\OuterSessionChannel}\Nu{s}\Nu{r}}
 \newcommand{\BeginPaCont}[0]{\Accept \dots \oplus \Restart .X \oplus \Abort . \End}
 \newcommand{\ABC}[0]{\operatorname{abc}}
 
