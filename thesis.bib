@@ -180,6 +180,22 @@ pages = {51-58},
 journal = {ACM SIGACT News (Distributed Computing Column) 32, 4 (Whole Number 121, December 2001)},
 edition = {ACM SIGACT News (Distributed Computing Column) 32, 4 (Whole Number 121, December 2001)},
 }
+@techreport{Lamport05,
+author = {Lamport, Leslie},
+title = {Generalized Consensus and Paxos},
+year = {2005},
+month = {March},
+abstract = {In [153], I proved lower bounds for the number of message delays required to reach consensus. I showed that the best algorithms can reach consensus in the normal case in 2 message delays. This result in turn led me to a new version of the Paxos algorithm of [122] called Fast Paxos, described in [158], that achieves this bound. However, Fast Paxos can take 3 message delays in the event of conflict, when two values are proposed concurrently. I showed in [153] that this was unavoidable in a general algorithm, so this seemed to be the last word.
+
+It then occurred to me that, in the state-machine approach (introduced in [27]), such conflicting proposals arise because two different commands are issued concurrently by two clients, and both are proposed as command number i. This conflict is necessary only if the two proposed commands do not commute. If they do, then there is no need to order them. This led me to a new kind of agreement problem that requires dynamically changing agreement on a growing partially ordered set of commands. I realized that generalizing from partially ordered sets of commands to a new mathematical structure I call a c-struct leads to a generalized consensus problem that covers both ordinary consensus and this new dynamic agreement problem. I also realized that Fast Paxos can be generalized to solve this new problem. I wrote up these results in March 2004. However, I was in the embarrassing position of having written a paper generalizing Fast Paxos without having written a paper about Fast Paxos. So, I just let the paper sit on my disk.
+
+I was invited to give a keynote address at the 2004 DSN conference, and I decided to talk about fast and generalized Paxos. Fernando Pedone came up after my talk and introduced himself. He said that he and André Schiper had already published a paper with the same generalization from the command sequences of the state-machine approach to partially ordered sets of commands, together with an algorithm that achieved the same optimal number of message delays in the absence of conflict. It turns out that their algorithm is different from the generalized Paxos algorithm. There are cases in which generalized Paxos takes only 2 message delays while their algorithm takes 3. But the difference in efficiency between the two algorithms is insignificant. The important difference is that generalized Paxos is more elegant.
+
+I've been sitting on this paper for so long because it doesn't seem right to publish a paper on a generalization of Fast Paxos before publishing something about Fast Paxos itself. Since generalized Paxos is a generalization, this paper also explains Fast Paxos. But people's minds don't work that way. They need to understand Fast Paxos before they can really understand its generalization. So, I figured I would turn this paper into the second part of a long paper or monograph whose first part explains Fast Paxos. However, in recent years I've been discovering new Paxonian results faster than I can write them up. It therefore seems silly not to release a paper that I've already written about one of those results. So, I added a brief discussion of the Pedone-Schiper result and a citation to [153] and am posting the paper here. Now that I have written the Fast Paxos paper and submitted it for publication, I may rewrite this paper as part two of that one.},
+url = {https://www.microsoft.com/en-us/research/publication/generalized-consensus-and-paxos/},
+pages = {60},
+number = {MSR-TR-2005-33},
+}
 @article{Lamport06,
 author = {Lamport, L.},
 title = {Lower Bounds for Asynchronous Consensus},
