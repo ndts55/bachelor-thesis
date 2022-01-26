@@ -51,7 +51,7 @@ In the first case the acceptor's response optionally includes the last proposal 
 In the second case it includes the highest $n$ that acceptor promised and is of the form $\Nack{\mathbb{N}}$.
 
 \section{Global Type}
-Since each proposer initiates its own session the global type can be defined for one proposer $\ProposerIndex$ and a quorum of acceptors $\AQ$.
+Since each proposer initiates its own session the global type can be defined for one proposer $\ProposerIndex$ and a quorum $\AQ$.
 
 The last phase of Paxos contains no inter-process communication, so it is not modeled in the global type.
 
@@ -70,27 +70,27 @@ We can distinguish the individual phases of the Paxos algorithm by the labels $\
 In the first two steps, $\POneA$ and $\POneB$, the proposer sends its proposal number to each acceptor in $\AQ$ and listens for their responses.
 In step $\PTwoA$ the proposer decides whether to send an $\Accept$ or $\Restart$ message to restart the algorithm.
 This decision is broadcast to all acceptors in $\AQ$.
-Should the proposer crash the algorithm ends for this particular proposer and quorum of acceptors.
+Should the proposer crash the algorithm ends for this particular proposer and the subprocesses of the acceptors in its quorum.
 
 \section{Functions}
 We define some functions which we use in the next section to define the processes.
 
 \[\proposalNumberName : \mathbb{N} \times \mathbb{N} \to \mathbb{N}\]
 
-$\proposalNumber{n}{p}$ returns a proposal number for proposer $p$ when given a natural number $n$.
+$\proposalNumber{\NumberRegister}{p}$ returns a proposal number for proposer $p$ when given a natural number $n$.
 It is used to pick a number for the prepare request in phase $\POneA$, which is also used in phase $\PTwoA$ in the actual proposal.
 We have two requirements for this function.
 
 Let $\SetOfProposers$ be the set of proposers.
 
-\[\forall p,q \in \SetOfProposers . \forall n,m \in \mathbb{N}: p \neq q \to \proposalNumber{n}{p} \neq \proposalNumber{m}{q}\]
+\[\forall p,q \in \SetOfProposers . \forall n,m \in \mathbb{N}: p \neq q \to \proposalNumber{\NumberRegister}{p} \neq \proposalNumber{m}{q}\]
 
 Different proposers pick their proposal numbers from disjoint sets of numbers.
 This way different proposers never issue a proposal with the same proposal number.
 
-\[\forall p \in \SetOfProposers . \forall n,m \in \mathbb{N}: n > m \to \proposalNumber{n}{p} > \proposalNumber{m}{p}\]
+\[\forall p \in \SetOfProposers . \forall n,m \in \mathbb{N}: n > m \to \proposalNumber{\NumberRegister}{p} > \proposalNumber{m}{p}\]
 
-We require $\proposalNumber{n}{p}$ to be strictly increasing for each proposer $p$ so every proposer uses a higher proposal number than any it has already used.
+We require $\proposalNumber{\NumberRegister}{p}$ to be strictly increasing for each proposer $p$ so every proposer uses a higher proposal number than any it has already used.
 
 \[\promiseValueName : \List{\Promise{a}} \to a\]
 
@@ -145,60 +145,61 @@ $\nFromProposal{p}$, $\greaterThan{a}{ma}$, and $\greaterEqual{a}{ma}$ are used 
 $\genAq{\ProposerIndex}{\AcceptorCount}{\ProposerCount}$ returns a randomly selected set $\AQ$ with $\AQ \subseteq A = \Curly{1, \dots, \AcceptorCount}$ and $|\AQ| > \frac{|A|}{2}$.
 $\AQ$ consists of any majority of acceptors.
 In Paxos a majority of acceptors forms a quorum, i.e. an accepting set with which a value can be chosen \cite{Lamport06}.
-We use this function when initiating the proposers to give them a quorum of acceptors with which they communicate.
+We use this function when initiating the proposers to give them a quorum with which they communicate.
 
 \section{Processes}
 \subsection{System Initialization}
 \begin{align*}
 &\Sys{\AcceptorCount}{\ProposerCount} = \SessionRequest{\OuterSharedPoint}{2}{\OuterSessionChannel} . \PpInit{\AcceptorCount + 1}{\genAq{\AcceptorCount + \ProposerCount}{\AcceptorCount}{\ProposerCount}}{\AcceptorCount + \ProposerCount}{\AcceptorCount + \ProposerCount}{\EmptyList}\\
 &\Or \SessionAccept{\OuterSharedPoint}{1}{\OuterSessionChannel} . \ParallelFor{\AcceptorCount < k < \AcceptorCount + \ProposerCount} \PpInit{\AcceptorCount + 1}{\genAq{k}{\AcceptorCount}{\ProposerCount}}{k}{k}{\EmptyList} \\
-&\Or \ParallelFor{1 \leq j \leq \AcceptorCount} \PaInit{j}{\AcceptorCount + 1}{\AcceptorCount}{\ProposerCount}{n_{\AcceptorIndex}}{pr_{\AcceptorIndex}}\\
+&\Or \ParallelFor{1 \leq j \leq \AcceptorCount} \PaInit{j}{\AcceptorCount + 1}{\AcceptorCount}{\ProposerCount}{\NumberRegister_{\AcceptorIndex}}{\ProposalRegister_{\AcceptorIndex}}\\
 \\
-&\PpInit{\ProposerIndex}{\AQ}{n}{m}{\VectorV} = \SessionRequest{\SharedPoint{n}}{\ProposerIndex}{s} . \Pp{}\\
+&\PpInit{\ProposerIndex}{\AQ}{\NumberRegister}{\ProcessIndex}{\VectorV} = \SessionRequest{\SharedPoint{\ProcessIndex}}{\ProposerIndex}{s} . \Pp{}\\
 &\PaInit{\AcceptorIndex}{\ProposerIndex}{\AcceptorCount}{\ProposerCount}{n}{pr} = \ParallelFor{\AcceptorCount < k \le \AcceptorCount + \ProposerCount} \SessionAccept{\SharedPoint{k}}{\AcceptorIndex}{s} . \PaOne
 \end{align*}
 
-$\Sys{\AcceptorCount}{\ProposerCount}$, $\PpInit{\ProposerIndex}{\AQ}{n}{m}{\VectorV}$, and $\PaInit{\AcceptorIndex}{\ProposerIndex}{\AcceptorCount}{\ProposerCount}{n}{pr}$ describe the system initialization.
+$\Sys{\AcceptorCount}{\ProposerCount}$, $\PpInit{\ProposerIndex}{\AQ}{\NumberRegister}{\ProcessIndex}{\VectorV}$, and $\PaInit{\AcceptorIndex}{\ProposerIndex}{\AcceptorCount}{\ProposerCount}{\NumberRegister}{\ProposalRegister}$ describe the system initialization.
 $\AcceptorCount$ and $\ProposerCount$ are the number of acceptors and proposers respectively.
 
 An outer session is created through shared channel $\OuterSharedPoint$.
 This outer session is not strictly necessary but was left in to allow for easier extension of the model.
 The acceptors are initialized using indices from 1 to $\AcceptorCount$ and the proposers are initialized using indices from $\AcceptorCount + 1$ to $\AcceptorCount + \ProposerCount$.
 
-$\PpInit{\ProposerIndex}{\AQ}{n}{m}{\VectorV}$ is initialized with the proposer's role in its own session $\ProposerIndex$, which is always $\AcceptorCount + 1$, a quorum of acceptors $\AQ$, an index $n$, and a vector $\VectorV$.
-Each proposer has the same role $\ProposerIndex = \AcceptorCount + 1$ but uses a different shared channel $\SharedPoint{n}$ according to its index $n$.
-$m$ is initialized to the same value as $n$ but is never updated.
+$\PpInit{\ProposerIndex}{\AQ}{\NumberRegister}{\ProcessIndex}{\VectorV}$ is initialized with the proposer's role in its own session $\ProposerIndex$, which is always $\AcceptorCount + 1$, a quorum $\AQ$, a register $\NumberRegister$, and a vector $\VectorV$.
+Each proposer has the same role $\ProposerIndex = \AcceptorCount + 1$ but uses a different shared channel $\SharedPoint{\ProcessIndex}$ according to its index $\ProcessIndex$.
+$\ProcessIndex$ is initialized to the same value as $\NumberRegister$ but is never updated.
 $\VectorV$ is used in the proposer to collect and evaluate the responses from the acceptors.
 It is always initialized with an empty list $\EmptyList$.
-Shared channel $\SharedPoint{n}$ is used to initiate a session.
+Shared channel $\SharedPoint{\ProcessIndex}$ is used to initiate a session.
 Afterwards, the process behaves like $\Pp{}$.
 We assume a mechanism for electing a distinguished proposer, which acts as the leader \cite{Lamport01}.
 The leader is the only proposer that can try issuing proposers.
 A new leader is elected via the same mechanism when the previous leader terminates or crashes.
 
-$\PaInit{\AcceptorIndex}{\ProposerIndex}{\AcceptorCount}{\ProposerCount}{n}{pr}$ is initialized with the acceptor's index $\AcceptorIndex$, the proposer index $\ProposerIndex$, which is always $\AcceptorCount + 1$, $\AcceptorCount$, $\ProposerCount$, initial knowledge for the highest promised proposal number $n = n_{\AcceptorIndex}$, if available, and initial knowledge for the most recently accepted proposal $pr = pr_{\AcceptorIndex}$, if available.
-$n$ is of type $\Maybe{\mathbb{N}}$ and $pr$ is of type $\Maybe{\Paren{\Proposal{\Value}}}$ thus both can be $\Nothing$.
+$\PaInit{\AcceptorIndex}{\ProposerIndex}{\AcceptorCount}{\ProposerCount}{\NumberRegister}{\ProposalRegister}$ is initialized with the acceptor's index $\AcceptorIndex$, the proposer index $\ProposerIndex$, which is always $\AcceptorCount + 1$, $\AcceptorCount$, $\ProposerCount$, initial knowledge for the highest promised proposal number $\NumberRegister = \NumberRegister_{\AcceptorIndex}$, if available, and initial knowledge for the most recently accepted proposal $\ProposalRegister = \ProposalRegister_{\AcceptorIndex}$, if available.
+$\NumberRegister$ holds a value of type $\Maybe{\mathbb{N}}$ and $\ProposalRegister$ holds a value of type $\Maybe{\Paren{\Proposal{\Value}}}$ thus both can contain $\Nothing$.
+We assume both registers are implemented via stable storage, which is preserved during failures.
 Each of the proposers' session requests are accepted in a separate subprocess.
-These subprocesses run parallel to each other but still access the same values for $n$ and $pr$.
+These subprocesses run parallel to each other but still access the same registers $\NumberRegister$ and $\ProposalRegister$.
 We observe that each subprocess in an acceptor accesses a different channel $s$, since it is generated by the proposer when its session request is accepted.
 Afterwards, each subprocess behaves like $\PaOne$.
 
 \subsection{Proposer}
-To define the proposer and the acceptor we introduce a function $\update{n}{m}$ which replaces the value inside $n$ with the value of $m$.
-We use this function to update the local variables of the processes.
+To define the proposer and the acceptor we introduce a function $\update{r}{v}$ which replaces the value inside register $r$ with $v$.
+We use this function to update the registers of the processes.
 
 \begin{align*}
-&\Pp{} = \Mu{\RecursionVariable} \update{n}{n + 1} .\\
-&\Indent{1}\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\proposalNumber{n}{m}}} .\\
+&\Pp{} = \Mu{\RecursionVariable} \update{\NumberRegister}{\NumberRegister + 1} .\\
+&\Indent{1}\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\proposalNumber{\NumberRegister}{m}}} .\\
 &\Indent{1}\DotForall{\AcceptorIndex\in\AQ}{\ReceiveUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}{v_{\AcceptorIndex}}} .\\
 &\Indent{1}\If{\anyNack{\VectorV} \tOr \Paren{\promiseCount{\VectorV} < \ceil{\frac{\ProposerIndex}{2}}}}\\
 &\Indent{2}\Then{\SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Restart}{\RecursionVariable}}\\
 &\Indent{2}\Else{\SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Accept}{\\
-&\Indent{3}\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\ProposalC{\Big ( \proposalNumber{n}{m} \Big )}{\Paren{\promiseValue{\VectorV}}}}}.\End
+&\Indent{3}\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\ProposalC{\Big ( \proposalNumber{\NumberRegister}{m} \Big )}{\Paren{\promiseValue{\VectorV}}}}}.\End
 }}
 \end{align*}
 
-At the start of the recursion $n$ is incremented to make sure every run of the recursion uses a different $n$ and thus a different proposal number.
+At the start of the recursion the value in $\NumberRegister$ is incremented to make sure every run of the recursion uses a different proposal number.
 The proposal number is sent to every acceptor in $\AQ$ and their replies are gathered in $\VectorV$ through $v_{\AcceptorIndex}$.
 Because $\ProposerIndex = \AcceptorCount + 1$, the minimum number of acceptors needed to form a majority is $\ceil{\frac{\ProposerIndex}{2}} = \ceil{\frac{\AcceptorCount + 1}{2}}$.
 If any $\Nack{x}$ was received or the number of $\Promise{y}$ received is less than that needed for the majority the proposer restarts the algorithm.
@@ -208,15 +209,15 @@ Otherwise, the proposer sends its proposal to the acceptors and terminates.
 \begin{align*}
 &\PaOne = \Mu{\RecursionVariable} \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\bot}{n'} .\\
 &\Indent{1}\big ( \If{n' = \bot} \Then{\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}.\PaTwo}\\
-&\Indent{2}\Else{\big( \If{\greaterThan{n'}{n}}\\
-&\Indent{3}\Then{\update{n}{n'}}.\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Promise{pr}}.\PaTwo\\
-&\Indent{3}\Else{\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{n}}.\PaTwo}
+&\Indent{2}\Else{\big( \If{\greaterThan{n'}{\NumberRegister}}\\
+&\Indent{3}\Then{\update{\NumberRegister}{n'}}.\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Promise{\ProposalRegister}}.\PaTwo\\
+&\Indent{3}\Else{\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{\NumberRegister}}.\PaTwo}
 \big ) \big )}
 \\\\
 &\PaTwo = \ReceiveWeaklyP{s}{\ProposerIndex}{\AcceptorIndex}{\Accept . \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\bot}{pr'} .\\
 &\Indent{2}\big( \If{pr' = \bot} \Then{\End}\\
-&\Indent{3}\Else{\big( \If{\greaterEqual{\nFromProposal{pr'}}{n}}\\
-&\Indent{5}\Then{\update{pr}{pr'} . \update{n}{\Just{\nFromProposal{pr'}}}.\End}\\
+&\Indent{3}\Else{\big( \If{\greaterEqual{\nFromProposal{pr'}}{\NumberRegister}}\\
+&\Indent{5}\Then{\update{\ProposalRegister}{pr'} . \update{\NumberRegister}{\Just{\Paren{\nFromProposal{pr'}}}}.\End}\\
 &\Indent{5}\Else{\End} \big ) \big )}\\
 &\Indent{1} \oplus \Restart.\RecursionVariable\\
 &\Indent{1} \oplus \Abort.\End
@@ -224,16 +225,16 @@ Otherwise, the proposer sends its proposal to the acceptors and terminates.
 \end{align*}
 
 For each proposer an acceptor has a corresponding subprocess, which behaves like $\PaOne$.
-These subprocesses access the same values for $n$ and $pr$.
-This means that updating these values with $\update{n}{m}$ updates them for all subprocesses of an acceptor.
+These subprocesses access the same registers $\NumberRegister$ and $\ProposalRegister$.
+This means that updating these registers with $\update{r}{v}$ updates them for all subprocesses of an acceptor.
 
 Each subprocess can communicate with one proposer.
 Thus, if that proposer does not or can not communicate with a particular subprocess of an acceptor then there is no need for that subprocess.
-It is possible that an acceptor participates in a proposer's session but is not contained in the proposer's quorum of acceptors $\AQ$, in which case the proposer does not communicate with that acceptor.
+It is possible that an acceptor participates in a proposer's session but is not contained in the proposer's quorum $\AQ$, in which case the proposer does not communicate with that acceptor.
 It is also possible for a proposer to crash or otherwise terminate, in which case the proposer can not communicate with that acceptor.
 
 Each subprocess begins by potentially receiving a proposal number $n'$ from the corresponding proposer.
-If the acceptor does receive a proposal number $n'$ it responds with either $\Promise{pr}$ or $\Nack{n}$, depending on the values of $n'$ and $n$.
+If the acceptor does receive a proposal number $n'$ it responds with either $\Promise{\ProposalRegister}$ or $\Nack{\NumberRegister}$, depending on the values of $n'$ and $\NumberRegister$.
 If the acceptor does not receive a proposal number then it sends $\bot$ to the proposer.
 Sending $\bot$ to the proposer is only necessary to maintain the global type.
 In either case the subprocess moves on to receive the proposers' decision in phase $\PTwoA$.
@@ -241,7 +242,7 @@ In either case the subprocess moves on to receive the proposers' decision in pha
 
 % Abort -> end
 Since the proposers' decision broadcast is weakly reliable, there are two cases in which the acceptor receives no decision.
-The proposer might have terminated or this particular acceptor is not in the proposers' quorum of acceptors $\AQ$.
+The proposer might have terminated or this particular acceptor is not in the proposers' quorum $\AQ$.
 In either case this particular subprocess of the acceptor is no longer needed, because each subprocess of the acceptor exclusively communicates with one proposer.
 Thus, the subprocess terminates in the default branch $\Abort$.
 
@@ -250,35 +251,36 @@ In the $\Restart$ branch this particular subprocess of the acceptor restarts the
 
 % Accept -> receive pr', update, end because proposer ends
 In the $\Accept$ branch the acceptor potentially receives a proposal $pr'$ from the corresponding proposer.
-The acceptor updates $n$ and $pr$ if the proposal number in $pr'$ is greater or equal to $n$.
+The acceptor updates $\NumberRegister$ and $\ProposalRegister$ if the proposal number in $pr'$ is greater or equal to $\NumberRegister$.
 Then the subprocess terminates.
-If the acceptor does not receive a proposal or the proposal number of $pr'$ is less than $n$ the subprocess terminates without updating $n$ or $pr$.
+If the acceptor does not receive a proposal or the proposal number of $pr'$ is less than $\NumberRegister$ the subprocess terminates without updating $\NumberRegister$ or $\ProposalRegister$.
 
 \section{Failure Patterns}
-Chandra and Toueg introduce a class of failure detectors $\FailureDetectorClass$, which is called \emph{eventually strong} in \cite{ChandraToueg96}.
+Chandra and Toueg introduce a class of failure detectors $\FailureDetectorClass$ called \emph{eventually strong} in \cite{ChandraToueg96}.
 Failure detectors in $\FailureDetectorClass$ satisfy the following properties: (1) eventually every process that crashes is permanently suspected by every correct process and (2) eventually some correct process is never suspected by any correct process.
 
-In all three phases modeled in the global type it is possible to suspect senders.
-In phases $\POneA$ and $\PTwoA$, with labels $\LOneA$ and $\LTwoA$ respectively, the acceptors may suspect some proposers.
-The proposers may suspect some acceptors in phase $\POneB$ with label $\LOneB$.
-Accordingly, $\FPuskip$ is implemented with a failure detector in $\FailureDetectorClass$ for phases $\POneA$, $\POneB$, and $\PTwoA$.
+% uskip and ml:
+% false for l2a, eventually strong otherwise for proposers and acceptors
+In phase $\POneA$ with label $\LOneA$ the acceptors may suspect some proposers and in phase $\POneB$ with label $\LOneB$ the proposers may suspect some acceptors.
+Accordingly, $\FPuskip$ and $\FPml$ are implemented with a failure detector in $\FailureDetectorClass$ for phases $\POneA$ and $\POneB$.
+For phase $\PTwoA$ with label $\LTwoA$ both $\FPuskip$ and $\FPml$ return $\False$ to ensure the proposal sent by the proposer to the members of its quorum is not lost.
+Thus, the unreliable communication is treated like the weakly reliable broadcast before it.
 
-Similarly, message loss is possible in all phases modeled in the global type.
-Thus, $\FPml$ is also implemented with a failure detector in $\FailureDetectorClass$ with one exception.
-$\FPml\left(s,\ProposerIndex,\AcceptorIndex,l\right)$ returns $\True$ if $\ProposerIndex$ is a proposer, $\AcceptorIndex$ is an acceptor that is not contained in the proposers' quorum of acceptors, and $l = \LOneB$.
-Since any proposer only communicates with the acceptors in its quorum, we can discard any messages from acceptors outside it.
+% wskip: true <=> corresponding proposer is not alive
+% leave undefined for proposers because they don't receive a broadcast
+For the weakly reliable broadcast in phase $\PTwoA$, the failure pattern $\FPwskip$ eventually returns $\True$ for subprocesses of acceptors if the corresponding proposer crashed.
 
-For the weakly reliable broadcast in phase $\PTwoA$, the failure pattern $\FPwskip$ returns $\True$ for subprocesses of acceptors if the corresponding proposer crashed, otherwise terminated, or the corresponding proposer's quorum does not include that particular acceptor.
-
-For Paxos to work a majority of acceptors needs to be alive.
-That means that the number of failed acceptors $f$ needs to satisfy $n > 2f$ where $n$ is the total number of acceptors, except in one case where there are 2 acceptors.
-Then, at most one acceptor may crash \cite{Lamport06}.
-For acceptors $\FPcrash$ returns $\True$ if at least one more acceptor may crash, i.e. $n > 2(f + 1)$ is satisfied.
-Let $\SetOfPermanentlySuspectedProcesses$ be the set of processes permanently suspected by a failure detector in $\FailureDetectorClass$. For proposers $\FPcrash$ returns $\True$ if $\AQ\setminus\SetOfPermanentlySuspectedProcesses$ is not a quorum, i.e. if the set of acceptors in $\AQ$ that are not permanently suspected is not enough to form a majority of acceptors.
+% crash:
+% we need at least one proposer
+% true if every correct proposers quorum is still a quorum without that acceptor, otherwise false
+We require that every correct proposer is able to communicate with a quorum for Paxos to work.
+Therefore, $\FPcrash$ eventually returns $\True$ for a subprocess of an acceptor $\AcceptorIndex$ only if the corresponding proposer with quorum $\AQ$ either crashed or still has access to a quorum without that particular acceptor \ie $\AQ\setminus\Curly{\AcceptorIndex}$ is still a quorum.
+% implies that acceptors as a whole may crash if proposers are either correct and can still communicate with a quorum without that acceptor or crashed
+% what about the requirement that we need at least one proposer?
 
 In Paxos there is no need to reject outdated messages so $\FPuget$ is implemented with a constant $\True$.
 
-% TODO These failure patterns satisfy conditions 1.1-1.6
+These failure patterns satisfy the Conditions~\ref{cond:all}.\ref{cond:crash}--\ref{cond:all}.\ref{cond:fpWskip}.
 
 \section{Example}
 In this section we will study an example run of the model with $3$ acceptors and $2$ proposers.
@@ -369,7 +371,9 @@ In the end all $3$ acceptors have accepted the value $\ABC$.
 $\Acceptor{1}$ and $\Acceptor{2}$ have accepted $\ProposalC{15}{\ABC}$ and $\Acceptor{3}$ has accepted $\ProposalC{10}{\ABC}$.
 
 \subsection{Formulae}
-We set $\AcceptorCount = 3$, $\ProposerCount = 2$, and $\Value=\Curly{\ABC, \operatorname{def}, \dots, \operatorname{vwx}, \operatorname{yz}}$.
+We set $\AcceptorCount = 3$, $\ProposerCount = 2$,
+$\Value=\Curly{\ABC, \operatorname{def}, \dots, \operatorname{vwx}, \operatorname{yz}}$.
+$\AQ_4 = \genAq{4}{3}{2} = \Curly{1,2}$ will be the quorum for $\Proposer{4}$ and $\AQ_5 = \genAq{5}{3}{2} = \Curly{2,3}$ will be the quorum for $\Proposer{5}$.
 
 \subsubsection{System Initialization}
 After inserting $\AcceptorCount$ and $\ProposerCount$ and applying $\RInit$ once for shared channel $a$ we have:
@@ -395,8 +399,8 @@ We apply $\RInit$ once for shared channel $\SharedPoint{4}$ and once again for s
 
 \begin{align*}
 &\mapstostar \NuChannels\big (\\
-&\Mu{\RecursionVariable} \update{n}{5} . \DotForall{\AcceptorIndex\in \{1,2\}}{\SendUnreliableP{s}{4}{\AcceptorIndex}{\LOneA}{\proposalNumber{n}{4}}}\dots \comment{= \Proposer{4}}\\
-&\Or \Mu{\RecursionVariable} \update{n}{6} . \DotForall{\AcceptorIndex\in \{2,3\}}{\SendUnreliableP{r}{4}{\AcceptorIndex}{\LOneA}{\proposalNumber{n}{5}}}\dots \comment{= \Proposer{5}}\\
+&\Mu{\RecursionVariable} \update{\NumberRegister}{5} . \DotForall{\AcceptorIndex\in \{1,2\}}{\SendUnreliableP{s}{4}{\AcceptorIndex}{\LOneA}{\proposalNumber{\NumberRegister}{4}}}\dots \comment{= \Proposer{4}}\\
+&\Or \Mu{\RecursionVariable} \update{\NumberRegister}{6} . \DotForall{\AcceptorIndex\in \{2,3\}}{\SendUnreliableP{r}{4}{\AcceptorIndex}{\LOneA}{\proposalNumber{\NumberRegister}{5}}}\dots \comment{= \Proposer{5}}\\
 &\Or \Paren{
     \Mu{\RecursionVariable} \ReceiveUnreliableP{s}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
     \Or \Mu{\RecursionVariable} \ReceiveUnreliableP{r}{4}{1}{\LOneA}{\bot}{n'}.\If{\dots}
@@ -471,7 +475,7 @@ Since $10 \neq \bot$ both $\Acceptor{2}$ and $\Acceptor{3}$ move into their resp
 \end{align*}
 
 Because $\greaterThan{10}{\Nothing}$ returns $\True$, $\Acceptor{2}$ and $\Acceptor{3}$ move into their respective $\Then$ branches by applying $\RIfT$.
-After executing $\update{n}{10}$ with $\RSideEffect$, $\Acceptor{2}$ and $\Acceptor{3}$ are ready to send their responses to $\Proposer{5}$.
+After executing $\update{\NumberRegister}{10}$ with $\RSideEffect$, $\Acceptor{2}$ and $\Acceptor{3}$ are ready to send their responses to $\Proposer{5}$.
 
 % A1: n=Nothing, pr=Nothing
 % A2: n=10, pr=Nothing
@@ -570,8 +574,8 @@ Note that we apply $\RWskip$ in $\Acceptor{1}$ and terminate that subprocess as 
 \big )
 \end{align*}
 
-At this point the local variables of $\Acceptor{2}$ and $\Acceptor{3}$ are $n = 10$ and $pr = \ProposalC{10}{\ABC}$.
-$\Acceptor{1}$ has not updated its local variables $n = \Nothing$ and $pr = \Nothing$.
+At this point the registers of $\Acceptor{2}$ and $\Acceptor{3}$ hold $\NumberRegister = 10$ and $\ProposalRegister = \ProposalC{10}{\ABC}$.
+$\Acceptor{1}$ has not updated its registers $\NumberRegister = \Nothing$ and $\ProposalRegister = \Nothing$.
 
 \subsubsection{Restarting the Algorithm}
 Next, $\Proposer{4}$ sends prepare requests with a proposal number less than 10, which is rejected by $\Acceptor{2}$.
@@ -593,7 +597,7 @@ We also apply $\RUskip$ once in $\Acceptor{3}$.
 
 We can apply \RIfT to \Acceptor{3} and \RIfF to \Acceptor{1} and \Acceptor{2}.
 $\Acceptor{3}$ moves directly to $\PaTwo$ whereas $\Acceptor{1}$ and $\Acceptor{2}$ send their responses to $\Proposer{4}$ before moving to $\PaTwo$.
-$\Acceptor{1}$ also updates its local variable $n = 5$ via $\RSideEffect$.
+$\Acceptor{1}$ also updates its register $\NumberRegister = 5$ via $\RSideEffect$.
 
 % A1: n=5, pr=Nothing
 % A2: n=10, pr=Proposal 10 abc
@@ -657,7 +661,7 @@ By applying $\RUsend$ in the remaining proposer and $\RUget$, $\RIfF$, $\RIfT$, 
 \big )
 \end{align*}
 
-Note that, at this point, $\Acceptor{1}$ and $\Acceptor{2}$ have updated their respective $n$ to $15$.
+Note that, at this point, $\Acceptor{1}$ and $\Acceptor{2}$ have updated their respective registers $\NumberRegister$ to $15$.
 
 Because $\Acceptor{2}$ has already accepted a proposal, it responds to $\Proposer{4}$'s prepare request with that proposal.
 Twice more we apply $\RUsend$, $\RUget$, and $\RIfF$ in $\Proposer{4}$ to obtain:
@@ -709,5 +713,5 @@ With that, \Acceptor{1} and \Acceptor{2} have accepted \Proposer{4}'s proposal.
 \Or \OuterSessionQueues
 \big )\]
 
-Afterwards $\Acceptor{1}$ and $\Acceptor{2}$ have $n = 15$ and $pr = \ProposalC{15}{\ABC}$ and $\Acceptor{3}$ has $n = 10$ and $pr = \ProposalC{10}{\ABC}$.
+Afterwards $\Acceptor{1}$ and $\Acceptor{2}$ have $\NumberRegister =  15$ and $\ProposalRegister =  \ProposalC{15}{\ABC}$ and $\Acceptor{3}$ has $\NumberRegister =  10$ and $\ProposalRegister =  \ProposalC{10}{\ABC}$.
 All acceptors have accepted the value $\ABC$.

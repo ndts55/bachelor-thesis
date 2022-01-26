@@ -52,7 +52,7 @@ Finally, it receives the proposer's branching choice.
 \right)
 \]
 
-$\Gamma$ contains the type for our shared channels $\OuterSharedPoint$ and $\SharedPoint{n}$ where $\AcceptorCount + 1 \leq n \leq \AcceptorCount + \ProposerCount$.
+$\Gamma$ contains the type for our shared channels $\OuterSharedPoint$ and $\SharedPoint{\ProcessIndex}$ where $\AcceptorCount + 1 \leq \ProcessIndex \leq \AcceptorCount + \ProposerCount$.
 
 We start the type check with the global environment $\Gamma$ and the entry point of the model $\Sys{\AcceptorCount}{\ProposerCount}$.
 Then, we apply the typing rules in \cite{PetersEtal21} in a proof tree and show that the model can be derived from the axioms $\RVar$ and $\REnd$.
@@ -146,10 +146,11 @@ The rest has been left out to improve readability.
 
 
 \subsection{Proposer}
-Let $\ProposerIndex = \AcceptorCount + 1, \AQ = \genAq{k}{\AcceptorCount}{\ProposerCount}, n = k, m = k, \VectorV = \EmptyList$ where $\AcceptorCount < k \leq \AcceptorCount + \ProposerCount$.
+Let $\ProposerIndex = \AcceptorCount + 1, \AQ = \genAq{k}{\AcceptorCount}{\ProposerCount}, \NumberRegister = k, m = k, \VectorV = \EmptyList$ where $\AcceptorCount < k \leq \AcceptorCount + \ProposerCount$.
 This gives us the values for the arguments of $\PpInitName$.
-We observe that $\GammaSatisfiesType{p}{\mathbb{N}}$, $\GammaSatisfiesType{k}{\mathbb{N}}$, $\GammaSatisfiesType{n}{\mathbb{N}}$, $\GammaSatisfiesType{m}{\mathbb{N}}$, and $\GammaSatisfiesType{\AQ}{\List{\mathbb{N}}}$.
-$p$, $k$, $n$, and $m$ are natural numbers and $\AQ$ is a list of natural numbers under global environment $\Gamma$.
+We observe that $\GammaSatisfiesType{p}{\mathbb{N}}$, $\GammaSatisfiesType{k}{\mathbb{N}}$, $\GammaSatisfiesType{\NumberRegister}{\mathbb{N}}$, $\GammaSatisfiesType{m}{\mathbb{N}}$, and $\GammaSatisfiesType{\AQ}{\List{\mathbb{N}}}$.
+$\NumberRegister$ contains a natural number.
+$p$, $k$, and $m$ are natural numbers and $\AQ$ is a list of natural numbers under global environment $\Gamma$.
 
 To abbreviate the proposer's local type in the following proof trees we define the following sub-formulae.
 
@@ -166,8 +167,8 @@ In order to shorten the proposer's process we define some variables.
 
 \begin{align*}
 &e = \anyNack{\VectorV} \tOr \Paren{\promiseCount{\VectorV} < \ceil{\frac{\ProposerIndex}{2}}}\\
-&pn = \proposalNumber{n}{m}\\
-&prop = \ProposalC{\Big ( \proposalNumber{n}{m} \Big )}{\Paren{\promiseValue{\VectorV}}}
+&pn = \proposalNumber{\NumberRegister}{m}\\
+&prop = \ProposalC{\Big ( \proposalNumber{\NumberRegister}{m} \Big )}{\Paren{\promiseValue{\VectorV}}}
 \end{align*}
 
 The actual values of $e$, $pn$, and $prop$ are not relevant for the type check.
@@ -179,7 +180,7 @@ To further abbreviate the terms in the proof trees we define two global environm
 
 $\GammaX$ contains $\Gamma$ and a type for the recursion variable $\RecursionVariable$.
 
-\[\GammaXV = \GammaX \cdot \GEnvEntry{v_{\AcceptorIndex}}{\Promise{\Value}},\forall\AcceptorIndex\in\AQ\]
+\[\GammaXV = \GammaX \cdot \GEnvEntry{v_{1}}{\Promise{\Value}}\cdot\ldots\cdot\GEnvEntry{v_{|\AQ|}}{\Promise{\Value}}\]
 
 $\GammaXV$ contains $\GammaX$ and types for the entries of $\VectorV$.
 These are added to the global environment when applying $\RUget$ in phase $\POneB$.
@@ -204,14 +205,14 @@ These are added to the global environment when applying $\RUget$ in phase $\POne
 \UnaryInfC{$\GammaX \vdash \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{pn}} \ldots \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}}\ldots}$}
 
 \RightLabel{$\RSideEffect$}
-\UnaryInfC{$\GammaX \vdash \update{n}{n+1} \ldots \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}}\ldots}$}
+\UnaryInfC{$\GammaX \vdash \update{\NumberRegister}{\NumberRegister + 1} \ldots \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}}\ldots}$}
 
 \RightLabel{$\RRec$}
-\UnaryInfC{$\Gamma\vdash \Mu{\RecursionVariable} \update{n}{n + 1} \ldots \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\Mu{\RecursionVariableType}\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}}\ldots}$}
+\UnaryInfC{$\Gamma\vdash \Mu{\RecursionVariable} \update{\NumberRegister}{\NumberRegister + 1} \ldots \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\Mu{\RecursionVariableType}\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}}\ldots}$}
 
 \LeftLabel{$\ProposerProof{} =$}
 \RightLabel{$\RReq$}
-\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{n}}{\ProposerIndex}{s}.\Pp{} \vartriangleright \emptyset$}
+\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\ProcessIndex}}{\ProposerIndex}{s}.\Pp{} \vartriangleright \emptyset$}
 \end{prooftree}
 $\ProposerProof{}$ is the continuation of $\SysProof{1}$ and $\SysProof{2}$.
 In both proof trees the session environment $\Delta$ was empty.
@@ -260,18 +261,18 @@ To improve readability of the proof trees we break down the acceptor's process a
 &\PaAccept = \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\bot}{pr'} .
 \If{pr' = \bot}\\
 &\Indent{1}\Then{\End}\\
-&\Indent{1}\Else{\If{\greaterEqual{\nFromProposal{pr'}}{n}}\\
-&\Indent{2}\Then{\update{pr}{pr'} . \update{n}{\Just{\nFromProposal{pr'}}}.\End}\\
+&\Indent{1}\Else{\If{\greaterEqual{\nFromProposal{pr'}}{\NumberRegister}}\\
+&\Indent{2}\Then{\update{\ProposalRegister}{pr'} . \update{\NumberRegister}{\Just{\nFromProposal{pr'}}}.\End}\\
 &\Indent{2}\Else{\End}}
 \end{align*}
 We can see that $\PaTwo$ contains $\PaAccept$ as $\PaTwo = \ReceiveWeaklyP{s}{\ProposerIndex}{\AcceptorIndex}{\Accept . \PaAccept \oplus \Restart . \RecursionVariable \oplus \Abort . \End}$.
 
 \begin{align*}
-&\Pa{t} = \update{n}{n'}.\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Promise{pr}}.\PaTwo
+&\Pa{t} = \update{\NumberRegister}{n'}.\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Promise{\ProposalRegister}}.\PaTwo
 \\\\
-&\Pa{f} = \SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{n}}.\PaTwo
+&\Pa{f} = \SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{\NumberRegister}}.\PaTwo
 \\\\
-&\Pa{gt} = \If{\greaterThan{n'}{n}}\Then{\Pa{t}}\Else{\Pa{f}}
+&\Pa{gt} = \If{\greaterThan{n'}{\NumberRegister}}\Then{\Pa{t}}\Else{\Pa{f}}
 \end{align*}
 With $\Pa{gt}$, $\PaOne$ can be written as $\PaOne = \Mu{\RecursionVariable}\ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\bot}{n'}.\If{n'=\bot}\Then{\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}.\PaTwo}\Else{\Pa{gt}}$.
 
@@ -310,7 +311,7 @@ $\GammaXNP$ adds type $\Proposal{\Value}$ for $pr'$.
 \UnaryInfC{$\GammaXN\vdash \Pa{gt} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaOneB}$}
 
 \RightLabel{$\RIf$}
-\BinaryInfC{$\GammaXN\vdash \If{n'=\bot}\Then{\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}.\PaTwo}\Else{\If{\greaterThan{n'}{n}}\ldots} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaOneB}$}
+\BinaryInfC{$\GammaXN\vdash \If{n'=\bot}\Then{\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}.\PaTwo}\Else{\If{\greaterThan{n'}{\NumberRegister}}\ldots} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaOneB}$}
 
 \RightLabel{$\RUget$}
 \UnaryInfC{$\GammaX \vdash \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\bot}{n'}.\If{n'=\bot}\ldots \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\ReceiveUnreliableL{\ProposerIndex}{\LOneA}{\mathbb{N}}.\TaOneB}$}
@@ -339,7 +340,7 @@ We examine $\AcceptorProof{gt}$ first, because it contains the proof tree of the
 
 \LeftLabel{$\AcceptorProof{gt} =$}
 \RightLabel{$\RIf$}
-\BinaryInfC{$\GammaXN\vdash \If{\greaterThan{n'}{n}}\Then{\Pa{t}}\Else{\Pa{f}} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaOneB}$}
+\BinaryInfC{$\GammaXN\vdash \If{\greaterThan{n'}{\NumberRegister}}\Then{\Pa{t}}\Else{\Pa{f}} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaOneB}$}
 \end{prooftree}
 First, we split the proof tree with $\RIf$.
 We continue the resulting branches in separate proof trees $\AcceptorProofTrue$ and $\AcceptorProofFalse$.
@@ -351,7 +352,7 @@ We continue the resulting branches in separate proof trees $\AcceptorProofTrue$ 
 \UnaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaBranch}$}
 \LeftLabel{$\AcceptorProofTrue =$}
 \RightLabel{$\RUsend$}
-\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{n}}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\SendUnreliableL{\ProposerIndex}{\LOneB}{\Promise{\Value}} . \TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{\NumberRegister}}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\SendUnreliableL{\ProposerIndex}{\LOneB}{\Promise{\Value}} . \TaBranch}$}
 \end{prooftree}
 
 % (A_f)
@@ -361,7 +362,7 @@ We continue the resulting branches in separate proof trees $\AcceptorProofTrue$ 
 \UnaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaBranch}$}
 \LeftLabel{$\AcceptorProofFalse =$}
 \RightLabel{$\RUsend$}
-\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{n}}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\SendUnreliableL{\ProposerIndex}{\LOneB}{\Promise{\Value}}.\TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{\NumberRegister}}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\SendUnreliableL{\ProposerIndex}{\LOneB}{\Promise{\Value}}.\TaBranch}$}
 \end{prooftree}
 
 In both, $\AcceptorProofTrue$ and $\AcceptorProofFalse$, we apply $\RUsend$.
@@ -398,14 +399,14 @@ The $\Restart$ branch can be finished by applying $\RVar$ and the $\Abort$ branc
 
 \AxiomC{$\AcceptorProof{update}$}
 \noLine
-\UnaryInfC{$\GammaXNP\vdash\update{pr}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
+\UnaryInfC{$\GammaXNP\vdash\update{\ProposalRegister}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
 
 \AxiomC{}
 \RightLabel{$\REnd$}
 \UnaryInfC{$\GammaXNP\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
 
 \RightLabel{$\RIf$}
-\BinaryInfC{$\GammaXNP\vdash \If{\greaterEqual{\nFromProposal{pr'}}{n}}\Then{\ldots}\Else{\End} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
+\BinaryInfC{$\GammaXNP\vdash \If{\greaterEqual{\nFromProposal{pr'}}{\NumberRegister}}\Then{\ldots}\Else{\End} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
 
 \RightLabel{$\RIf$}
 \BinaryInfC{$\GammaXNP\vdash \If{pr'=\bot}\Then{\End}\Else{\ldots} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
@@ -424,10 +425,10 @@ To keep this proof tree readable we continue the proof of the remaining branch i
 \RightLabel{$\REnd$}
 \UnaryInfC{$\GammaXNP\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
 \RightLabel{$\RSideEffect$}
-\UnaryInfC{$\GammaXNP\vdash \update{n}{\Just{\nFromProposal{pr'}}}.\End \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
+\UnaryInfC{$\GammaXNP\vdash \update{\NumberRegister}{\Just{\nFromProposal{pr'}}}.\End \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
 \LeftLabel{$\AcceptorProof{update} =$}
 \RightLabel{$\RSideEffect$}
-\UnaryInfC{$\GammaXNP\vdash\update{pr}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
+\UnaryInfC{$\GammaXNP\vdash\update{\ProposalRegister}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
 \end{prooftree}
 Finally, we apply $\RSideEffect$ twice and $\REnd$ once.
 This concludes the type check and proves that the model is well-typed.
@@ -451,7 +452,7 @@ Thus, we need to prove that correct proposers terminate to prove termination for
 
 If the set of acceptors in a proposer's quorum $\AQ$ that are correct is not enough to form a majority of acceptors, that proposer repeatedly restarts the algorithm.
 In this case the proposer will be unable to issue a valid proposal.
-Because $\FPcrash$ returns $\True$ if $\AQ\setminus\SetOfPermanentlySuspectedProcesses$, where $\SetOfPermanentlySuspectedProcesses$ is the set of processes permanently suspected by a failure detector in $\FailureDetectorClass$, is not a quorum, the proposer eventually crashes.
+% Because $\FPcrash$ returns $\True$ if $\AQ\setminus\SetOfPermanentlySuspectedProcesses$, where $\SetOfPermanentlySuspectedProcesses$ is the set of processes permanently suspected by a failure detector in $\FailureDetectorClass$, is not a quorum, the proposer eventually crashes.
 Proposers either complete the Paxos algorithm after phase $\PTwoA$ or crash.
 
 In \cite{Lamport01} \citeauthor{Lamport01} describes a scenario in which two proposers loop endlessly, never having their proposals accepted:
@@ -470,7 +471,6 @@ A new leader is elected when the previous leader terminates.
 Any proposer $\ProposerIndex$ requires that the set of correct acceptors in its quorum of acceptors is itself a quorum, i.e. an accepting set with which a value can be chosen \cite{Lamport06}.
 Should message loss occur in labels $\LOneA$ or $\LOneB$, $\ProposerIndex$ restarts the algorithm.
 This broadcast is weakly reliable and thus only fails when $\ProposerIndex$ crashes or terminates because $\FPwskip$ disallows suspicion of correct proposers by acceptors.
-% TODO This is not _exactly_ right. Explain it _exactly_ right.
 Given the definition of $\promiseValueName$, $\ProposerIndex$ will only propose a fresh value if none of the acceptors have accepted a proposal yet.
 At least one acceptor in every other proposer's quorum is contained in $\ProposerIndex$'s quorum.
 Thus, if a majority of acceptors accept $\ProposerIndex$'s proposal it is sent to every other proposer when they reach phase $\POneB$.
