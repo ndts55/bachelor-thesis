@@ -94,7 +94,8 @@ We require $\proposalNumber{\NumberRegister}{p}$ to be strictly increasing for e
 
 \[\promiseValueName : \List{\Promise{a}} \to a\]
 
-$\promiseValue{ps}$ returns a fresh value if none of the promises in $ps$ contain a value. Otherwise, the best value is returned. Usually, that means the value with the highest associated proposal number.
+$\promiseValue{ps}$ returns a fresh value if none of the promises in $ps$ contain a value.
+Otherwise, the best value is returned. Usually, that is the value with the highest associated proposal number.
 A promise contains a value $v$ if it is of the form $\Promise{\Just{v}}$.
 With this function we can model the picking of a value for a proposal in phase $\PTwoA$.
 
@@ -226,7 +227,7 @@ Otherwise, the proposer sends its proposal to the acceptors and terminates.
 
 For each proposer an acceptor has a corresponding subprocess, which behaves like $\PaOne$.
 These subprocesses access the same registers $\NumberRegister$ and $\ProposalRegister$.
-This means that updating these registers with $\update{r}{v}$ updates them for all subprocesses of an acceptor.
+Updating these registers with $\update{r}{v}$ updates them for all subprocesses of an acceptor.
 
 Each subprocess can communicate with one proposer.
 Thus, if that proposer does not or can not communicate with a particular subprocess of an acceptor then there is no need for that subprocess.

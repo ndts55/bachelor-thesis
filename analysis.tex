@@ -1,5 +1,5 @@
 \chapter{Analysis}
-We take the model from the previous chapter, type check it, and discuss what the type check means for agreement, validity, and termination of the Paxos algorithm.
+We take the model from the previous chapter, type check it, and discuss how we use the type check to prove agreement, validity, and termination for our model of the Paxos algorithm.
 To execute the type check we project the global type to local types and use the typing rules given in \cite{PetersEtal21}.
 
 \section{Local Types}
@@ -433,53 +433,20 @@ To keep this proof tree readable we continue the proof of the remaining branch i
 Finally, we apply $\RSideEffect$ twice and $\REnd$ once.
 This concludes the type check and proves that the model is well-typed.
 
-\section{Termination, Agreement, Validity}
-% Termination
-% % Eventually, every correct process decides some value.
+\section{Validity, Agreement, Termination}
 % Validity
-% % If all the correct processes proposed the same value v, then any correct process must decide v.
+%% Only a value that has been proposed may be chosen,
 % Agreement
-% % Every correct process must agree on the same value.
-\subsection{Termination}
-The global type and well-typedness ensure the absence of deadlocks.
-This means that the processes either loop forever or terminate.
-Acceptors terminate if all of their subprocesses terminate.
-Each subprocess of an acceptor corresponds to one proposer.
-A subprocess can only terminate via the weakly reliable broadcast in $\PaTwo$, which depends on the corresponding proposer.
-If that proposer crashes or its quorum does not include the acceptor, the subprocess terminates because $\FPwskip$ returns $\True$ and the default branch is $\Abort$, which terminates immediately.
-The termination of a subprocess with a correct proposer requires the termination of that proposer.
-Thus, we need to prove that correct proposers terminate to prove termination for our model.
-
-If the set of acceptors in a proposer's quorum $\AQ$ that are correct is not enough to form a majority of acceptors, that proposer repeatedly restarts the algorithm.
-In this case the proposer will be unable to issue a valid proposal.
-% Because $\FPcrash$ returns $\True$ if $\AQ\setminus\SetOfPermanentlySuspectedProcesses$, where $\SetOfPermanentlySuspectedProcesses$ is the set of processes permanently suspected by a failure detector in $\FailureDetectorClass$, is not a quorum, the proposer eventually crashes.
-Proposers either complete the Paxos algorithm after phase $\PTwoA$ or crash.
-
-In \cite{Lamport01} \citeauthor{Lamport01} describes a scenario in which two proposers loop endlessly, never having their proposals accepted:
-Proposer $p$ completes phase 1 for a proposal number $n_1$. Another proposer $q$ then completes phase 1 for a proposal number $n_2 > n_1$.
-Proposer $p$'s phase 2 accept requests for a proposal numbered $n_1$ are ignored because the acceptors have all promised not to accept any new proposal numbered less than $n_2$.
-So, proposer $p$ then begins and completes phase 1 for a new proposal number $n_3 > n_2$, causing the second phase 2 accept requests of proposer $q$ to be ignored.
-And so on.
-
-From \cite{Lamport01} we know that this problem is solved by electing a single distinguished proposer to be the leader.
-The leader eventually picks a proposal number high enough for its proposal to be accepted.
-The model assumes some sort of leader selection.
-A new leader is elected when the previous leader terminates.
-
-\subsection{Agreement}
-% def: every correct process must agree on the same value
-Any proposer $\ProposerIndex$ requires that the set of correct acceptors in its quorum of acceptors is itself a quorum, i.e. an accepting set with which a value can be chosen \cite{Lamport06}.
-Should message loss occur in labels $\LOneA$ or $\LOneB$, $\ProposerIndex$ restarts the algorithm.
-This broadcast is weakly reliable and thus only fails when $\ProposerIndex$ crashes or terminates because $\FPwskip$ disallows suspicion of correct proposers by acceptors.
-Given the definition of $\promiseValueName$, $\ProposerIndex$ will only propose a fresh value if none of the acceptors have accepted a proposal yet.
-At least one acceptor in every other proposer's quorum is contained in $\ProposerIndex$'s quorum.
-Thus, if a majority of acceptors accept $\ProposerIndex$'s proposal it is sent to every other proposer when they reach phase $\POneB$.
-These proposers then propagate the accepted value by proposing it again but with a higher proposal number.
-This way all correct acceptors accept the same value.
+%% Only a single value is chosen, and
+% Termination
+%% If a value has been proposed and sufficient processes remain non-faulty, then eventually some value is chosen (compare to \cite{Lamport05}).
+Finally, we can prove \textbf{Validity}: only a value that has been proposed may be chosen \cite{Lamport01}, \textbf{Agreement}: only a single value is chosen \cite{Lamport01}, and \textbf{Termination}: if a value has been proposed and sufficient processes remain non-faulty, then eventually some value is chosen (compare to \cite{Lamport06}).
 
 \subsection{Validity}
-% The implementation satisfies validity.
-To prove validity for our model we examine the communication structure and the origins of the accepted values.
+%%%%%
+% Only a value that has been proposed may be chosen
+%%%%%
+To prove that only a value that has been proposed may be chosen we examine the communication structure and the origins of the accepted values in our model.
 % global type + well-typedness = communication structure is as specfied
 Because the model is well-typed we know the communication structure is as specified in global type $\GlobalType$.
 % Because of the global type and the communication protocol it ensures following session fidelity in Theorem 4—there are no communication mismatches and the received messages are of the expected sort—, then validity holds globally.
@@ -493,9 +460,8 @@ Label $\LOneB$ is used to send messages of sort $\Promise{\Value}$.
 % % acceptors send their previous knowledge to proposer, if available
 These messages are sent from the acceptors to a proposer and may contain the acceptors' accepted proposal.
 Should an acceptor previously have accepted a proposal, that proposal then contains the accepted value.
-% % this is either an initial accepted value or an accepted value that was proposed by a proposer
-The accepted proposal $pr$ is either the acceptor's already accepted proposal $pr_{\AcceptorIndex}$ or a proposal that was previously proposed by a proposer.
-$pr$ is sent over $\LOneB$ without alteration.
+The accepted proposal $\ProposalRegister$ is either the acceptor's already accepted proposal $pr_{\AcceptorIndex}$ or a proposal that was previously proposed by a proposer.
+$\ProposalRegister$ is sent over $\LOneB$ without alteration.
 The proposer receiving these messages stores them in $\VectorV$ without changing their values.
 
 % l2a
@@ -513,3 +479,69 @@ Acceptors that receive and accept this proposal store it without alteration.
 
 % l1a is not used to transmit choosable values
 Since label $\LOneA$ is not used to transmit values that can be accepted, we conclude that validity holds for each local process and thus globally.
+
+\subsection{Agreement}
+%%%%%
+% Only a single value is chosen
+%%%%%
+% FPcrash => every correct proposer has a quorum to communicate with
+% proposal sent via weakly reliable broadcast and then "weakly reliable" message
+% FPwskip and FPuskip (for l2a) => disallow suspecting sending proposer that is not crashed at this stage
+% acceptors accept proposal
+% due to overlapping quorums (majorities) the next proposer knows about the accepted value
+% due to the definition of promiseValue that proposer proposes the value that was already accepted.
+% all correct acceptors accept the same value
+We examine the flow of accepted values through the network to prove that only a single value is chosen.
+$\FPcrash$ guarantees that the set of correct acceptors in the quorum of any correct proposer $\ProposerIndex$ is itself a quorum \ie an accepting set that can choose a value \cite{Lamport06}.
+Should message loss occur in labels $\LOneA$ or $\LOneB$, $\ProposerIndex$ restarts the algorithm.
+This broadcast is weakly reliable and thus only fails if $\ProposerIndex$ crashes because $\FPwskip$ disallows suspicion of correct proposers by acceptors.
+Given the definition of $\promiseValueName$, $\ProposerIndex$ will only propose a fresh value if it has not received any accepted proposals from an acceptor.
+
+In Paxos a quorum is a majority of acceptors.
+For any two majorities of acceptors there exists at least one that is contained in both majorities.
+So, at least one acceptor in every other proposer's quorum is contained in $\ProposerIndex$'s quorum.
+Thus, if a majority of acceptors accept $\ProposerIndex$'s proposal it is sent to every other proposer when they reach phase $\POneB$.
+These proposers then propagate the accepted value by proposing it again but with a higher proposal number.
+This way all correct acceptors accept the same value.
+
+\subsection{Termination}
+%%%%%
+% If a value has been proposed and sufficient processes remain non-faulty, then eventually some value is chosen
+%%%%%
+% global type + well-typedness = absence of deadlocks
+% processes either loop forever or terminate
+% eventually we get a set of processes where:
+% - a quorum-sized number of acceptors
+%   - because FPcrash disallows more to crash
+% - at least one correct proposer
+%   - we haven't actually written this but we do need at least one proposer...
+%   - it doesn't matter: If we have no more proposers then no value can be proposed and termination is satisfied. The case where we have at least one proposer is more interesting.
+% - every proposer has access to a quorum
+%   - because of FPcrash, which disallows any more acceptors to crash
+% - one proposer is the distinguished proposer
+%   - because of leader election, which we assumed in the model, similar to Lamport01
+% with such a set of processes we can simply run the algorithm
+% weakly reliable broadcast can't be lost
+% message on l2a can't be lost either
+% enough acceptors receive and accept the proposal and a value has been chosen
+
+We want to prove that if a value has been proposed and sufficient processes remain non-faulty, then eventually some value is chosen.
+
+The global type and well-typedness ensure the absence of deadlocks.
+Thus, processes either loop forever or terminate.
+Assuming a failure detector in $\FailureDetectorClass$, eventually any correct proposer is not suspected by any correct acceptor and does not suspect any correct acceptor.
+$\FPcrash$ guarantees that all correct proposers can communicate with a set of correct acceptors that forms a quorum.
+
+If all proposers crashed then no value can be proposed and no value will be chosen.
+Termination as defined above is satisfied in this case.
+
+If at least one proposer is correct, there exists a distinguished proposer because our model assumes a mechanism for electing such a proposer.
+The distinguished proposer executes the algorithm, communicating with its quorum.
+Eventually, it will choose a high enough proposal number and receive enough promises to send a proposal.
+The decision to send a proposal as well as the proposal itself are received by enough correct acceptors to form a quorum.
+These messages can not be lost due to the weakly reliable branching and our implementation of $\FPml$ for label $\LTwoA$.
+The proposal is accepted by a majority of acceptors and thus, a value is chosen.
+The distinguished proposer and the corresponding subprocesses of the acceptors in its quorum terminate.
+
+The process repeats with the next distinguished proposer, if any.
+Every subprocess of an acceptor corresponding to a crashed proposer can skip the weakly reliable broadcast and terminate.
