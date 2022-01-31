@@ -492,7 +492,7 @@ Since label $\LOneA$ is not used to transmit values that can be accepted, we con
 % due to the definition of promiseValue that proposer proposes the value that was already accepted.
 % all correct acceptors accept the same value
 We examine the flow of accepted values through the network to prove that only a single value is chosen.
-$\FPcrash$ guarantees that the set of correct acceptors in the quorum of any correct proposer $\ProposerRole$ is itself a quorum \ie an accepting set that can choose a value \cite{Lamport06}.
+$\FPcrash$ guarantees that the set of correct acceptors in the quorum of any correct proposer $\ProposerRole$ is itself a quorum, \ie an accepting set that can choose a value \cite{Lamport06}.
 Should message loss occur in labels $\LOneA$ or $\LOneB$, $\ProposerRole$ restarts the algorithm.
 This broadcast is weakly reliable and thus only fails if $\ProposerRole$ crashes because $\FPwskip$ disallows suspicion of correct proposers by acceptors.
 Given the definition of $\promiseValueName$, $\ProposerRole$ will only propose a fresh value if it has not received any accepted proposals from an acceptor.

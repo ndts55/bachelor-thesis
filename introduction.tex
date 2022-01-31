@@ -1,11 +1,11 @@
 \chapter{Introduction}
 In distributed systems components on different computers coordinate and communicate via message passing to achieve a common goal.
-Sometimes, to achieve this goal, the individual components need to reach consensus, i.e., agree on the value of some data using a consensus algorithm.
+Sometimes, to achieve this goal, the individual components need to reach consensus, \ie agree on the value of some data using a consensus algorithm.
 For example in state machine replication or when deciding which database transactions should be committed in what order.
 For such a distributed system to behave correctly the consensus algorithm needs to be correct.
 Thus, analyzing consensus algorithms is important.
 
-To achieve consensus, consensus algorithms must satisfy the following properties: termination, validity, and agreement \cite{CoulourisEtal01}.
+To achieve consensus, consensus algorithms must satisfy the following properties: validity, agreement, and termination \cite{CoulourisEtal01}.
 Proving these properties can be complicated.
 Model checking tools lead to big state-spaces so static analysis is preferable.
 For static analysis Multiparty Session Types are particularly interesting because session typing can ensure protocol conformance and the absence of communication errors and deadlocks \cite{ScalasEtal18}.
@@ -35,5 +35,3 @@ In this work we will use Fault-Tolerant Multiparty Session Types to analyze the 
 
 % \section{Possible difficulties}
 % \IMRADlabel{results}
-
-% It might not be entirely possible to build an appropriate model of Paxos with fault-tolerant Multiparty Session Types.

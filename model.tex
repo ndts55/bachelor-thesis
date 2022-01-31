@@ -145,7 +145,7 @@ $\nFromProposal{p}$, $\greaterThan{a}{ma}$, and $\greaterEqual{a}{ma}$ are used 
 
 $\genAq{\ProposerRole}{\AcceptorCount}{\ProposerCount}$ returns a randomly selected set $\AQ$ with $\AQ \subseteq A = \Curly{1, \dots, \AcceptorCount}$ and $|\AQ| > \frac{|A|}{2}$ as a sorted list.
 $\AQ$ consists of any majority of acceptors.
-In Paxos a majority of acceptors forms a quorum, i.e. an accepting set with which a value can be chosen \cite{Lamport06}.
+In Paxos a majority of acceptors forms a quorum, \ie an accepting set with which a value can be chosen \cite{Lamport06}.
 We use this function when initiating the proposers to give them a quorum with which they communicate.
 
 \begin{align*}
@@ -447,7 +447,7 @@ For the weakly reliable broadcast in phase $\PTwoA$, the failure pattern $\FPwsk
 % we need at least one proposer
 % true if every correct proposers quorum is still a quorum without that acceptor, otherwise false
 We require that every correct proposer is able to communicate with a quorum for Paxos to work.
-Therefore, $\FPcrash$ eventually returns $\True$ for a subprocess of an acceptor $\AcceptorRole$ only if the corresponding proposer with quorum $\AQ$ either crashed or still has access to a quorum without that particular acceptor \ie $\AQ\setminus\Curly{\AcceptorRole}$ is still a quorum.
+Therefore, $\FPcrash$ eventually returns $\True$ for a subprocess of an acceptor $\AcceptorRole$ only if the corresponding proposer with quorum $\AQ$ either crashed or still has access to a quorum without that particular acceptor, \ie $\AQ\setminus\Curly{\AcceptorRole}$ is still a quorum.
 % implies that acceptors as a whole may crash if proposers are either correct and can still communicate with a quorum without that acceptor or crashed
 % what about the requirement that we need at least one proposer?
 
