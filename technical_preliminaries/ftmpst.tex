@@ -348,8 +348,6 @@ Similarly, processes that wait for messages from a crashed process have to be ab
 Finally, \weakR branching requests should not be lost.
 To ensure that the receiver of such a branching request can proceed if the sender is crashed but is not allowed to skip the reception of the branching request before the sender crashed, we require that $ \fpWSkip(\Chan, \Role_1, \Role_2) $ is false as long as $ \AT{\Chan}{\Role_2} $ is alive or messages on the respective queue are still in transit (Condition~\ref{cond:all}.\ref{cond:fpWskip}).
 
-% TODO "it is an established method to verify the correctness of algorithms \wrt given system requirements (\eg in \cite{ChandraToueg96,Lamport01,TanenbaumSteen17}), even if these system requirements are not verified and often do not hold in all (but only nearly all) cases."
-
 \emph{Coherence} intuitively describes that a session environment captures all local endpoints of a collection of global types.
 Since we capture all relevant global types in the global environment, we define
 coherence on pairs of global and session environments.
