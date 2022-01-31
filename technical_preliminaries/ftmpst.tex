@@ -2,7 +2,6 @@
 Our model of the Paxos algorithm uses a fault-tolerant extension of Multiparty Session Types introduced by \citeauthor{PetersEtal21} in \cite{PetersEtal21}.
 The following explanation of Fault-Tolerant Multiparty Session Types is from that same paper.
 
-% \subsection{Fault-Tolerance in Distributed Algorithms}
 We consider three sources of failure in an \unrel communication:
 (1) the sender may crash before it releases the message,
 (2) the receiver may crash before it can consume the message, or
@@ -18,7 +17,7 @@ We consider three levels of failures in interactions:
 	\item[\Unrel ($ \iU $):] Both the sender and the receiver might crash at every possible point during this interaction and the communication medium might lose the message. There are no guarantees that this interaction---or any part of it---takes place.
 \end{description}
 
-% \subsection{Fault-Tolerant Types and Processes}
+\subsection{Syntax} % Fault-Tolerant Types and Processes
 
 We assume that the sets $ \names $ of names $ \Chan[a], \Chan, \Args \ldots $; $ \roles $ of roles $ \Role[n], \Role, \ldots $; $ \labels $ of labels $ \Label, \LabelD, \ldots $; $ \typeVars $ of type variables $ \TypeV $; and $ \procVars $ of process variables $ \ProcV $ are pairwise distinct.
 To simplify the reduction semantics of our session calculus, we use natural numbers as roles (compare to \cite{hondaYoshidaCarbone16}).
@@ -170,7 +169,7 @@ We write  $ \Unreliable{\GT} $, $ \Unreliable{\LT} $, and $ \Unreliable{\PT} $, 
 The combination of a session channel and a role uniquely identifies a participant of a session, called an \emph{actor}. A process has an actor $ \AT{\Chan[s]}{\Role} $ if it has an action prefix on $ \Chan $, where $ \Role $ is the first role mentioned in the prefix.
 Let $ \Actors{\PT} $ be the set of actors of $ \PT $.
 
-% \subsection{A Semantics with Failure Patterns}
+\subsection{Semantics} % A Semantics with Failure Patterns
 
 The application of a substitution $ \Subst{\Args[y]}{\Args} $ on a term $ A $, denoted as $ A\Subst{\Args[y]}{\Args} $, is defined as the result of replacing all free occurrences of $ \Args $ in $ A $ by $ \Args[y] $, possibly applying alpha-conversion to avoid capture or name clashes. For all names $ n \in \names \setminus \Set{ \Args } $ the substitution behaves as the identity mapping. We use substitution on types as well as processes and naturally extend substitution to the substitution of variables by terms (to unfold recursions) and names by expressions (to instantiate a bound name with a received value).
 
@@ -189,6 +188,8 @@ We use structural congruence to abstract from syntactically different processes 
 	\hspace{2em} \PRes{\Args}{\PRes{\Args[y]}{\PT}} \equiv \PRes{\Args[y]}{\PRes{\Args}{\PT}}\\
 	\PRes{\Args}{\left( \PT_1 \mid \PT_2 \right)} \equiv \PT_1 \mid \PRes{\Args}{\PT_2} \quad \text{if } \Args \notin \FreeNames{\PT_1}
 \end{array} \]
+
+\subsubsection{Reduction}
 
 \begin{figure}[tp]
     \centering
@@ -257,12 +258,7 @@ The remaining rules for conditionals, session delegation, parallel composition, 
 
 We augmented our reduction semantics in Fig.~\ref{fig:semantics} by five different failure patterns that we deliberately do not specify, although we usually assume that the failure patterns $ \fpUGet $, $ \fpUSkip $, and $ \fpWSkip $ use only local information, whereas $ \fpML $ and $ \fpCrash $ may use global information of the system in the current run.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  Typing Fault-Tolerant Processes  %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% \subsection{Typing Fault-Tolerant Processes}
-
+\subsubsection{Typing} % Typing Fault-Tolerant Processes
 The type of a process $ \PT $ is checked in a \emph{typed judgment}, \ie triples $ \Gamma \vdash \PT \triangleright \Delta $, where
 \begin{align*}
 	\Gamma & \deffTerms \emptyset
@@ -329,9 +325,7 @@ For the \weakR case we have to additionally check that the default labels of the
 
 Rule~(\textsf{Crash}) for crashed processes checks that $ \Unreliable{\Delta} $.
 
-% Because of the failure pattern in the reduction semantics in Fig.~\ref{fig:semantics}, subject reduction and progress do not hold in general.
-% Instead we have to fix conditions on failure patterns that ensure these properties.
-
+\subsubsection{Failure Patterns}
 We have to fix conditions on failure patterns to ensure that subject reduction and progress hold in general.
 
 \begin{condition}[Failure Pattern]
