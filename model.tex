@@ -428,6 +428,7 @@ Then the subprocess terminates.
 If the acceptor does not receive a proposal or the proposal number of $pr'$ is less than $\NumberRegister$ the subprocess terminates without updating $\NumberRegister$ or $\ProposalRegister$.
 
 \section{Failure Patterns}
+A failure detector is a subsystem that detects process failures and crashes.
 Chandra and Toueg introduce a class of failure detectors $\FailureDetectorClass$ called \emph{eventually strong} in \cite{ChandraToueg96}.
 Failure detectors in $\FailureDetectorClass$ satisfy the following properties: (1) eventually every process that crashes is permanently suspected by every correct process and (2) eventually some correct process is never suspected by any correct process.
 
