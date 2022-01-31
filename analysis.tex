@@ -270,7 +270,7 @@ We can see that $\PaTwo$ contains $\PaAccept$ as $\PaTwo = \ReceiveWeaklyP{s}{\P
 \begin{align*}
 &\Pa{t} = \update{\NumberRegister}{n'}.\SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Promise{\ProposalRegister}}.\PaTwo
 \\\\
-&\Pa{f} = \SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack{\NumberRegister}}.\PaTwo
+&\Pa{f} = \SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack}.\PaTwo
 \\\\
 &\Pa{gt} = \If{\greaterThan{n'}{\NumberRegister}}\Then{\Pa{t}}\Else{\Pa{f}}
 \end{align*}
@@ -352,7 +352,7 @@ We continue the resulting branches in separate proof trees $\AcceptorProofTrue$ 
 \UnaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaBranch}$}
 \LeftLabel{$\AcceptorProofTrue =$}
 \RightLabel{$\RUsend$}
-\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack{\NumberRegister}}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\SendUnreliableL{\ProposerRole}{\LOneB}{\Promise{\Value}} . \TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\SendUnreliableL{\ProposerRole}{\LOneB}{\Promise{\Value}} . \TaBranch}$}
 \end{prooftree}
 
 % (A_f)
@@ -362,7 +362,7 @@ We continue the resulting branches in separate proof trees $\AcceptorProofTrue$ 
 \UnaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaBranch}$}
 \LeftLabel{$\AcceptorProofFalse =$}
 \RightLabel{$\RUsend$}
-\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack{\NumberRegister}}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\SendUnreliableL{\ProposerRole}{\LOneB}{\Promise{\Value}}.\TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\SendUnreliableL{\ProposerRole}{\LOneB}{\Promise{\Value}}.\TaBranch}$}
 \end{prooftree}
 
 In both, $\AcceptorProofTrue$ and $\AcceptorProofFalse$, we apply $\RUsend$.

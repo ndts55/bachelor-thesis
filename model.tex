@@ -36,19 +36,19 @@ Again, $a$ is a variable ranging over types.
 An example for a value of type $\Proposal{\Bool}$ could be $\ProposalC{1}{\True}$ and an example for a value of type $\Proposal{\Paren{\Maybe{\mathbb{N}}}}$ could be $\ProposalC{1}{\Paren{\Just{1}}}$.
 This sort models the proposals issued by the proposers in phase $\PTwoA$.
 
-\[\Promise{a} = \Promise{\Paren{\Maybe{\Paren{\Proposal{a}}}}} \Or \Nack{\mathbb{N}}\]
+\[\Promise{a} = \Promise{\Paren{\Maybe{\Paren{\Proposal{a}}}}} \Or \Nack\]
 
 $\Promise{a}$ has two possible forms.
-$\Promise{\Paren{\Maybe{\Paren{\Proposal{a}}}}}$ and $\Nack{\mathbb{N}}$.
-Possible values include $\Nack{1}$ and $\Promise{\Paren{\Just{\Paren{\ProposalC{1}{{\False}}}}}}$ of type $\Promise{\mathbb{\Bool}}$.
-The actual type of $\Nack{1}$, much like that of $\Nothing$, is underspecified.
+$\Promise{\Paren{\Maybe{\Paren{\Proposal{a}}}}}$ and $\Nack$.
+Possible values include $\Nack$ and $\Promise{\Paren{\Just{\Paren{\ProposalC{1}{{\False}}}}}}$ of type $\Promise{\mathbb{\Bool}}$.
+The actual type of $\Nack$, much like that of $\Nothing$, is underspecified.
 Again, we have to specify the exact type manually or through context.
 
 In phase $\POneB$ the acceptors respond to the proposers prepare request with a value of type $\Promise{\Value}$.
 The prepare request contains a number $n$.
 The acceptors may respond to the prepare request with a promise to not accept any proposal numbered less than $n$ or with a rejection.
 In the first case the acceptor's response optionally includes the last proposal it accepted, if available, and is of the form $\Promise{\Paren{\Maybe{\Paren{\Proposal{a}}}}}$.
-In the second case it includes the highest $n$ that acceptor promised and is of the form $\Nack{\mathbb{N}}$.
+In the second case it is of the form $\Nack$.
 
 \section{Global Type}
 Since each proposer initiates its own session the global type can be defined for one proposer $\ProposerRole$ and a quorum $\AQ$.
@@ -102,18 +102,18 @@ With this function we can model the picking of a value for a proposal in phase $
 \begin{align*}
 &\anyNackName : \List{\Promise{a}} \to \Bool\\
 &\anyNack{\EmptyList} = \False\\
-&\anyNack{\ListPattern{\Nack{\Wildcard}}{\Wildcard}} = \True\\
+&\anyNack{\ListPattern{\Nack}{\Wildcard}} = \True\\
 &\anyNack{\ListPattern{\Promise{\Wildcard}}{xs}} = \anyNack{xs}
 \end{align*}
 
-$\anyNack{ps}$ returns $\True$ if the list contains at least one promise of the form $\Nack{n}$.
+$\anyNack{ps}$ returns $\True$ if the list contains at least one promise of the form $\Nack$.
 Otherwise, it returns $\False$.
 
 \begin{align*}
 &\promiseCountName : \List{\Promise{a}} \to \mathbb{N}\\
 &\promiseCount{\EmptyList} = 0\\
 &\promiseCount{\ListPattern{\Promise{\Wildcard}}{xs}} = 1 + \promiseCount{xs}\\
-&\promiseCount{\ListPattern{\Nack{\Wildcard}}{xs}} = \promiseCount{xs}
+&\promiseCount{\ListPattern{\Nack}{xs}} = \promiseCount{xs}
 \end{align*}
 
 $\promiseCount{ps}$ takes a list of promises $ps$ and counts the number of promises that have the form $\Promise{m}$.
@@ -189,7 +189,7 @@ Let $\Proposer{5}$'s quorum be $\AQ_5 = \Bracket{2, 3}$.
 $\Acceptor{2}$, $\Acceptor{3}$, and $\Proposer{5}$ participate in $\Proposer{5}$'s session.
 $\Acceptor{2}$'s role is 1, because its process index 2 is the first element in $\AQ_5$.
 $\Acceptor{3}$'s role is 2, because its process index 3 is the second element in $\AQ_5$.
-$\Proposer{5}$'s role is 3, because $|\AQ_5| + 1 = 2 + 1 = 3$.
+$\Proposer{5}$'s role is $|\AQ_5| + 1 = 2 + 1 = 3$.
 
 \begin{align*}
 &\Sys{\AcceptorCount}{\ProposerCount} = \SessionRequest{\OuterSharedPoint}{2}{\OuterSessionChannel} . \PpInit{
@@ -372,7 +372,7 @@ We use this function to update the registers of the processes.
 At the start of the recursion the value in $\NumberRegister$ is incremented to make sure every run of the recursion uses a higher proposal number.
 The proposal number is sent to every acceptor in $\AQ$ and their replies are gathered in $\VectorV$ through $v_{\AcceptorRole}$.
 The minimum number of acceptors needed to form a majority is $\ceil{\frac{\AcceptorCount + 1}{2}}$.
-If any $\Nack{x}$ was received or the number of $\Promise{y}$ received is less than that needed for the majority the proposer restarts the algorithm.
+If any $\Nack$ was received or the number of $\Promise{y}$ received is less than that needed for the majority the proposer restarts the algorithm.
 Otherwise, the proposer sends its proposal to the acceptors and terminates.
 
 \subsection{Acceptor}
@@ -381,7 +381,7 @@ Otherwise, the proposer sends its proposal to the acceptors and terminates.
 &\Indent{1}\big ( \If{n' = \bot} \Then{\SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.\Call{\PaTwo}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister, \ProposalRegister}}\\
 &\Indent{2}\Else{\big( \If{\greaterThan{n'}{\NumberRegister}}\\
 &\Indent{3}\Then{\update{\NumberRegister}{n'}}.\SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Promise{\ProposalRegister}}.\Call{\PaTwo}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister, \ProposalRegister}\\
-&\Indent{3}\Else{\SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack{\NumberRegister}}.\Call{\PaTwo}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister, \ProposalRegister}}
+&\Indent{3}\Else{\SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack}.\Call{\PaTwo}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister, \ProposalRegister}}
 \big ) \big )}
 \\\\
 &\Call{\PaTwo}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister, \ProposalRegister} = \ReceiveWeaklyP{s}{\ProposerRole}{\AcceptorRole}{\Accept . \ReceiveUnreliableP{s}{\ProposerRole}{\AcceptorRole}{\LTwoA}{\bot}{pr'} .\\
@@ -408,7 +408,7 @@ Each subprocess can communicate with one proposer.
 Thus, if that proposer can not communicate with a particular subprocess of an acceptor there is no need for that subprocess.
 
 Each subprocess begins by potentially receiving a proposal number $n'$ from the corresponding proposer.
-If the acceptor does receive a proposal number $n'$ it responds with either $\Promise{\ProposalRegister}$ or $\Nack{\NumberRegister}$, depending on the values of $n'$ and $\NumberRegister$.
+If the acceptor does receive a proposal number $n'$ it responds with either $\Promise{\ProposalRegister}$ or $\Nack$, depending on the values of $n'$ and $\NumberRegister$.
 If the acceptor does not receive a proposal number then it sends $\bot$ to the proposer.
 Sending $\bot$ to the proposer is necessary to maintain the global type.
 In either case the subprocess moves on to receive the proposer's decision in phase $\PTwoA$.
@@ -499,7 +499,7 @@ Then we will examine the scenario using reduction rules starting at system initi
 
     \draw[arr] ($(a1) - (0, \Step{7})$) -- node[arrt] {$\Promise{\Nothing}$} ($(p4) - (0, \Step{7})$);
 
-    \draw[arr] ($(a2) - (0, \Step{8})$) -- node[arrt] {$\Nack{10}$} ($(p4) - (0, \Step{8})$);
+    \draw[arr] ($(a2) - (0, \Step{8})$) -- node[arrt] {$\Nack$} ($(p4) - (0, \Step{8})$);
 
     \draw[arr] ($(p4) - (0, \Step{9})$) -- node[arrt] {$\Restart$} ($(a1) - (0, \Step{9})$);
     \draw[arr] ($(p4) - (0, \Step{9})$) -- ($(a2) - (0, \Step{9})$);
@@ -532,7 +532,7 @@ $\Proposer{5}$ is elected to be the leader.
 In steps $\Paren{1}$ to $\Paren{5}$, $\Proposer{5}$ completes the Paxos algorithm with $\Acceptor{2}$ and $\Acceptor{3}$ and terminates.
 
 At this point $\Acceptor{2}$ has promised not to accept any proposal numbered less than $10$ and has accepted the value $\ABC$.
-So, when $\Proposer{4}$ tries to use $5$ as its proposal number $\Paren{6}$, it receives $\Nack{10}$ from $\Acceptor{2}$ $\Paren{8}$ and has to restart the algorithm $\Paren{9}$.
+So, when $\Proposer{4}$ tries to use $5$ as its proposal number $\Paren{6}$, it receives $\Nack$ from $\Acceptor{2}$ $\Paren{8}$ and has to restart the algorithm $\Paren{9}$.
 
 $\Proposer{4}$ then runs through the Paxos algorithm with $\Acceptor{1}$ and $\Acceptor{2}$ starting with a new prepare request $\Paren{10}$ with a higher proposal number.
 In step $\Paren{12}$ $\Proposer{4}$ learns that value $\ABC$ with proposal number $10$ has already been accepted by $\Acceptor{2}$.
@@ -778,7 +778,7 @@ $\Acceptor{1}$ also updates its register $\NumberRegister = 5$ via $\RSideEffect
 &\mapstostar \NuChannels \big (\\
 &\Mu{\RecursionVariable} \ReceiveUnreliableP{s}{1}{4}{\LOneB}{\bot}{v_1}.\ReceiveUnreliableP{s}{2}{4}{\LOneB}{\bot}{v_2}\dots \comment{= \Proposer{4}}\\
 &\Or \Mu{\RecursionVariable} \SendUnreliableP{s}{1}{4}{\LOneB}{\Promise{\Nothing}}.\PaTwo \comment{= \Acceptor{1}}\\
-&\Or \Mu{\RecursionVariable} \SendUnreliableP{s}{2}{4}{\LOneB}{\Nack{10}}.\PaTwo \comment{= \Acceptor{2}}\\
+&\Or \Mu{\RecursionVariable} \SendUnreliableP{s}{2}{4}{\LOneB}{\Nack}.\PaTwo \comment{= \Acceptor{2}}\\
 &\Or \Mu{\RecursionVariable} \ReceiveWeaklyP{r}{4}{3}{\BeginPaCont} \comment{= \Acceptor{3}}\\
 &\Or \InnerSessionQueues{s}
 \Or \InnerSessionQueues{r}
