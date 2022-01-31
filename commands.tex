@@ -18,6 +18,7 @@
 % General typesetting stuff
 \newcommand{\Curly}[1]{\left\{#1\right\}}
 \newcommand{\Paren}[1]{\left(#1\right)}
+\newcommand{\Bracket}[1]{\left[#1\right]}
 \newcommand{\comment}[1]{\;\textcolor{teal}{#1}}
 \def\IndentationSize{0.75em}
 \newcommand{\Indent}[1]{\hspace*{\IndentationSize * #1}}
@@ -48,6 +49,7 @@
 \newcommand{\DotForall}[2]{\textstyle\left(\bigodot_{#1}\;#2\right)}
 \newcommand{\Mu}[1]{\left(\mu #1\right)}
 \newcommand{\AQ}[0]{\operatorname{Q}}
+\newcommand{\QRoles}[0]{\operatorname{R}}
 \newcommand{\End}[0]{0}
 
 %% Phases
@@ -61,13 +63,14 @@
 \newcommand{\LTwoB}[0]{l2b}
 
 %% Global Type
-\newcommand{\ProposerIndex}[0]{p}
-\newcommand{\AcceptorIndex}[0]{a}
+\newcommand{\ProposerRole}[0]{p}
+\newcommand{\AcceptorRole}[0]{a}
 \newcommand{\OuterSharedPoint}[0]{o}
 \newcommand{\SharedPoint}[1]{b_{#1}}
 \newcommand{\OuterSessionChannel}[0]{z}
+\newcommand{\SessionChannel}[0]{s}
 \newcommand{\OuterGlobalType}[0]{\operatorname{G}}
-\newcommand{\GlobalType}[0]{\operatorname{G_{\ProposerIndex, A_Q}}}
+\newcommand{\GlobalType}[0]{\operatorname{G_{\ProposerRole, A_Q}}}
 \newcommand{\SendUnreliableG}[4]{#1 \to_u #2 : #3 \left\langle #4 \right\rangle}
 \newcommand{\SendWeaklyG}[3]{#1 \to_w #2 : \Curly{#3}}
 \newcommand{\RecursionVariableType}[0]{t}
@@ -96,6 +99,7 @@
 \newcommand{\FailureDetectorClass}[0]{\Diamond\mathscr{S}}
 
 % Paxos Process
+\newcommand{\Call}[2]{#1\left(#2\right)}
 \newcommand{\AcceptorCount}[0]{c_A}
 \newcommand{\ProposerCount}[0]{c_P}
 \newcommand{\Accept}[0]{\mathnormal{Accept}}
@@ -104,15 +108,15 @@
 \newcommand{\Sys}[2]{\operatorname{Sys}\left(#1, #2\right)}
 \newcommand{\Process}[2]{\operatorname{P^{#1}_{#2}}}
 \newcommand{\Pa}[1]{\Process{A}{#1}}
-\newcommand{\Pp}[1]{\Process{P}{#1}}
+\newcommand{\Pp}[1]{\Process{P}{}\left(#1\right)}
 \newcommand{\PaOne}[0]{\Pa{1}}
 \newcommand{\PaTwo}[0]{\Pa{2}}
 \newcommand{\PaAccept}[0]{\Pa{acc}}
-\newcommand{\PpInitName}[0]{\Pp{init}}
-\newcommand{\PpInit}[5]{\PpInitName\left(#1, #2, #3, #4, #5\right)}
+\newcommand{\PpInitName}[0]{\Process{P}{init}}
+\newcommand{\PpInit}[1]{\textstyle\PpInitName\left(#1\right)}
 \newcommand{\PpInitShort}[0]{\PpInitName\left(\dots\right)}
 \newcommand{\PaInitName}[0]{\Pa{init}}
-\newcommand{\PaInit}[6]{\PaInitName\left(#1, #2, #3, #4, #5, #6\right)}
+\newcommand{\PaInit}[1]{\PaInitName\left(#1\right)}
 \newcommand{\PaInitShort}[0]{\PaInitName\left(\dots\right)}
 \newcommand{\SessionRequest}[3]{\overline{#1}\left[#2\right]\left(#3\right)}
 \newcommand{\SessionAccept}[3]{#1\left[#2\right]\left(#3\right)}
@@ -145,6 +149,12 @@
 \newcommand{\genAqName}[0]{\operatorname{gen\AQ}}
 \newcommand{\genAq}[3]{\genAqName\left(#1, #2, #3\right)}
 
+\newcommand{\positionHelperName}[0]{\operatorname{positionHelper}}
+\newcommand{\positionHelper}[3]{\positionHelperName\left(#1, #2, #3\right)}
+
+\newcommand{\positionName}[0]{\operatorname{position}}
+\newcommand{\position}[2]{\positionName\left(#1, #2\right)}
+
 \newcommand{\update}[2]{\operatorname{update} \left(#1, #2\right)}
 
 % Math and Programming
@@ -171,7 +181,8 @@
 \newcommand{\SetOfFunctions}[0]{F_{\Domain, \Image}}
 \newcommand{\NumberRegister}[0]{\operatorname{n}}
 \newcommand{\ProposalRegister}[0]{\operatorname{pr}}
-\newcommand{\ProcessIndex}[0]{m}
+\newcommand{\ProcessIndexK}[0]{k}
+\newcommand{\ProcessIndexJ}[0]{j}
 
 % Example run
 \newcommand{\Nu}[1]{\left(\nu #1\right)}

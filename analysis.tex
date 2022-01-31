@@ -6,28 +6,28 @@ To execute the type check we project the global type to local types and use the 
 Because no communication occurs in the outer session, the  outer session's type is $\OuterGlobalType = \End$.
 The projection of $\OuterGlobalType$ to a local type is $\OuterGlobalTypeProjection{k} = \End$ for every $k$.
 
-For $1 \leq \AcceptorIndex \leq \AcceptorCount$ and $\AcceptorCount + 1 \leq \ProposerIndex \leq \AcceptorCount + \ProposerCount$ we project the global type $\GlobalType$ to local types $\GlobalTypeProjection{\ProposerIndex}$ and $\GlobalTypeProjection{\AcceptorIndex}$.
+For $1 \leq \AcceptorRole \leq \AcceptorCount$ and $\AcceptorCount + 1 \leq \ProposerRole \leq \AcceptorCount + \ProposerCount$ we project the global type $\GlobalType$ to local types $\GlobalTypeProjection{\ProposerRole}$ and $\GlobalTypeProjection{\AcceptorRole}$.
 
 \begin{align*}
-&\GlobalTypeProjection{\ProposerIndex} = \Mu{\RecursionVariableType}
-\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}} .
-\DotForall{\AcceptorIndex\in\AQ}{\ReceiveUnreliableL{\AcceptorIndex}{\LOneB}{\Promise{\Value}}} .\\
-&\Indent{1}\SendWeaklyL{\AQ}{\Accept . \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LTwoA}{\Proposal{\Value}}}.\End , \Restart . \RecursionVariableType , \Abort .\End}
+&\GlobalTypeProjection{\ProposerRole} = \Mu{\RecursionVariableType}
+\DotForall{\AcceptorRole\in\AQ}{\SendUnreliableL{\AcceptorRole}{\LOneA}{\mathbb{N}}} .
+\DotForall{\AcceptorRole\in\AQ}{\ReceiveUnreliableL{\AcceptorRole}{\LOneB}{\Promise{\Value}}} .\\
+&\Indent{1}\SendWeaklyL{\AQ}{\Accept . \DotForall{\AcceptorRole\in\AQ}{\SendUnreliableL{\AcceptorRole}{\LTwoA}{\Proposal{\Value}}}.\End , \Restart . \RecursionVariableType , \Abort .\End}
 \end{align*}
 
-$\GlobalTypeProjection{\ProposerIndex}$ defines the local type for proposers.
+$\GlobalTypeProjection{\ProposerRole}$ defines the local type for proposers.
 First, the proposer sends a proposal number to all acceptors in its quorum in phase $\POneA$.
 It receives their responses in phase $\POneB$ and then branches in phase $\PTwoA$.
 We can see that the proposer communicates with all acceptors in its quorum in every phase.
 
 \begin{align*}
-&\GlobalTypeProjection{\AcceptorIndex} = \Mu{\RecursionVariableType}
-\ReceiveUnreliableL{\ProposerIndex}{\LOneA}{\mathbb{N}} .
-\SendUnreliableL{\ProposerIndex}{\LOneB}{\Promise{\Value}} .\\
-&\Indent{1}\ReceiveWeaklyL{\ProposerIndex}{\Accept . \ReceiveUnreliableL{\ProposerIndex}{\LTwoA}{\Proposal{\Value}}.\End , \Restart . \RecursionVariableType , \Abort .\End}{\Abort}
+&\GlobalTypeProjection{\AcceptorRole} = \Mu{\RecursionVariableType}
+\ReceiveUnreliableL{\ProposerRole}{\LOneA}{\mathbb{N}} .
+\SendUnreliableL{\ProposerRole}{\LOneB}{\Promise{\Value}} .\\
+&\Indent{1}\ReceiveWeaklyL{\ProposerRole}{\Accept . \ReceiveUnreliableL{\ProposerRole}{\LTwoA}{\Proposal{\Value}}.\End , \Restart . \RecursionVariableType , \Abort .\End}{\Abort}
 \end{align*}
 
-$\GlobalTypeProjection{\AcceptorIndex}$ defines the local type for acceptors, assuming a proposer $\ProposerIndex$.
+$\GlobalTypeProjection{\AcceptorRole}$ defines the local type for acceptors, assuming a proposer $\ProposerRole$.
 Since Paxos defines two roles that communicate with each other, their local types complement each other.
 An acceptor first receives a proposal number, then it responds with a $\Promise{\Value}$.
 Finally, it receives the proposer's branching choice.
@@ -52,7 +52,7 @@ Finally, it receives the proposer's branching choice.
 \right)
 \]
 
-$\Gamma$ contains the type for our shared channels $\OuterSharedPoint$ and $\SharedPoint{\ProcessIndex}$ where $\AcceptorCount + 1 \leq \ProcessIndex \leq \AcceptorCount + \ProposerCount$.
+$\Gamma$ contains the type for our shared channels $\OuterSharedPoint$ and $\SharedPoint{\ProposerRole}$ where $\AcceptorCount + 1 \leq \ProposerRole \leq \AcceptorCount + \ProposerCount$.
 
 We start the type check with the global environment $\Gamma$ and the entry point of the model $\Sys{\AcceptorCount}{\ProposerCount}$.
 Then, we apply the typing rules in \cite{PetersEtal21} in a proof tree and show that the model can be derived from the axioms $\RVar$ and $\REnd$.
@@ -70,13 +70,13 @@ Then, we apply the typing rules in \cite{PetersEtal21} in a proof tree and show 
 
 \AxiomC{$\SysProof{3}$}
 \noLine
-\UnaryInfC{$\Gamma\vdash \ParallelFor{1 \leq \AcceptorIndex \leq \AcceptorCount} \PaInitShort \vartriangleright \emptyset$}
+\UnaryInfC{$\Gamma\vdash \ParallelFor{1 \leq \AcceptorRole \leq \AcceptorCount} \PaInitShort \vartriangleright \emptyset$}
 
 \RightLabel{$\RPar$}
-\BinaryInfC{$\Gamma\vdash \SessionAccept{\OuterSharedPoint}{1}{\OuterSessionChannel} \ldots \Or \ParallelFor{1 \leq \AcceptorIndex \leq \AcceptorCount} \PaInitShort \vartriangleright \emptyset$}
+\BinaryInfC{$\Gamma\vdash \SessionAccept{\OuterSharedPoint}{1}{\OuterSessionChannel} \ldots \Or \ParallelFor{1 \leq \AcceptorRole \leq \AcceptorCount} \PaInitShort \vartriangleright \emptyset$}
 
 \RightLabel{$\RPar$}
-\BinaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{\OuterSessionChannel}.\PpInitShort \Or \SessionAccept{\OuterSharedPoint}{1}{\OuterSessionChannel} \ldots \Or \ParallelFor{1 \leq \AcceptorIndex \leq \AcceptorCount} \PaInitShort \vartriangleright \emptyset$}
+\BinaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{\OuterSessionChannel}.\PpInitShort \Or \SessionAccept{\OuterSharedPoint}{1}{\OuterSessionChannel} \ldots \Or \ParallelFor{1 \leq \AcceptorRole \leq \AcceptorCount} \PaInitShort \vartriangleright \emptyset$}
 \end{prooftree}
 We apply $\RPar$ twice and split off into the proof trees $\SysProof{1}$, $\SysProof{2}$, and $\SysProof{3}$.
 
@@ -124,9 +124,9 @@ The session environment $\Delta$ in $\ProposerProof{}$ is empty for every propos
 \begin{prooftree}
 \AxiomC{$\AcceptorProofOne$}
 \noLine
-\UnaryInfC{$\Gamma\vdash \PaOne \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\GlobalTypeProjection{\AcceptorIndex}}$}
+\UnaryInfC{$\Gamma\vdash \PaOne \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\GlobalTypeProjection{\AcceptorRole}}$}
 \RightLabel{$\RAcc$}
-\UnaryInfC{$\Gamma\vdash\SessionAccept{\SharedPoint{k}}{\AcceptorIndex}{s}.\PaOne\vartriangleright\emptyset$}
+\UnaryInfC{$\Gamma\vdash\SessionAccept{\SharedPoint{k}}{\AcceptorRole}{s}.\PaOne\vartriangleright\emptyset$}
 \AxiomC{$\ldots$}
 \RightLabel{$\RPar^{\ProposerCount}$}
 \BinaryInfC{$\Gamma\vdash\ParallelFor{\AcceptorCount < k \le \AcceptorCount + \ProposerCount} \SessionAccept{\SharedPoint{k}}{\AcceptorCount}{s} . \PaOne\vartriangleright\emptyset$}
@@ -146,7 +146,7 @@ The rest has been left out to improve readability.
 
 
 \subsection{Proposer}
-Let $\ProposerIndex = \AcceptorCount + 1, \AQ = \genAq{k}{\AcceptorCount}{\ProposerCount}, \NumberRegister = k, m = k, \VectorV = \EmptyList$ where $\AcceptorCount < k \leq \AcceptorCount + \ProposerCount$.
+Let $\ProposerRole = \AcceptorCount + 1, \AQ = \genAq{k}{\AcceptorCount}{\ProposerCount}, \NumberRegister = k, m = k, \VectorV = \EmptyList$ where $\AcceptorCount < k \leq \AcceptorCount + \ProposerCount$.
 This gives us the values for the arguments of $\PpInitName$.
 We observe that $\GammaSatisfiesType{p}{\mathbb{N}}$, $\GammaSatisfiesType{k}{\mathbb{N}}$, $\GammaSatisfiesType{\NumberRegister}{\mathbb{N}}$, $\GammaSatisfiesType{m}{\mathbb{N}}$, and $\GammaSatisfiesType{\AQ}{\List{\mathbb{N}}}$.
 $\NumberRegister$ contains a natural number.
@@ -155,18 +155,18 @@ $p$, $k$, and $m$ are natural numbers and $\AQ$ is a list of natural numbers und
 To abbreviate the proposer's local type in the following proof trees we define the following sub-formulae.
 
 \begin{align*}
-&\TpAccept = \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LTwoA}{\Proposal{\Value}}}.\End\\
+&\TpAccept = \DotForall{\AcceptorRole\in\AQ}{\SendUnreliableL{\AcceptorRole}{\LTwoA}{\Proposal{\Value}}}.\End\\
 &\TpBranch = \SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . \RecursionVariableType \oplus \Abort .\End}
 \end{align*}
 
-Note that $\GlobalTypeProjection{\ProposerIndex} = \Mu{\RecursionVariableType}
-\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}} .
-\DotForall{\AcceptorIndex\in\AQ}{\ReceiveUnreliableL{\AcceptorIndex}{\LOneB}{\Promise{\Value}}} . \TpBranch$.
+Note that $\GlobalTypeProjection{\ProposerRole} = \Mu{\RecursionVariableType}
+\DotForall{\AcceptorRole\in\AQ}{\SendUnreliableL{\AcceptorRole}{\LOneA}{\mathbb{N}}} .
+\DotForall{\AcceptorRole\in\AQ}{\ReceiveUnreliableL{\AcceptorRole}{\LOneB}{\Promise{\Value}}} . \TpBranch$.
 
 In order to shorten the proposer's process we define some variables.
 
 \begin{align*}
-&e = \anyNack{\VectorV} \tOr \Paren{\promiseCount{\VectorV} < \ceil{\frac{\ProposerIndex}{2}}}\\
+&e = \anyNack{\VectorV} \tOr \Paren{\promiseCount{\VectorV} < \ceil{\frac{\ProposerRole}{2}}}\\
 &pn = \proposalNumber{\NumberRegister}{m}\\
 &prop = \ProposalC{\Big ( \proposalNumber{\NumberRegister}{m} \Big )}{\Paren{\promiseValue{\VectorV}}}
 \end{align*}
@@ -189,34 +189,34 @@ These are added to the global environment when applying $\RUget$ in phase $\POne
 \begin{prooftree}
 \AxiomC{$\ProposerProofTrue$}
 \noLine
-\UnaryInfC{$\GammaXV \vdash \SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Restart}{\RecursionVariable} \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\TpBranch}$}
+\UnaryInfC{$\GammaXV \vdash \SendWeaklyP{s}{\ProposerRole}{\AQ}{\Restart}{\RecursionVariable} \vartriangleright \SEnvEntry{s}{\ProposerRole}{\TpBranch}$}
 
 \AxiomC{$\ProposerProofFalse$}
 \noLine
-\UnaryInfC{$\GammaXV \vdash \SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Accept}{\ldots} \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\TpBranch}$}
+\UnaryInfC{$\GammaXV \vdash \SendWeaklyP{s}{\ProposerRole}{\AQ}{\Accept}{\ldots} \vartriangleright \SEnvEntry{s}{\ProposerRole}{\TpBranch}$}
 
 \RightLabel{$\RIf$}
-\BinaryInfC{$\GammaXV \vdash \If{e} \Then{\SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Restart}{\RecursionVariable}} \Else{\SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Accept}{\ldots}} \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\TpBranch}$}
+\BinaryInfC{$\GammaXV \vdash \If{e} \Then{\SendWeaklyP{s}{\ProposerRole}{\AQ}{\Restart}{\RecursionVariable}} \Else{\SendWeaklyP{s}{\ProposerRole}{\AQ}{\Accept}{\ldots}} \vartriangleright \SEnvEntry{s}{\ProposerRole}{\TpBranch}$}
 
 \RightLabel{$\RUget^{|\AQ|}$}
-\UnaryInfC{$\GammaX \vdash \DotForall{\AcceptorIndex\in\AQ}{\ReceiveUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}{v_{\AcceptorIndex}}} \ldots \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\DotForall{\AcceptorIndex\in\AQ}{\ReceiveUnreliableL{\AcceptorIndex}{\LOneB}{\Promise{\Value}}}}$}
+\UnaryInfC{$\GammaX \vdash \DotForall{\AcceptorRole\in\AQ}{\ReceiveUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}{v_{\AcceptorRole}}} \ldots \vartriangleright \SEnvEntry{s}{\ProposerRole}{\DotForall{\AcceptorRole\in\AQ}{\ReceiveUnreliableL{\AcceptorRole}{\LOneB}{\Promise{\Value}}}}$}
 
 \RightLabel{$\RUsend^{|\AQ|}$}
-\UnaryInfC{$\GammaX \vdash \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{pn}} \ldots \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}}\ldots}$}
+\UnaryInfC{$\GammaX \vdash \DotForall{\AcceptorRole\in\AQ}{\SendUnreliableP{s}{\ProposerRole}{\AcceptorRole}{\LOneA}{pn}} \ldots \vartriangleright \SEnvEntry{s}{\ProposerRole}{\DotForall{\AcceptorRole\in\AQ}{\SendUnreliableL{\AcceptorRole}{\LOneA}{\mathbb{N}}}\ldots}$}
 
 \RightLabel{$\RSideEffect$}
-\UnaryInfC{$\GammaX \vdash \update{\NumberRegister}{\NumberRegister + 1} \ldots \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}}\ldots}$}
+\UnaryInfC{$\GammaX \vdash \update{\NumberRegister}{\NumberRegister + 1} \ldots \vartriangleright \SEnvEntry{s}{\ProposerRole}{\DotForall{\AcceptorRole\in\AQ}{\SendUnreliableL{\AcceptorRole}{\LOneA}{\mathbb{N}}}\ldots}$}
 
 \RightLabel{$\RRec$}
-\UnaryInfC{$\Gamma\vdash \Mu{\RecursionVariable} \update{\NumberRegister}{\NumberRegister + 1} \ldots \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\Mu{\RecursionVariableType}\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LOneA}{\mathbb{N}}}\ldots}$}
+\UnaryInfC{$\Gamma\vdash \Mu{\RecursionVariable} \update{\NumberRegister}{\NumberRegister + 1} \ldots \vartriangleright \SEnvEntry{s}{\ProposerRole}{\Mu{\RecursionVariableType}\DotForall{\AcceptorRole\in\AQ}{\SendUnreliableL{\AcceptorRole}{\LOneA}{\mathbb{N}}}\ldots}$}
 
 \LeftLabel{$\ProposerProof{} =$}
 \RightLabel{$\RReq$}
-\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\ProcessIndex}}{\ProposerIndex}{s}.\Pp{} \vartriangleright \emptyset$}
+\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{MMM}}{\ProposerRole}{s}.\Pp{} \vartriangleright \emptyset$}
 \end{prooftree}
 $\ProposerProof{}$ is the continuation of $\SysProof{1}$ and $\SysProof{2}$.
 In both proof trees the session environment $\Delta$ was empty.
-Here, we apply $\RReq$ and add $\SEnvEntry{s}{\ProposerIndex}{\GlobalTypeProjection{\ProposerIndex}}$ to the session environment.
+Here, we apply $\RReq$ and add $\SEnvEntry{s}{\ProposerRole}{\GlobalTypeProjection{\ProposerRole}}$ to the session environment.
 Applying $\RRec$ changes the global environment from $\Gamma$ to $\GammaX$.
 $\RSideEffect$ advances the process.
 First $\RUsend$ and then $\RUget$ is applied for every acceptor in $\AQ$.
@@ -227,10 +227,10 @@ $\RIf$ splits the proof tree into $\ProposerProofTrue$ and $\ProposerProofFalse$
 \begin{prooftree}
 \AxiomC{}
 \RightLabel{$\RVar$}
-\UnaryInfC{$\GammaXV\vdash \RecursionVariable \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\RecursionVariableType}$}
+\UnaryInfC{$\GammaXV\vdash \RecursionVariable \vartriangleright \SEnvEntry{s}{\ProposerRole}{\RecursionVariableType}$}
 \LeftLabel{$\ProposerProofTrue =$}
 \RightLabel{$\RWsel$}
-\UnaryInfC{$\GammaXV\vdash \SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Restart}{\RecursionVariable} \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . \RecursionVariableType \oplus \Abort .\End}}$}
+\UnaryInfC{$\GammaXV\vdash \SendWeaklyP{s}{\ProposerRole}{\AQ}{\Restart}{\RecursionVariable} \vartriangleright \SEnvEntry{s}{\ProposerRole}{\SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . \RecursionVariableType \oplus \Abort .\End}}$}
 \end{prooftree}
 We apply $\RWsel$ and then $\RVar$ to finish $\ProposerProofTrue$.
 
@@ -238,53 +238,53 @@ We apply $\RWsel$ and then $\RVar$ to finish $\ProposerProofTrue$.
 \begin{prooftree}
 \AxiomC{}
 \RightLabel{$\REnd$}
-\UnaryInfC{$\GammaXV\vdash \End \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\End}$}
+\UnaryInfC{$\GammaXV\vdash \End \vartriangleright \SEnvEntry{s}{\ProposerRole}{\End}$}
 \RightLabel{$\RUsend^{|\AQ|}$}
-\UnaryInfC{$\GammaXV\vdash \DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{prop}}.\End \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\DotForall{\AcceptorIndex\in\AQ}{\SendUnreliableL{\AcceptorIndex}{\LTwoA}{\Proposal{\Value}}}.\End}$}
+\UnaryInfC{$\GammaXV\vdash \DotForall{\AcceptorRole\in\AQ}{\SendUnreliableP{s}{\ProposerRole}{\AcceptorRole}{\LTwoA}{prop}}.\End \vartriangleright \SEnvEntry{s}{\ProposerRole}{\DotForall{\AcceptorRole\in\AQ}{\SendUnreliableL{\AcceptorRole}{\LTwoA}{\Proposal{\Value}}}.\End}$}
 
 \LeftLabel{$\ProposerProofFalse =$}
 \RightLabel{$\RWsel$}
-\UnaryInfC{$\GammaXV\vdash \SendWeaklyP{s}{\ProposerIndex}{\AQ}{\Accept.\ldots} \vartriangleright \SEnvEntry{s}{\ProposerIndex}{\SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . \RecursionVariableType \oplus \Abort .\End}}$}
+\UnaryInfC{$\GammaXV\vdash \SendWeaklyP{s}{\ProposerRole}{\AQ}{\Accept.\ldots} \vartriangleright \SEnvEntry{s}{\ProposerRole}{\SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . \RecursionVariableType \oplus \Abort .\End}}$}
 \end{prooftree}
 After applying $\RUsend$ we can apply $\RUsend$ once for every acceptor in $\AQ$.
 Finally, we can finish $\ProposerProofFalse$ — and with it $\ProposerProof{}$ — by applying $\REnd$.
 
 \subsection{Acceptor}
 First, we define the arguments of $\PaInitName$ and $\PaOne$.
-Let $\AcceptorIndex = j$ and $\ProposerIndex = \AcceptorCount + 1$ where $1 \leq j \leq \AcceptorCount$.
+Let $\AcceptorRole = j$ and $\ProposerRole = \AcceptorCount + 1$ where $1 \leq j \leq \AcceptorCount$.
 With session environment $\Gamma$ we have $\GammaSatisfiesType{a}{\mathbb{N}}$ and $\GammaSatisfiesType{p}{\mathbb{N}}$.
 % TODO n_a? pr_a?
 
 To improve readability of the proof trees we break down the acceptor's process and local type.
 
 \begin{align*}
-&\PaAccept = \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\bot}{pr'} .
+&\PaAccept = \ReceiveUnreliableP{s}{\ProposerRole}{\AcceptorRole}{\LTwoA}{\bot}{pr'} .
 \If{pr' = \bot}\\
 &\Indent{1}\Then{\End}\\
 &\Indent{1}\Else{\If{\greaterEqual{\nFromProposal{pr'}}{\NumberRegister}}\\
 &\Indent{2}\Then{\update{\ProposalRegister}{pr'} . \update{\NumberRegister}{\Just{\nFromProposal{pr'}}}.\End}\\
 &\Indent{2}\Else{\End}}
 \end{align*}
-We can see that $\PaTwo$ contains $\PaAccept$ as $\PaTwo = \ReceiveWeaklyP{s}{\ProposerIndex}{\AcceptorIndex}{\Accept . \PaAccept \oplus \Restart . \RecursionVariable \oplus \Abort . \End}$.
+We can see that $\PaTwo$ contains $\PaAccept$ as $\PaTwo = \ReceiveWeaklyP{s}{\ProposerRole}{\AcceptorRole}{\Accept . \PaAccept \oplus \Restart . \RecursionVariable \oplus \Abort . \End}$.
 
 \begin{align*}
-&\Pa{t} = \update{\NumberRegister}{n'}.\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Promise{\ProposalRegister}}.\PaTwo
+&\Pa{t} = \update{\NumberRegister}{n'}.\SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Promise{\ProposalRegister}}.\PaTwo
 \\\\
-&\Pa{f} = \SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{\NumberRegister}}.\PaTwo
+&\Pa{f} = \SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack{\NumberRegister}}.\PaTwo
 \\\\
 &\Pa{gt} = \If{\greaterThan{n'}{\NumberRegister}}\Then{\Pa{t}}\Else{\Pa{f}}
 \end{align*}
-With $\Pa{gt}$, $\PaOne$ can be written as $\PaOne = \Mu{\RecursionVariable}\ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\bot}{n'}.\If{n'=\bot}\Then{\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}.\PaTwo}\Else{\Pa{gt}}$.
+With $\Pa{gt}$, $\PaOne$ can be written as $\PaOne = \Mu{\RecursionVariable}\ReceiveUnreliableP{s}{\ProposerRole}{\AcceptorRole}{\LOneA}{\bot}{n'}.\If{n'=\bot}\Then{\SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.\PaTwo}\Else{\Pa{gt}}$.
 
 \begin{align*}    
-&\TaAccept = \ReceiveUnreliableL{\ProposerIndex}{\LTwoA}{\Proposal{\Value}}.\End
+&\TaAccept = \ReceiveUnreliableL{\ProposerRole}{\LTwoA}{\Proposal{\Value}}.\End
 \\\\
-&\TaBranch = \ReceiveWeaklyL{\ProposerIndex}{\Accept . \TaAccept , \Restart . \RecursionVariableType , \Abort .\End}{\Abort}
+&\TaBranch = \ReceiveWeaklyL{\ProposerRole}{\Accept . \TaAccept , \Restart . \RecursionVariableType , \Abort .\End}{\Abort}
 \\\\
-&\TaOneB = \SendUnreliableL{\ProposerIndex}{\LOneB}{\Promise{\Value}} . \TaBranch
+&\TaOneB = \SendUnreliableL{\ProposerRole}{\LOneB}{\Promise{\Value}} . \TaBranch
 \end{align*}
 
-The acceptor's local type $\GlobalTypeProjection{\AcceptorIndex}$ can be written as $\GlobalTypeProjection{\AcceptorIndex} = \Mu{\RecursionVariableType}\ReceiveUnreliableL{\ProposerIndex}{\LOneA}{\mathbb{N}}.\TaOneB$.
+The acceptor's local type $\GlobalTypeProjection{\AcceptorRole}$ can be written as $\GlobalTypeProjection{\AcceptorRole} = \Mu{\RecursionVariableType}\ReceiveUnreliableL{\ProposerRole}{\LOneA}{\mathbb{N}}.\TaOneB$.
 
 Finally, we define the global environments $\GammaX$, $\GammaXN$, and $\GammaXNP$.
 
@@ -302,25 +302,25 @@ $\GammaXNP$ adds type $\Proposal{\Value}$ for $pr'$.
 \begin{prooftree}
 \AxiomC{$\AcceptorProofTwo$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaBranch}$}
 \RightLabel{$\RUsend$}
-\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaOneB}$}
+\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaOneB}$}
 
 \AxiomC{$\AcceptorProof{gt}$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \Pa{gt} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaOneB}$}
+\UnaryInfC{$\GammaXN\vdash \Pa{gt} \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaOneB}$}
 
 \RightLabel{$\RIf$}
-\BinaryInfC{$\GammaXN\vdash \If{n'=\bot}\Then{\SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\bot}.\PaTwo}\Else{\If{\greaterThan{n'}{\NumberRegister}}\ldots} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaOneB}$}
+\BinaryInfC{$\GammaXN\vdash \If{n'=\bot}\Then{\SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.\PaTwo}\Else{\If{\greaterThan{n'}{\NumberRegister}}\ldots} \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaOneB}$}
 
 \RightLabel{$\RUget$}
-\UnaryInfC{$\GammaX \vdash \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\bot}{n'}.\If{n'=\bot}\ldots \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\ReceiveUnreliableL{\ProposerIndex}{\LOneA}{\mathbb{N}}.\TaOneB}$}
+\UnaryInfC{$\GammaX \vdash \ReceiveUnreliableP{s}{\ProposerRole}{\AcceptorRole}{\LOneA}{\bot}{n'}.\If{n'=\bot}\ldots \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\ReceiveUnreliableL{\ProposerRole}{\LOneA}{\mathbb{N}}.\TaOneB}$}
 
 \LeftLabel{$\AcceptorProofOne =$}
 \RightLabel{$\RRec$}
-\UnaryInfC{$\Gamma\vdash \Mu{\RecursionVariable} \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LOneA}{\bot}{n'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\Mu{\RecursionVariableType}\ReceiveUnreliableL{\ProposerIndex}{\LOneA}{\mathbb{N}}.\ldots}$}
+\UnaryInfC{$\Gamma\vdash \Mu{\RecursionVariable} \ReceiveUnreliableP{s}{\ProposerRole}{\AcceptorRole}{\LOneA}{\bot}{n'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\Mu{\RecursionVariableType}\ReceiveUnreliableL{\ProposerRole}{\LOneA}{\mathbb{N}}.\ldots}$}
 \end{prooftree}
-After applying $\RAcc$ in $\SysProof{3}$ the session environment contains the acceptor's local type $\GlobalTypeProjection{\AcceptorIndex}$.
+After applying $\RAcc$ in $\SysProof{3}$ the session environment contains the acceptor's local type $\GlobalTypeProjection{\AcceptorRole}$.
 We apply $\RRec$ and $\RUget$ and the split the proof tree with $\RIf$.
 By applying $\RRec$ and $\RUget$ the global environment expands from $\Gamma$ to $\GammaX$ to $\GammaXN$.
 On the left branch we apply $\RUsend$ and continue in $\AcceptorProofTwo$.
@@ -332,15 +332,15 @@ We examine $\AcceptorProof{gt}$ first, because it contains the proof tree of the
 \begin{prooftree}
 \AxiomC{$\AcceptorProofTrue$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \Pa{t} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaOneB}$}
+\UnaryInfC{$\GammaXN\vdash \Pa{t} \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaOneB}$}
 
 \AxiomC{$\AcceptorProofFalse$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \Pa{f} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaOneB}$}
+\UnaryInfC{$\GammaXN\vdash \Pa{f} \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaOneB}$}
 
 \LeftLabel{$\AcceptorProof{gt} =$}
 \RightLabel{$\RIf$}
-\BinaryInfC{$\GammaXN\vdash \If{\greaterThan{n'}{\NumberRegister}}\Then{\Pa{t}}\Else{\Pa{f}} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaOneB}$}
+\BinaryInfC{$\GammaXN\vdash \If{\greaterThan{n'}{\NumberRegister}}\Then{\Pa{t}}\Else{\Pa{f}} \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaOneB}$}
 \end{prooftree}
 First, we split the proof tree with $\RIf$.
 We continue the resulting branches in separate proof trees $\AcceptorProofTrue$ and $\AcceptorProofFalse$.
@@ -349,20 +349,20 @@ We continue the resulting branches in separate proof trees $\AcceptorProofTrue$ 
 \begin{prooftree}
 \AxiomC{$\AcceptorProofTwo$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaBranch}$}
 \LeftLabel{$\AcceptorProofTrue =$}
 \RightLabel{$\RUsend$}
-\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{\NumberRegister}}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\SendUnreliableL{\ProposerIndex}{\LOneB}{\Promise{\Value}} . \TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack{\NumberRegister}}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\SendUnreliableL{\ProposerRole}{\LOneB}{\Promise{\Value}} . \TaBranch}$}
 \end{prooftree}
 
 % (A_f)
 \begin{prooftree}
 \AxiomC{$\AcceptorProofTwo$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaBranch}$}
 \LeftLabel{$\AcceptorProofFalse =$}
 \RightLabel{$\RUsend$}
-\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{s}{\AcceptorIndex}{\ProposerIndex}{\LOneB}{\Nack{\NumberRegister}}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\SendUnreliableL{\ProposerIndex}{\LOneB}{\Promise{\Value}}.\TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack{\NumberRegister}}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\SendUnreliableL{\ProposerRole}{\LOneB}{\Promise{\Value}}.\TaBranch}$}
 \end{prooftree}
 
 In both, $\AcceptorProofTrue$ and $\AcceptorProofFalse$, we apply $\RUsend$.
@@ -372,19 +372,19 @@ Now we can examine $\AcceptorProofTwo$, which is the proof tree for $\PaTwo$.
 \begin{prooftree}
 \AxiomC{$\AcceptorProofAccept$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \PaAccept \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaAccept}$}
+\UnaryInfC{$\GammaXN\vdash \PaAccept \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaAccept}$}
 
 \AxiomC{}
 \RightLabel{$\RVar$}
-\UnaryInfC{$\GammaXN\vdash \RecursionVariable \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\RecursionVariableType}$}
+\UnaryInfC{$\GammaXN\vdash \RecursionVariable \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\RecursionVariableType}$}
 
 \AxiomC{}
 \RightLabel{$\REnd$}
-\UnaryInfC{$\GammaXN\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
+\UnaryInfC{$\GammaXN\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\End}$}
 
 \LeftLabel{$\AcceptorProofTwo =$}
 \RightLabel{$\RWbran$}
-\TrinaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\TaBranch}$}
+\TrinaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaBranch}$}
 \end{prooftree}
 By applying $\RWbran$ we separate the three branches.
 From left to right we get an $\Accept$, a $\Restart$, and an $\Abort$ branch.
@@ -395,24 +395,24 @@ The $\Restart$ branch can be finished by applying $\RVar$ and the $\Abort$ branc
 \begin{prooftree}
 \AxiomC{}
 \RightLabel{$\REnd$}
-\UnaryInfC{$\GammaXNP\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
+\UnaryInfC{$\GammaXNP\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\End}$}
 
 \AxiomC{$\AcceptorProof{update}$}
 \noLine
-\UnaryInfC{$\GammaXNP\vdash\update{\ProposalRegister}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
+\UnaryInfC{$\GammaXNP\vdash\update{\ProposalRegister}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\End}$}
 
 \AxiomC{}
 \RightLabel{$\REnd$}
-\UnaryInfC{$\GammaXNP\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
+\UnaryInfC{$\GammaXNP\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\End}$}
 
 \RightLabel{$\RIf$}
-\BinaryInfC{$\GammaXNP\vdash \If{\greaterEqual{\nFromProposal{pr'}}{\NumberRegister}}\Then{\ldots}\Else{\End} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
+\BinaryInfC{$\GammaXNP\vdash \If{\greaterEqual{\nFromProposal{pr'}}{\NumberRegister}}\Then{\ldots}\Else{\End} \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\End}$}
 
 \RightLabel{$\RIf$}
-\BinaryInfC{$\GammaXNP\vdash \If{pr'=\bot}\Then{\End}\Else{\ldots} \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
+\BinaryInfC{$\GammaXNP\vdash \If{pr'=\bot}\Then{\End}\Else{\ldots} \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\End}$}
 \LeftLabel{$\AcceptorProofAccept =$}
 \RightLabel{$\RUget$}
-\UnaryInfC{$\GammaXN\vdash \ReceiveUnreliableP{s}{\ProposerIndex}{\AcceptorIndex}{\LTwoA}{\bot}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\ReceiveUnreliableL{\ProposerIndex}{\LTwoA}{\Proposal{\Value}}.\End}$}
+\UnaryInfC{$\GammaXN\vdash \ReceiveUnreliableP{s}{\ProposerRole}{\AcceptorRole}{\LTwoA}{\bot}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\ReceiveUnreliableL{\ProposerRole}{\LTwoA}{\Proposal{\Value}}.\End}$}
 \end{prooftree}
 We apply $\RUget$ and expand the global session to $\GammaXNP$.
 The proof tree is split twice by applying $\RIf$ twice.
@@ -423,12 +423,12 @@ To keep this proof tree readable we continue the proof of the remaining branch i
 \begin{prooftree}
 \AxiomC{}
 \RightLabel{$\REnd$}
-\UnaryInfC{$\GammaXNP\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
+\UnaryInfC{$\GammaXNP\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\End}$}
 \RightLabel{$\RSideEffect$}
-\UnaryInfC{$\GammaXNP\vdash \update{\NumberRegister}{\Just{\nFromProposal{pr'}}}.\End \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
+\UnaryInfC{$\GammaXNP\vdash \update{\NumberRegister}{\Just{\nFromProposal{pr'}}}.\End \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\End}$}
 \LeftLabel{$\AcceptorProof{update} =$}
 \RightLabel{$\RSideEffect$}
-\UnaryInfC{$\GammaXNP\vdash\update{\ProposalRegister}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorIndex}{\End}$}
+\UnaryInfC{$\GammaXNP\vdash\update{\ProposalRegister}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\End}$}
 \end{prooftree}
 Finally, we apply $\RSideEffect$ twice and $\REnd$ once.
 This concludes the type check and proves that the model is well-typed.
@@ -460,7 +460,7 @@ Label $\LOneB$ is used to send messages of sort $\Promise{\Value}$.
 % % acceptors send their previous knowledge to proposer, if available
 These messages are sent from the acceptors to a proposer and may contain the acceptors' accepted proposal.
 Should an acceptor previously have accepted a proposal, that proposal then contains the accepted value.
-The accepted proposal $\ProposalRegister$ is either the acceptor's already accepted proposal $pr_{\AcceptorIndex}$ or a proposal that was previously proposed by a proposer.
+The accepted proposal $\ProposalRegister$ is either the acceptor's already accepted proposal $pr_{\AcceptorRole}$ or a proposal that was previously proposed by a proposer.
 $\ProposalRegister$ is sent over $\LOneB$ without alteration.
 The proposer receiving these messages stores them in $\VectorV$ without changing their values.
 
@@ -492,15 +492,15 @@ Since label $\LOneA$ is not used to transmit values that can be accepted, we con
 % due to the definition of promiseValue that proposer proposes the value that was already accepted.
 % all correct acceptors accept the same value
 We examine the flow of accepted values through the network to prove that only a single value is chosen.
-$\FPcrash$ guarantees that the set of correct acceptors in the quorum of any correct proposer $\ProposerIndex$ is itself a quorum \ie an accepting set that can choose a value \cite{Lamport06}.
-Should message loss occur in labels $\LOneA$ or $\LOneB$, $\ProposerIndex$ restarts the algorithm.
-This broadcast is weakly reliable and thus only fails if $\ProposerIndex$ crashes because $\FPwskip$ disallows suspicion of correct proposers by acceptors.
-Given the definition of $\promiseValueName$, $\ProposerIndex$ will only propose a fresh value if it has not received any accepted proposals from an acceptor.
+$\FPcrash$ guarantees that the set of correct acceptors in the quorum of any correct proposer $\ProposerRole$ is itself a quorum \ie an accepting set that can choose a value \cite{Lamport06}.
+Should message loss occur in labels $\LOneA$ or $\LOneB$, $\ProposerRole$ restarts the algorithm.
+This broadcast is weakly reliable and thus only fails if $\ProposerRole$ crashes because $\FPwskip$ disallows suspicion of correct proposers by acceptors.
+Given the definition of $\promiseValueName$, $\ProposerRole$ will only propose a fresh value if it has not received any accepted proposals from an acceptor.
 
 In Paxos a quorum is a majority of acceptors.
 For any two majorities of acceptors there exists at least one that is contained in both majorities.
-So, at least one acceptor in every other proposer's quorum is contained in $\ProposerIndex$'s quorum.
-Thus, if a majority of acceptors accept $\ProposerIndex$'s proposal it is sent to every other proposer when they reach phase $\POneB$.
+So, at least one acceptor in every other proposer's quorum is contained in $\ProposerRole$'s quorum.
+Thus, if a majority of acceptors accept $\ProposerRole$'s proposal it is sent to every other proposer when they reach phase $\POneB$.
 These proposers then propagate the accepted value by proposing it again but with a higher proposal number.
 This way all correct acceptors accept the same value.
 
