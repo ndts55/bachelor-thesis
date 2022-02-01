@@ -276,6 +276,7 @@ We write $ \Args \sharp \Gamma $ and $ \Args \sharp \Delta $ if the name $ \Args
 We use $ \compS $ to add an assignment provided that the new assignment is not in conflict with the type environment, \ie $ \Gamma \compS A $ implies that the respective name/variable/label in $ A $ is not contained in $ \Gamma $ and $ \Delta \compS A $ implies that the respective actor/queue in $ A $ is not contained in $ \Delta $.
 These conditions on $ \compS $ for global and session environments are referred to as \emph{linearity}.
 We restrict in the following our attention to linear environments.
+We abstract in session environments from assignments towards terminated local types, \ie $\Delta \cdot \SEnvEntry{s}{r}{\End} = \Delta$.
 
 \begin{figure}[tp]
 	\centering
