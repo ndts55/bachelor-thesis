@@ -36,7 +36,7 @@
 \newcommand{\Or}[0]{\; | \;}
 \newcommand{\Promise}[1]{\operatorname{Promise}\; #1}
 \newcommand{\Proposal}[1]{\operatorname{Proposal}\; #1}
-\newcommand{\ProposalC}[2]{\operatorname{Proposal}\; #1\; #2}
+\newcommand{\ProposalC}[2]{\operatorname{Prop}\; #1\; #2}
 \newcommand{\Nack}[0]{\operatorname{Nack}}
 \newcommand{\Value}[0]{\operatorname{Value}}
 \newcommand{\TypeParamA}[0]{\ensuremath{\operatorname{a}}\xspace}
@@ -163,7 +163,7 @@
 \newcommand{\If}[1]{\operatorname{if}\xspace #1}
 \newcommand{\Then}[1]{\operatorname{then}\xspace #1}
 \newcommand{\Else}[1]{\operatorname{else}\xspace #1}
-\newcommand{\tOr}[0]{\text{ or }}
+\newcommand{\tOr}[0]{\text{ } or \text{ }}
 \newcommand{\mapstostar}[0]{\longmapsto^*}
 \newcommand{\Wildcard}[0]{\mathtt{\_}}
 \newcommand{\EmptyList}[0]{\mathtt{[]}}
@@ -183,14 +183,25 @@
 \newcommand{\ProposalRegister}[0]{\operatorname{pr}}
 \newcommand{\ProcessIndexK}[0]{k}
 \newcommand{\ProcessIndexJ}[0]{j}
+\newcommand{\ChannelS}[0]{s}
+\newcommand{\ChannelR}[0]{r}
 
 % Example run
 \newcommand{\Nu}[1]{\left(\nu #1\right)}
-\newcommand{\OuterSessionQueues}[0]{\ParallelFor{1 \le k,l \le 2, k \neq l} t_{k\to l}:[]}
-\newcommand{\InnerSessionQueues}[1]{\ParallelFor{1 \le k,l \le 4, k \neq l} #1_{k\to l}:[]}
+\newcommand{\OuterSessionQueues}[0]{\ParallelFor{1 \le k,l \le 2, k \neq l} \OuterSessionChannel_{k\to l}:[]}
+\newcommand{\InnerSessionQueues}[1]{\ParallelFor{1 \le k,l \le 3, k \neq l} #1_{k\to l}:[]}
 \newcommand{\NuChannels}[0]{\Nu{\OuterSessionChannel}\Nu{s}\Nu{r}}
-\newcommand{\BeginPaCont}[0]{\Accept \dots \oplus \Restart .X \oplus \Abort . \End}
+\newcommand{\BeginPaCont}[0]{\Accept \ldots \oplus \Restart .X \oplus \Abort . \End}
 \newcommand{\ABC}[0]{\operatorname{abc}}
+\newcommand{\RegisterContent}[8]{
+\begin{center}
+\begin{tabular}{l | l | l | l | l}
+    $\Acceptor{1}$ & $\Acceptor{2}$ & $\Acceptor{3}$ & $\Proposer{4}$ & $\Proposer{5}$\\
+    $\NumberRegister_1 =$ #1 & $\NumberRegister_2 =$ #2 & $\NumberRegister_3 =$ #3 & $\NumberRegister_4 =$ #4 & $\NumberRegister_5 =$ #5\\
+    $\ProposalRegister_1 =$ #6 & $\ProposalRegister_2 =$ #7 & $\ProposalRegister_3 =$ #8 & & \\
+\end{tabular}
+\end{center}
+}
 
 % Reduction / Typing Rules
 \newcommand{\Rule}[1]{\ensuremath{\Paren{\operatorname{#1}}}\xspace}
@@ -203,13 +214,13 @@
 %% Reduction Rules
 \newcommand{\RWskip}[0]{\Rule{WSkip}}
 \newcommand{\Rml}[0]{\Rule{ML}}
+\newcommand{\RRec}[0]{\Rule{Rec}}
 %% Typing Rules
 \newcommand{\RReq}[0]{\Rule{Req}}
 \newcommand{\RAcc}[0]{\Rule{Acc}}
 \newcommand{\REnd}[0]{\Rule{End}}
 \newcommand{\RIf}[0]{\Rule{If}}
 \newcommand{\RPar}[0]{\Rule{Par}}
-\newcommand{\RRec}[0]{\Rule{Rec}}
 \newcommand{\RVar}[0]{\Rule{Var}}
 \newcommand{\RSideEffect}[0]{\Rule{Func}}
 \newcommand{\RIfT}[0]{\Rule{If-T}}
