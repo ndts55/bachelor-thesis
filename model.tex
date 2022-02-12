@@ -51,18 +51,38 @@ In the first case the acceptor's response optionally includes the last proposal 
 In the second case it is of the form $\Nack$.
 
 \section{Global Type}
-Since each proposer initiates its own session the global type can be defined for one proposer $\ProposerRole$ and a quorum $\AQ$.
+Since each proposer initiates its own session the global type can be defined for one proposer $\ProposerRole$ and a corresponding quorum $\AQ$.
+Let $\ProposerSessionRole = |\AQ| + 1$ and $\QRoles = \Curly{1,\ldots,|\AQ|}$.
 
 The last phase of Paxos contains no inter-process communication, so it is not modeled in the global type.
 
 \begin{align*}
-&\GlobalType = \Mu{\RecursionVariableType}
-\DotForall{\AcceptorRole \in \AQ}{\SendUnreliableG{\ProposerRole}{\AcceptorRole}{\LOneA}{\mathbb{N}}} .
-\DotForall{\AcceptorRole \in \AQ}{\SendUnreliableG{\AcceptorRole}{\ProposerRole}{\LOneB}{\Promise{\Value}}} .\\
-&\Indent{1}\SendWeaklyG{\ProposerRole}{\AQ}{
-\Accept.\DotForall{\AcceptorRole \in \AQ}{\SendUnreliableG{\ProposerRole}{\AcceptorRole}{\LTwoA}{\Proposal{\Value}}}.\End \oplus
-\Restart.\RecursionVariableType \oplus
-\Abort.\End}
+    &\GlobalType =
+        \Mu{\RecursionVariableType}
+        \DotForall{
+            \AcceptorRole \in \QRoles
+        }{
+            \SendUnreliableG{\ProposerSessionRole}{\AcceptorRole}{\LOneA}{\mathbb{N}}
+        } .
+        \DotForall{
+            \AcceptorRole \in \QRoles
+        }{
+            \SendUnreliableG{\AcceptorRole}{\ProposerSessionRole}{\LOneB}{\Promise{\Value}}
+        } .\\
+    &\Indent{1}
+        \SendWeaklyG{\ProposerSessionRole}{\QRoles}{
+            \Accept.
+                \DotForall{
+                    \AcceptorRole \in \QRoles
+                }{
+                    \SendUnreliableG{\ProposerSessionRole}{\AcceptorRole}{\LTwoA}{\Proposal{\Value}}
+                }.
+                \End
+            \oplus \Restart.
+                \RecursionVariableType
+            \oplus \Abort.
+                \End
+        }
 \end{align*}
 
 We can distinguish the individual phases of the Paxos algorithm by the labels $\LOneA$, $\LOneB$, and $\LTwoA$.
@@ -167,6 +187,7 @@ We observe that $1 \leq \position{n}{xs} \leq |xs|$ for every list $xs$ and $n \
 \section{Processes}
 \subsection{System Initialization}
 Let $\AcceptorCount$ and $\ProposerCount$ be the number of acceptors and proposers respectively.
+We require that $\AcceptorCount > 0$ and $\ProposerCount > 0$.
 Let $\AQ_{\ProcessIndexK} = \genAq{\ProcessIndexK}{\AcceptorCount}{\ProposerCount}$ be the quorum and $\NumberRegister_{\ProcessIndexK}$ a register for proposer with process index $\ProcessIndexK$ where $\AcceptorCount + 1 \leq \ProcessIndexK \leq \AcceptorCount + \ProposerCount$.
 Finally, let $\NumberRegister_{\ProcessIndexJ}$ and $\ProposalRegister_{\ProcessIndexJ}$ be registers for an acceptor with process index $\ProcessIndexJ$ where $1 \leq \ProcessIndexJ \leq \AcceptorCount$.
 

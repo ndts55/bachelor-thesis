@@ -64,13 +64,15 @@
 
 %% Global Type
 \newcommand{\ProposerRole}[0]{p}
+\newcommand{\ProposerSessionRole}[0]{q}
 \newcommand{\AcceptorRole}[0]{a}
 \newcommand{\OuterSharedPoint}[0]{o}
 \newcommand{\SharedPoint}[1]{b_{#1}}
 \newcommand{\OuterSessionChannel}[0]{z}
 \newcommand{\SessionChannel}[0]{s}
 \newcommand{\OuterGlobalType}[0]{\operatorname{G}}
-\newcommand{\GlobalType}[0]{\operatorname{G_{\ProposerRole, A_Q}}}
+\newcommand{\GlobalType}[0]{\operatorname{G_{\ProposerRole, \AQ}}}
+\newcommand{\IndexedGlobalType}[1]{\operatorname{G_{#1, \AQ_{#1}}}}
 \newcommand{\SendUnreliableG}[4]{#1 \to_u #2 : #3 \left\langle #4 \right\rangle}
 \newcommand{\SendWeaklyG}[3]{#1 \to_w #2 : \Curly{#3}}
 \newcommand{\RecursionVariableType}[0]{t}
@@ -82,6 +84,7 @@
 \newcommand{\ReceiveWeaklyL}[3]{\left[#1\right]?_w \Curly{#2}_{#3}}
 \newcommand{\OuterGlobalTypeProjection}[1]{\OuterGlobalType \upharpoonright_{#1}}
 \newcommand{\GlobalTypeProjection}[1]{\GlobalType \upharpoonright_{#1}}
+\newcommand{\IndexedGlobalTypeProjection}[2]{\IndexedGlobalType{#1} \upharpoonright_{#2}}
 
 %% Process
 \newcommand{\SendUnreliableP}[5]{#1\left[#2, #3\right]!_u #4 \left\langle #5 \right\rangle}
@@ -152,7 +155,7 @@
 \newcommand{\positionHelperName}[0]{\operatorname{positionHelper}}
 \newcommand{\positionHelper}[3]{\positionHelperName\left(#1, #2, #3\right)}
 
-\newcommand{\positionName}[0]{\operatorname{position}}
+\newcommand{\positionName}[0]{\operatorname{pos}}
 \newcommand{\position}[2]{\positionName\left(#1, #2\right)}
 
 \newcommand{\update}[2]{\operatorname{update} \left(#1, #2\right)}
@@ -227,6 +230,8 @@
 \newcommand{\RIfF}[0]{\Rule{If-F}}
 
 % Type Check
+\newcommand{\AcceptorA}[0]{a}
+\newcommand{\AcceptorB}[0]{b}
 \newcommand{\SEnvEntry}[3]{#1\left[#2\right]:#3}
 \newcommand{\GEnvEntry}[2]{#1:#2}
 \newcommand{\GammaX}[0]{\Gamma'}

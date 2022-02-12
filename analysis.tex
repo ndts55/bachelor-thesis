@@ -3,16 +3,39 @@ We take the model from the previous chapter, type check it, and discuss how we u
 To execute the type check we project the global type to local types and use the typing rules given in \cite{PetersEtal21}.
 
 \section{Local Types}
-Because no communication occurs in the outer session, the  outer session's type is $\OuterGlobalType = \End$.
+Because no communication occurs in the outer session, the  outer session's global type is $\OuterGlobalType = \End$.
 The projection of $\OuterGlobalType$ to a local type is $\OuterGlobalTypeProjection{k} = \End$ for every $k$.
 
-For $1 \leq \AcceptorRole \leq \AcceptorCount$ and $\AcceptorCount + 1 \leq \ProposerRole \leq \AcceptorCount + \ProposerCount$ we project the global type $\GlobalType$ to local types $\GlobalTypeProjection{\ProposerRole}$ and $\GlobalTypeProjection{\AcceptorRole}$.
+We assume a proposer $\ProposerRole$ where $\AcceptorCount + 1 \leq \ProposerRole \leq \AcceptorCount + \ProposerCount$ and a corresponding quorum $\AQ\subseteq\Curly{1,\ldots,\AcceptorCount}$.
+Let $\QRoles = \Curly{1,\ldots,|\AQ|}$.
+We project the global type $\GlobalType$ to the local type $\GlobalTypeProjection{\ProposerRole}$.
 
 \begin{align*}
-&\GlobalTypeProjection{\ProposerRole} = \Mu{\RecursionVariableType}
-\DotForall{\AcceptorRole\in\AQ}{\SendUnreliableL{\AcceptorRole}{\LOneA}{\mathbb{N}}} .
-\DotForall{\AcceptorRole\in\AQ}{\ReceiveUnreliableL{\AcceptorRole}{\LOneB}{\Promise{\Value}}} .\\
-&\Indent{1}\SendWeaklyL{\AQ}{\Accept . \DotForall{\AcceptorRole\in\AQ}{\SendUnreliableL{\AcceptorRole}{\LTwoA}{\Proposal{\Value}}}.\End , \Restart . \RecursionVariableType , \Abort .\End}
+&\GlobalTypeProjection{\ProposerRole} =
+    \Mu{\RecursionVariableType}
+    \DotForall{
+        \AcceptorRole\in\QRoles
+    }{
+        \SendUnreliableL{\AcceptorRole}{\LOneA}{\mathbb{N}}
+    } .
+    \DotForall{
+        \AcceptorRole\in\QRoles
+    }{
+        \ReceiveUnreliableL{\AcceptorRole}{\LOneB}{\Promise{\Value}}
+    } .\\
+&\Indent{1}
+    \SendWeaklyL{\QRoles}{
+        \Accept .
+            \DotForall{
+                \AcceptorRole\in\QRoles
+            }{
+                \SendUnreliableL{\AcceptorRole}{\LTwoA}{\Proposal{\Value}}}.
+                \End ,
+        \Restart .
+            \RecursionVariableType ,
+        \Abort .
+            \End
+    }
 \end{align*}
 
 $\GlobalTypeProjection{\ProposerRole}$ defines the local type for proposers.
@@ -20,39 +43,61 @@ First, the proposer sends a proposal number to all acceptors in its quorum in ph
 It receives their responses in phase $\POneB$ and then branches in phase $\PTwoA$.
 We can see that the proposer communicates with all acceptors in its quorum in every phase.
 
+Additionally, we assume acceptors $\AcceptorA$ and $\AcceptorB$ where $1 \leq \AcceptorA, \AcceptorB \leq \AcceptorCount$, $\AcceptorA\in\AQ$, and $\AcceptorB\notin\AQ$.
+Let $\ProposerSessionRole = |\AQ| + 1$.
+We project the global type $\GlobalType$ to the local types $\GlobalTypeProjection{\AcceptorA}$ and $\GlobalTypeProjection{\AcceptorB}$.
+
 \begin{align*}
-&\GlobalTypeProjection{\AcceptorRole} = \Mu{\RecursionVariableType}
-\ReceiveUnreliableL{\ProposerRole}{\LOneA}{\mathbb{N}} .
-\SendUnreliableL{\ProposerRole}{\LOneB}{\Promise{\Value}} .\\
-&\Indent{1}\ReceiveWeaklyL{\ProposerRole}{\Accept . \ReceiveUnreliableL{\ProposerRole}{\LTwoA}{\Proposal{\Value}}.\End , \Restart . \RecursionVariableType , \Abort .\End}{\Abort}
+&\GlobalTypeProjection{\AcceptorA} =
+    \Mu{\RecursionVariableType}
+    \ReceiveUnreliableL{\ProposerSessionRole}{\LOneA}{\mathbb{N}} .
+    \SendUnreliableL{\ProposerSessionRole}{\LOneB}{\Promise{\Value}} .
+&\GlobalTypeProjection{\AcceptorB} = \End\\
+&\Indent{1}
+    \ReceiveWeaklyL{\ProposerSessionRole}{
+        \Accept .
+            \ReceiveUnreliableL{\ProposerSessionRole}{\LTwoA}{\Proposal{\Value}}.
+            \End
+        ,\Restart .
+            \RecursionVariableType
+        ,\Abort .
+            \End
+    }{\Abort}
 \end{align*}
 
-$\GlobalTypeProjection{\AcceptorRole}$ defines the local type for acceptors, assuming a proposer $\ProposerRole$.
+$\GlobalTypeProjection{\AcceptorA}$ defines the local type for acceptors contained in the proposer's quorum $\AQ$.
 Since Paxos defines two roles that communicate with each other, their local types complement each other.
 An acceptor first receives a proposal number, then it responds with a $\Promise{\Value}$.
 Finally, it receives the proposer's branching choice.
 
-\section{Type Check}
-\[
-\Gamma =
-\left(
-\GEnvEntry{\OuterSharedPoint}{\OuterGlobalType}
-\cdot \GEnvEntry{\SharedPoint{\AcceptorCount+1}}{\GlobalType} \cdot \ldots
-\cdot \GEnvEntry{\SharedPoint{\AcceptorCount+\ProposerCount}}{\GlobalType}
-\right)
-\cdot
-\left(
-\GEnvEntry{1}{\mathbb{N}}
-\cdot \ldots
-\cdot \GEnvEntry{\AcceptorCount}{\mathbb{N}}
-\cdot \GEnvEntry{\AcceptorCount + 1}{\mathbb{N}}
-\cdot \ldots
-\cdot \GEnvEntry{\AcceptorCount + \ProposerCount}{\mathbb{N}}
-\cdot \GEnvEntry{\ProposerCount}{\mathbb{N}}
-\right)
-\]
+$\GlobalTypeProjection{\AcceptorB}$ is empty because the proposer does not communicate with acceptors outside $\AQ$.
+Thus, $\AcceptorB$ has no role in its session.
 
-$\Gamma$ contains the type for our shared channels $\OuterSharedPoint$ and $\SharedPoint{\ProposerRole}$ where $\AcceptorCount + 1 \leq \ProposerRole \leq \AcceptorCount + \ProposerCount$.
+\section{Type Check}
+Let $\AcceptorCount,\ProposerCount\in\mathbb{N}$ and $\AQ_{\ProcessIndexK} = \genAq{\ProcessIndexK}{\AcceptorCount}{\ProposerCount}$ for $\AcceptorCount + 1 \leq \ProcessIndexK \leq \AcceptorCount + \ProposerCount$.
+
+\begin{align*}
+\Gamma =
+    &\left(
+    \GEnvEntry{\OuterSharedPoint}{\OuterGlobalType}
+    \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+1}}{\IndexedGlobalType{\AcceptorCount+1}} \cdot \ldots
+    \cdot \GEnvEntry{\SharedPoint{\AcceptorCount+\ProposerCount}}{\IndexedGlobalType{\AcceptorCount+\ProposerCount}}
+    \right)\\
+&\cdot
+    \left(
+    \GEnvEntry{1}{\mathbb{N}}
+    \cdot \ldots
+    \cdot \GEnvEntry{\AcceptorCount}{\mathbb{N}}
+    \cdot \GEnvEntry{\AcceptorCount + 1}{\mathbb{N}}
+    \cdot \ldots
+    \cdot \GEnvEntry{\AcceptorCount + \ProposerCount}{\mathbb{N}}
+    \right)
+\end{align*}
+
+$\Gamma$ contains the type for our shared channels $\OuterSharedPoint$, $\SharedPoint{\ProcessIndexK}$ where $\AcceptorCount + 1 \leq \ProcessIndexK \leq \AcceptorCount + \ProposerCount$, and all numbers between $1$ and $\AcceptorCount + \ProposerCount$.
+
+Note that $0 < \ProposerCount < \AcceptorCount + \ProposerCount$ because $\AcceptorCount > 0 \land \ProposerCount > 0$.
+Thus, $\GammaSatisfiesType{\ProposerCount}{\mathbb{N}}$.
 
 We start the type check with the global environment $\Gamma$ and the entry point of the model $\Sys{\AcceptorCount}{\ProposerCount}$.
 Then, we apply the typing rules in \cite{PetersEtal21} in a proof tree and show that the model can be derived from the axioms $\RVar$ and $\REnd$.
@@ -60,59 +105,78 @@ Then, we apply the typing rules in \cite{PetersEtal21} in a proof tree and show 
 \subsection{System Initialization}
 % (S0)
 \begin{prooftree}
-\AxiomC{$\SysProof{1}$}
-\noLine
-\UnaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{\OuterSessionChannel}\ldots \vartriangleright \emptyset$}
+    \AxiomC{$\SysProof{1}$}
+    \noLine
+    \UnaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{\OuterSessionChannel}\ldots \vartriangleright \emptyset$}
 
-\AxiomC{$\SysProof{2}$}
-\noLine
-\UnaryInfC{$\Gamma\vdash \SessionAccept{\OuterSharedPoint}{1}{\OuterSessionChannel} \ldots \vartriangleright \emptyset$}
+    \AxiomC{$\SysProof{2}$}
+    \noLine
+    \UnaryInfC{$\Gamma\vdash \SessionAccept{\OuterSharedPoint}{1}{\OuterSessionChannel} \ldots \vartriangleright \emptyset$}
 
-\AxiomC{$\SysProof{3}$}
-\noLine
-\UnaryInfC{$\Gamma\vdash \ParallelFor{1 \leq \AcceptorRole \leq \AcceptorCount} \PaInitShort \vartriangleright \emptyset$}
+    \AxiomC{$\SysProof{3}$}
+    \noLine
+    \UnaryInfC{$\Gamma\vdash \ParallelFor{1 \leq \ProcessIndexJ \leq \AcceptorCount} \PaInitShort \vartriangleright \emptyset$}
 
-\RightLabel{$\RPar$}
-\BinaryInfC{$\Gamma\vdash \SessionAccept{\OuterSharedPoint}{1}{\OuterSessionChannel} \ldots \Or \ParallelFor{1 \leq \AcceptorRole \leq \AcceptorCount} \PaInitShort \vartriangleright \emptyset$}
+    \RightLabel{$\RPar$}
+    \BinaryInfC{$\Gamma\vdash \SessionAccept{\OuterSharedPoint}{1}{\OuterSessionChannel} \ldots \Or \ParallelFor{1 \leq \ProcessIndexJ \leq \AcceptorCount} \PaInitShort \vartriangleright \emptyset$}
 
-\RightLabel{$\RPar$}
-\BinaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{\OuterSessionChannel}.\PpInitShort \Or \SessionAccept{\OuterSharedPoint}{1}{\OuterSessionChannel} \ldots \Or \ParallelFor{1 \leq \AcceptorRole \leq \AcceptorCount} \PaInitShort \vartriangleright \emptyset$}
+    \RightLabel{$\RPar$}
+    \BinaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{\OuterSessionChannel}.\PpInitShort \Or \SessionAccept{\OuterSharedPoint}{1}{\OuterSessionChannel} \ldots \Or \ParallelFor{1 \leq \ProcessIndexJ \leq \AcceptorCount} \PaInitShort \vartriangleright \emptyset$}
 \end{prooftree}
 We apply $\RPar$ twice and split off into the proof trees $\SysProof{1}$, $\SysProof{2}$, and $\SysProof{3}$.
 
 % (S1)
 \begin{prooftree}
-\AxiomC{$\ProposerProof{}$}
-\noLine
-\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\AcceptorCount+\ProposerCount}}{\AcceptorCount+1}{s}.\Pp{} \vartriangleright \SEnvEntry{\OuterSessionChannel}{2}{\OuterGlobalTypeProjection{2}}$}
+    \AxiomC{$\ProposerProof{}$}
+    \noLine
+    \UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\AcceptorCount+\ProposerCount}}{\AcceptorCount+1}{\SessionChannel}.\Pp{} \vartriangleright \SEnvEntry{\OuterSessionChannel}{2}{\OuterGlobalTypeProjection{2}}$}
 
-\LeftLabel{$\SysProof{1} =$}
-\RightLabel{$\RRec$}
-\UnaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{\OuterSessionChannel}.\PpInit{\AcceptorCount+1}{\genAq{\AcceptorCount+\ProposerCount}{\AcceptorCount}{\ProposerCount}}{\AcceptorCount+\ProposerCount}{\AcceptorCount+\ProposerCount}{\EmptyList} \vartriangleright \emptyset$}
+    \LeftLabel{$\SysProof{1} =$}
+    \RightLabel{$\RReq$}
+    \UnaryInfC{$\Gamma\vdash \SessionRequest{\OuterSharedPoint}{2}{\OuterSessionChannel}.
+        \PpInit{
+            \AcceptorCount + \ProposerCount,
+            |\AQ_{\AcceptorCount + \ProposerCount}| + 1,
+            \Curly{1,\ldots,|\AQ_{\AcceptorCount + \ProposerCount}|},
+            \AcceptorCount,
+            \NumberRegister_{\AcceptorCount + \ProposerCount},
+            \EmptyList
+        }\vartriangleright \emptyset$}
 \end{prooftree}
-In $\SysProof{1}$ we apply $\RRec$ once.
+In $\SysProof{1}$ we apply $\RReq$ once.
 The rest of the proof tree is in $\ProposerProof{}$.
 Note that, since $\OuterGlobalTypeProjection{2} = \End$, $\SEnvEntry{\OuterSessionChannel}{2}{\OuterGlobalTypeProjection{2}} = \emptyset$.
 This is relevant later when continuing $\ProposerProof{}$.
 
 % (S2)
 \begin{prooftree}
-\AxiomC{$\ProposerProof{}$}
-\noLine
-\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\AcceptorCount+1}}{\AcceptorCount+1}{s}.\Pp{} \vartriangleright \emptyset$}
+    \AxiomC{$\ProposerProof{}$}
+    \noLine
+    \UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\AcceptorCount+1}}{\AcceptorCount+1}{\SessionChannel}.\Pp{} \vartriangleright \emptyset$}
 
-\AxiomC{$\ldots$}
+    \AxiomC{$\ldots$}
 
-\AxiomC{$\ProposerProof{}$}
-\noLine
-\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\AcceptorCount+\ProposerCount-1}}{\AcceptorCount+1}{s}.\Pp{} \vartriangleright \emptyset$}
+    \AxiomC{$\ProposerProof{}$}
+    \noLine
+    \UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\AcceptorCount+\ProposerCount-1}}{\AcceptorCount+1}{\SessionChannel}.\Pp{} \vartriangleright \emptyset$}
 
-\RightLabel{$\RPar^{\ProposerCount - 1}$}
-\TrinaryInfC{$\Gamma\vdash \ParallelFor{\AcceptorCount < k < \AcceptorCount+\ProposerCount} \PpInit{\AcceptorCount+1}{\genAq{k}{\AcceptorCount}{\ProposerCount}}{k}{k}{\EmptyList} \vartriangleright \SEnvEntry{\OuterSessionChannel}{1}{G\upharpoonright_1}$}
+    \RightLabel{$\RPar^{\ProposerCount - 1}$}
+    \TrinaryInfC{$\Gamma\vdash
+    \ParallelFor{
+        \AcceptorCount + 1 \leq \ProcessIndexK < \AcceptorCount + \ProposerCount
+    }
+    \PpInit{
+        \ProcessIndexK,
+        |\AQ_{\ProcessIndexK}| + 1,
+        \Curly{1,\ldots,|\AQ_{\ProcessIndexK}|},
+        \AcceptorCount,
+        \NumberRegister_{\ProcessIndexK},
+        \EmptyList
+    } \vartriangleright \SEnvEntry{\OuterSessionChannel}{1}{G\upharpoonright_1}$}
 
-\LeftLabel{$\SysProof{2} =$}
-\RightLabel{$\RAcc$}
-\UnaryInfC{$\Gamma\vdash \SessionAccept{\OuterSharedPoint}{1}{\OuterSessionChannel} . \ParallelFor{\AcceptorCount < k < \AcceptorCount+\ProposerCount} \PpInitShort \vartriangleright \emptyset$}
+    \LeftLabel{$\SysProof{2} =$}
+    \RightLabel{$\RAcc$}
+    \UnaryInfC{$\Gamma\vdash \SessionAccept{\OuterSharedPoint}{1}{\OuterSessionChannel} . \ParallelFor{\AcceptorCount + 1 \leq \ProcessIndexK < \AcceptorCount+\ProposerCount} \PpInitShort \vartriangleright \emptyset$}
 \end{prooftree}
 Applying $\RAcc$ in $\SysProof{2}$ requires that $\GEnvEntry{\OuterSharedPoint}{\OuterGlobalType} \in \Gamma$.
 $\RPar$ is applied $\ProposerCount - 1$ times to separate all the proposer processes.
@@ -122,30 +186,105 @@ The session environment $\Delta$ in $\ProposerProof{}$ is empty for every propos
 
 % (S3)
 \begin{prooftree}
-\AxiomC{$\AcceptorProofOne$}
-\noLine
-\UnaryInfC{$\Gamma\vdash \PaOne \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\GlobalTypeProjection{\AcceptorRole}}$}
-\RightLabel{$\RAcc$}
-\UnaryInfC{$\Gamma\vdash\SessionAccept{\SharedPoint{k}}{\AcceptorRole}{s}.\PaOne\vartriangleright\emptyset$}
-\AxiomC{$\ldots$}
-\RightLabel{$\RPar^{\ProposerCount}$}
-\BinaryInfC{$\Gamma\vdash\ParallelFor{\AcceptorCount < k \le \AcceptorCount + \ProposerCount} \SessionAccept{\SharedPoint{k}}{\AcceptorCount}{s} . \PaOne\vartriangleright\emptyset$}
-\AxiomC{$\ldots$}
+    \AxiomC{}
+    \RightLabel{$\REnd$}
+    \UnaryInfC{$\Gamma\vdash\End\vartriangleright\emptyset$}
 
-\LeftLabel{$\SysProof{3} =$}
-\RightLabel{$\RPar^{\AcceptorCount}$}
-\BinaryInfC{$\Gamma\vdash\ParallelFor{1 \leq j \leq \AcceptorCount} \left(\ParallelFor{\AcceptorCount < k \le \AcceptorCount + \ProposerCount} \SessionAccept{\SharedPoint{k}}{j}{s} . \PaOne\right) \vartriangleright\emptyset$}
+    \AxiomC{$\SysProof{4}$}
+    \noLine
+    \UnaryInfC{$
+    \Gamma\vdash
+        \SessionAccept{\SharedPoint{\ProcessIndexK}}{\position{\ProcessIndexJ}{\AQ_{\ProcessIndexK}}}{\SessionChannel}.
+        \Call{\PaOne}{\ldots}
+        \vartriangleright\emptyset
+    $}
+
+    \RightLabel{$\RIf$}
+    \BinaryInfC{$
+        \If{\ProcessIndexJ\notin\AQ_{\ProcessIndexK}}
+        \Then{\End}
+        \Else{\SessionAccept{\SharedPoint{\ProcessIndexK}}{\position{\ProcessIndexJ}{\AQ_{\ProcessIndexK}}}{\SessionChannel} . \Call{\PaOne}{
+            \ldots
+        }}
+    $}
+    
+    \AxiomC{$\ldots$}
+    
+    \RightLabel{$\RPar^{\ProposerCount}$}
+    \BinaryInfC{$\Gamma\vdash
+        \ParallelFor{
+            \AcceptorCount + 1 \leq \ProcessIndexK \leq \AcceptorCount + \ProposerCount
+        }
+        \Paren{
+            \If{\ProcessIndexJ\notin\AQ_{\ProcessIndexK}}
+            \Then{\End}
+            \Else{\SessionAccept{\SharedPoint{\ProcessIndexK}}{\position{\ProcessIndexJ}{\AQ_{\ProcessIndexK}}}{\SessionChannel} . \Call{\PaOne}{
+                \ldots
+            }}
+        }
+        \vartriangleright\emptyset$}
+    \AxiomC{$\ldots$}
+
+    \LeftLabel{$\SysProof{3} =$}
+    \RightLabel{$\RPar^{\AcceptorCount}$}
+    \BinaryInfC{$\Gamma\vdash
+        \ParallelFor{1 \leq \ProcessIndexJ \leq \AcceptorCount}
+        \PaInit{
+            \ProcessIndexJ,
+            \AcceptorCount,
+            \ProposerCount,
+            \NumberRegister_{\ProcessIndexJ},
+            \ProposalRegister_{\ProcessIndexJ}
+        }
+        \vartriangleright \emptyset
+    $}
 \end{prooftree}
 $\RPar$ is applied $\AcceptorCount$ times to separate the individual acceptors and then $\ProposerCount$ times for each acceptor to separate the individual subprocesses.
-Since every subprocess of every acceptor behaves like $\PaOne$ and has the same local type, the same proof tree $\AcceptorProofOne$ can be applied.
-Applying $\RAcc$ to every subprocess of every acceptor requires $\forall k\in\mathbb{N}: \left(\AcceptorCount + 1 \leq k \land k \leq \AcceptorCount + \ProposerCount \right) \to \GEnvEntry{\SharedPoint{k}}{\GlobalType} \in \Gamma$.
+We apply $\RIf$ and split the proof tree.
+Then, we finish the left proof tree by applying $\REnd$.
+The right proof tree is in $\SysProof{4}$.
 
-Note that only one acceptor and one of its subprocesses is shown in $\SysProof{3}$.
+% (S4)
+\begin{prooftree}
+    \AxiomC{$\AcceptorProofOne$}
+    \noLine
+    \UnaryInfC{$\Gamma\vdash
+    \Call{\PaOne}{
+            \SessionChannel,
+            \position{\ProcessIndexJ}{\AQ_{\ProcessIndexK}},
+            |\AQ_{\ProcessIndexK}| + 1,
+            \NumberRegister_{\ProcessIndexJ},
+            \ProposalRegister_{\ProcessIndexJ}
+        }
+    \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{
+        \IndexedGlobalTypeProjection{\ProcessIndexK}{\AcceptorRole}
+        }$}
+    
+    \LeftLabel{$\SysProof{4} =$}
+    \RightLabel{$\RAcc$}
+    \UnaryInfC{$
+    \Gamma\vdash
+        \SessionAccept{\SharedPoint{\ProcessIndexK}}{\position{\ProcessIndexJ}{\AQ_{\ProcessIndexK}}}{\SessionChannel}.
+        \Call{\PaOne}{
+            \SessionChannel,
+            \position{\ProcessIndexJ}{\AQ_{\ProcessIndexK}},
+            |\AQ_{\ProcessIndexK}| + 1,
+            \NumberRegister_{\ProcessIndexJ},
+            \ProposalRegister_{\ProcessIndexJ}
+        }
+        \vartriangleright\emptyset
+    $}
+\end{prooftree}
+
+Applying $\RAcc$ to every subprocess of every acceptor requires that every shared channel $\SharedPoint{\ProcessIndexK}$ where $\AcceptorCount + 1 \leq \ProcessIndexK \leq \AcceptorCount + \ProposerCount$ is assigned the type $\GlobalType$ in $\Gamma$.
+
+\[\forall k\in\mathbb{N}: \left(\AcceptorCount + 1 \leq k \land k \leq \AcceptorCount + \ProposerCount \right) \to \GEnvEntry{\SharedPoint{k}}{\GlobalType} \in \Gamma\]
+
+Note that only one acceptor and one of its subprocesses is shown in $\SysProof{3}$ and $\SysProof{4}$.
 The other subprocesses and acceptors only differ in their values for the iteration variables $k$ and $j$.
 The rest has been left out to improve readability.
 
-
-\subsection{Proposer}
+\subsection{Proposer} % TODO keep going from here.
 Let $\ProposerRole = \AcceptorCount + 1, \AQ = \genAq{k}{\AcceptorCount}{\ProposerCount}, \NumberRegister = k, m = k, \VectorV = \EmptyList$ where $\AcceptorCount < k \leq \AcceptorCount + \ProposerCount$.
 This gives us the values for the arguments of $\PpInitName$.
 We observe that $\GammaSatisfiesType{p}{\mathbb{N}}$, $\GammaSatisfiesType{k}{\mathbb{N}}$, $\GammaSatisfiesType{\NumberRegister}{\mathbb{N}}$, $\GammaSatisfiesType{m}{\mathbb{N}}$, and $\GammaSatisfiesType{\AQ}{\List{\mathbb{N}}}$.
@@ -189,34 +328,34 @@ These are added to the global environment when applying $\RUget$ in phase $\POne
 \begin{prooftree}
 \AxiomC{$\ProposerProofTrue$}
 \noLine
-\UnaryInfC{$\GammaXV \vdash \SendWeaklyP{s}{\ProposerRole}{\AQ}{\Restart}{\RecursionVariable} \vartriangleright \SEnvEntry{s}{\ProposerRole}{\TpBranch}$}
+\UnaryInfC{$\GammaXV \vdash \SendWeaklyP{\SessionChannel}{\ProposerRole}{\AQ}{\Restart}{\RecursionVariable} \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\TpBranch}$}
 
 \AxiomC{$\ProposerProofFalse$}
 \noLine
-\UnaryInfC{$\GammaXV \vdash \SendWeaklyP{s}{\ProposerRole}{\AQ}{\Accept}{\ldots} \vartriangleright \SEnvEntry{s}{\ProposerRole}{\TpBranch}$}
+\UnaryInfC{$\GammaXV \vdash \SendWeaklyP{\SessionChannel}{\ProposerRole}{\AQ}{\Accept}{\ldots} \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\TpBranch}$}
 
 \RightLabel{$\RIf$}
-\BinaryInfC{$\GammaXV \vdash \If{e} \Then{\SendWeaklyP{s}{\ProposerRole}{\AQ}{\Restart}{\RecursionVariable}} \Else{\SendWeaklyP{s}{\ProposerRole}{\AQ}{\Accept}{\ldots}} \vartriangleright \SEnvEntry{s}{\ProposerRole}{\TpBranch}$}
+\BinaryInfC{$\GammaXV \vdash \If{e} \Then{\SendWeaklyP{\SessionChannel}{\ProposerRole}{\AQ}{\Restart}{\RecursionVariable}} \Else{\SendWeaklyP{\SessionChannel}{\ProposerRole}{\AQ}{\Accept}{\ldots}} \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\TpBranch}$}
 
 \RightLabel{$\RUget^{|\AQ|}$}
-\UnaryInfC{$\GammaX \vdash \DotForall{\AcceptorRole\in\AQ}{\ReceiveUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}{v_{\AcceptorRole}}} \ldots \vartriangleright \SEnvEntry{s}{\ProposerRole}{\DotForall{\AcceptorRole\in\AQ}{\ReceiveUnreliableL{\AcceptorRole}{\LOneB}{\Promise{\Value}}}}$}
+\UnaryInfC{$\GammaX \vdash \DotForall{\AcceptorRole\in\AQ}{\ReceiveUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}{v_{\AcceptorRole}}} \ldots \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\DotForall{\AcceptorRole\in\AQ}{\ReceiveUnreliableL{\AcceptorRole}{\LOneB}{\Promise{\Value}}}}$}
 
 \RightLabel{$\RUsend^{|\AQ|}$}
-\UnaryInfC{$\GammaX \vdash \DotForall{\AcceptorRole\in\AQ}{\SendUnreliableP{s}{\ProposerRole}{\AcceptorRole}{\LOneA}{pn}} \ldots \vartriangleright \SEnvEntry{s}{\ProposerRole}{\DotForall{\AcceptorRole\in\AQ}{\SendUnreliableL{\AcceptorRole}{\LOneA}{\mathbb{N}}}\ldots}$}
+\UnaryInfC{$\GammaX \vdash \DotForall{\AcceptorRole\in\AQ}{\SendUnreliableP{\SessionChannel}{\ProposerRole}{\AcceptorRole}{\LOneA}{pn}} \ldots \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\DotForall{\AcceptorRole\in\AQ}{\SendUnreliableL{\AcceptorRole}{\LOneA}{\mathbb{N}}}\ldots}$}
 
 \RightLabel{$\RSideEffect$}
-\UnaryInfC{$\GammaX \vdash \update{\NumberRegister}{\NumberRegister + 1} \ldots \vartriangleright \SEnvEntry{s}{\ProposerRole}{\DotForall{\AcceptorRole\in\AQ}{\SendUnreliableL{\AcceptorRole}{\LOneA}{\mathbb{N}}}\ldots}$}
+\UnaryInfC{$\GammaX \vdash \update{\NumberRegister}{\NumberRegister + 1} \ldots \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\DotForall{\AcceptorRole\in\AQ}{\SendUnreliableL{\AcceptorRole}{\LOneA}{\mathbb{N}}}\ldots}$}
 
 \RightLabel{$\RRec$}
-\UnaryInfC{$\Gamma\vdash \Mu{\RecursionVariable} \update{\NumberRegister}{\NumberRegister + 1} \ldots \vartriangleright \SEnvEntry{s}{\ProposerRole}{\Mu{\RecursionVariableType}\DotForall{\AcceptorRole\in\AQ}{\SendUnreliableL{\AcceptorRole}{\LOneA}{\mathbb{N}}}\ldots}$}
+\UnaryInfC{$\Gamma\vdash \Mu{\RecursionVariable} \update{\NumberRegister}{\NumberRegister + 1} \ldots \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\Mu{\RecursionVariableType}\DotForall{\AcceptorRole\in\AQ}{\SendUnreliableL{\AcceptorRole}{\LOneA}{\mathbb{N}}}\ldots}$}
 
 \LeftLabel{$\ProposerProof{} =$}
 \RightLabel{$\RReq$}
-\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{MMM}}{\ProposerRole}{s}.\Pp{} \vartriangleright \emptyset$}
+\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{MMM}}{\ProposerRole}{\SessionChannel}.\Pp{} \vartriangleright \emptyset$}
 \end{prooftree}
 $\ProposerProof{}$ is the continuation of $\SysProof{1}$ and $\SysProof{2}$.
 In both proof trees the session environment $\Delta$ was empty.
-Here, we apply $\RReq$ and add $\SEnvEntry{s}{\ProposerRole}{\GlobalTypeProjection{\ProposerRole}}$ to the session environment.
+Here, we apply $\RReq$ and add $\SEnvEntry{\SessionChannel}{\ProposerRole}{\GlobalTypeProjection{\ProposerRole}}$ to the session environment.
 Applying $\RRec$ changes the global environment from $\Gamma$ to $\GammaX$.
 $\RSideEffect$ advances the process.
 First $\RUsend$ and then $\RUget$ is applied for every acceptor in $\AQ$.
@@ -227,10 +366,10 @@ $\RIf$ splits the proof tree into $\ProposerProofTrue$ and $\ProposerProofFalse$
 \begin{prooftree}
 \AxiomC{}
 \RightLabel{$\RVar$}
-\UnaryInfC{$\GammaXV\vdash \RecursionVariable \vartriangleright \SEnvEntry{s}{\ProposerRole}{\RecursionVariableType}$}
+\UnaryInfC{$\GammaXV\vdash \RecursionVariable \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\RecursionVariableType}$}
 \LeftLabel{$\ProposerProofTrue =$}
 \RightLabel{$\RWsel$}
-\UnaryInfC{$\GammaXV\vdash \SendWeaklyP{s}{\ProposerRole}{\AQ}{\Restart}{\RecursionVariable} \vartriangleright \SEnvEntry{s}{\ProposerRole}{\SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . \RecursionVariableType \oplus \Abort .\End}}$}
+\UnaryInfC{$\GammaXV\vdash \SendWeaklyP{\SessionChannel}{\ProposerRole}{\AQ}{\Restart}{\RecursionVariable} \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . \RecursionVariableType \oplus \Abort .\End}}$}
 \end{prooftree}
 We apply $\RWsel$ and then $\RVar$ to finish $\ProposerProofTrue$.
 
@@ -238,13 +377,13 @@ We apply $\RWsel$ and then $\RVar$ to finish $\ProposerProofTrue$.
 \begin{prooftree}
 \AxiomC{}
 \RightLabel{$\REnd$}
-\UnaryInfC{$\GammaXV\vdash \End \vartriangleright \SEnvEntry{s}{\ProposerRole}{\End}$}
+\UnaryInfC{$\GammaXV\vdash \End \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\End}$}
 \RightLabel{$\RUsend^{|\AQ|}$}
-\UnaryInfC{$\GammaXV\vdash \DotForall{\AcceptorRole\in\AQ}{\SendUnreliableP{s}{\ProposerRole}{\AcceptorRole}{\LTwoA}{prop}}.\End \vartriangleright \SEnvEntry{s}{\ProposerRole}{\DotForall{\AcceptorRole\in\AQ}{\SendUnreliableL{\AcceptorRole}{\LTwoA}{\Proposal{\Value}}}.\End}$}
+\UnaryInfC{$\GammaXV\vdash \DotForall{\AcceptorRole\in\AQ}{\SendUnreliableP{\SessionChannel}{\ProposerRole}{\AcceptorRole}{\LTwoA}{prop}}.\End \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\DotForall{\AcceptorRole\in\AQ}{\SendUnreliableL{\AcceptorRole}{\LTwoA}{\Proposal{\Value}}}.\End}$}
 
 \LeftLabel{$\ProposerProofFalse =$}
 \RightLabel{$\RWsel$}
-\UnaryInfC{$\GammaXV\vdash \SendWeaklyP{s}{\ProposerRole}{\AQ}{\Accept.\ldots} \vartriangleright \SEnvEntry{s}{\ProposerRole}{\SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . \RecursionVariableType \oplus \Abort .\End}}$}
+\UnaryInfC{$\GammaXV\vdash \SendWeaklyP{\SessionChannel}{\ProposerRole}{\AQ}{\Accept.\ldots} \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . \RecursionVariableType \oplus \Abort .\End}}$}
 \end{prooftree}
 After applying $\RUsend$ we can apply $\RUsend$ once for every acceptor in $\AQ$.
 Finally, we can finish $\ProposerProofFalse$ — and with it $\ProposerProof{}$ — by applying $\REnd$.
@@ -258,23 +397,23 @@ With session environment $\Gamma$ we have $\GammaSatisfiesType{a}{\mathbb{N}}$ a
 To improve readability of the proof trees we break down the acceptor's process and local type.
 
 \begin{align*}
-&\PaAccept = \ReceiveUnreliableP{s}{\ProposerRole}{\AcceptorRole}{\LTwoA}{\bot}{pr'} .
+&\PaAccept = \ReceiveUnreliableP{\SessionChannel}{\ProposerRole}{\AcceptorRole}{\LTwoA}{\bot}{pr'} .
 \If{pr' = \bot}\\
 &\Indent{1}\Then{\End}\\
 &\Indent{1}\Else{\If{\greaterEqual{\nFromProposal{pr'}}{\NumberRegister}}\\
 &\Indent{2}\Then{\update{\ProposalRegister}{pr'} . \update{\NumberRegister}{\Just{\nFromProposal{pr'}}}.\End}\\
 &\Indent{2}\Else{\End}}
 \end{align*}
-We can see that $\PaTwo$ contains $\PaAccept$ as $\PaTwo = \ReceiveWeaklyP{s}{\ProposerRole}{\AcceptorRole}{\Accept . \PaAccept \oplus \Restart . \RecursionVariable \oplus \Abort . \End}$.
+We can see that $\PaTwo$ contains $\PaAccept$ as $\PaTwo = \ReceiveWeaklyP{\SessionChannel}{\ProposerRole}{\AcceptorRole}{\Accept . \PaAccept \oplus \Restart . \RecursionVariable \oplus \Abort . \End}$.
 
 \begin{align*}
-&\Pa{t} = \update{\NumberRegister}{n'}.\SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Promise{\ProposalRegister}}.\PaTwo
+&\Pa{t} = \update{\NumberRegister}{n'}.\SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Promise{\ProposalRegister}}.\PaTwo
 \\\\
-&\Pa{f} = \SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack}.\PaTwo
+&\Pa{f} = \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack}.\PaTwo
 \\\\
 &\Pa{gt} = \If{\greaterThan{n'}{\NumberRegister}}\Then{\Pa{t}}\Else{\Pa{f}}
 \end{align*}
-With $\Pa{gt}$, $\PaOne$ can be written as $\PaOne = \Mu{\RecursionVariable}\ReceiveUnreliableP{s}{\ProposerRole}{\AcceptorRole}{\LOneA}{\bot}{n'}.\If{n'=\bot}\Then{\SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.\PaTwo}\Else{\Pa{gt}}$.
+With $\Pa{gt}$, $\PaOne$ can be written as $\PaOne = \Mu{\RecursionVariable}\ReceiveUnreliableP{\SessionChannel}{\ProposerRole}{\AcceptorRole}{\LOneA}{\bot}{n'}.\If{n'=\bot}\Then{\SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.\PaTwo}\Else{\Pa{gt}}$.
 
 \begin{align*}    
 &\TaAccept = \ReceiveUnreliableL{\ProposerRole}{\LTwoA}{\Proposal{\Value}}.\End
@@ -302,23 +441,23 @@ $\GammaXNP$ adds type $\Proposal{\Value}$ for $pr'$.
 \begin{prooftree}
 \AxiomC{$\AcceptorProofTwo$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaBranch}$}
 \RightLabel{$\RUsend$}
-\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaOneB}$}
+\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.\PaTwo \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaOneB}$}
 
 \AxiomC{$\AcceptorProof{gt}$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \Pa{gt} \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaOneB}$}
+\UnaryInfC{$\GammaXN\vdash \Pa{gt} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaOneB}$}
 
 \RightLabel{$\RIf$}
-\BinaryInfC{$\GammaXN\vdash \If{n'=\bot}\Then{\SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.\PaTwo}\Else{\If{\greaterThan{n'}{\NumberRegister}}\ldots} \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaOneB}$}
+\BinaryInfC{$\GammaXN\vdash \If{n'=\bot}\Then{\SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.\PaTwo}\Else{\If{\greaterThan{n'}{\NumberRegister}}\ldots} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaOneB}$}
 
 \RightLabel{$\RUget$}
-\UnaryInfC{$\GammaX \vdash \ReceiveUnreliableP{s}{\ProposerRole}{\AcceptorRole}{\LOneA}{\bot}{n'}.\If{n'=\bot}\ldots \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\ReceiveUnreliableL{\ProposerRole}{\LOneA}{\mathbb{N}}.\TaOneB}$}
+\UnaryInfC{$\GammaX \vdash \ReceiveUnreliableP{\SessionChannel}{\ProposerRole}{\AcceptorRole}{\LOneA}{\bot}{n'}.\If{n'=\bot}\ldots \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\ReceiveUnreliableL{\ProposerRole}{\LOneA}{\mathbb{N}}.\TaOneB}$}
 
 \LeftLabel{$\AcceptorProofOne =$}
 \RightLabel{$\RRec$}
-\UnaryInfC{$\Gamma\vdash \Mu{\RecursionVariable} \ReceiveUnreliableP{s}{\ProposerRole}{\AcceptorRole}{\LOneA}{\bot}{n'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\Mu{\RecursionVariableType}\ReceiveUnreliableL{\ProposerRole}{\LOneA}{\mathbb{N}}.\ldots}$}
+\UnaryInfC{$\Gamma\vdash \Mu{\RecursionVariable} \ReceiveUnreliableP{\SessionChannel}{\ProposerRole}{\AcceptorRole}{\LOneA}{\bot}{n'}.\ldots \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\Mu{\RecursionVariableType}\ReceiveUnreliableL{\ProposerRole}{\LOneA}{\mathbb{N}}.\ldots}$}
 \end{prooftree}
 After applying $\RAcc$ in $\SysProof{3}$ the session environment contains the acceptor's local type $\GlobalTypeProjection{\AcceptorRole}$.
 We apply $\RRec$ and $\RUget$ and the split the proof tree with $\RIf$.
@@ -332,15 +471,15 @@ We examine $\AcceptorProof{gt}$ first, because it contains the proof tree of the
 \begin{prooftree}
 \AxiomC{$\AcceptorProofTrue$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \Pa{t} \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaOneB}$}
+\UnaryInfC{$\GammaXN\vdash \Pa{t} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaOneB}$}
 
 \AxiomC{$\AcceptorProofFalse$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \Pa{f} \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaOneB}$}
+\UnaryInfC{$\GammaXN\vdash \Pa{f} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaOneB}$}
 
 \LeftLabel{$\AcceptorProof{gt} =$}
 \RightLabel{$\RIf$}
-\BinaryInfC{$\GammaXN\vdash \If{\greaterThan{n'}{\NumberRegister}}\Then{\Pa{t}}\Else{\Pa{f}} \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaOneB}$}
+\BinaryInfC{$\GammaXN\vdash \If{\greaterThan{n'}{\NumberRegister}}\Then{\Pa{t}}\Else{\Pa{f}} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaOneB}$}
 \end{prooftree}
 First, we split the proof tree with $\RIf$.
 We continue the resulting branches in separate proof trees $\AcceptorProofTrue$ and $\AcceptorProofFalse$.
@@ -349,20 +488,20 @@ We continue the resulting branches in separate proof trees $\AcceptorProofTrue$ 
 \begin{prooftree}
 \AxiomC{$\AcceptorProofTwo$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaBranch}$}
 \LeftLabel{$\AcceptorProofTrue =$}
 \RightLabel{$\RUsend$}
-\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\SendUnreliableL{\ProposerRole}{\LOneB}{\Promise{\Value}} . \TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack}.\PaTwo \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\SendUnreliableL{\ProposerRole}{\LOneB}{\Promise{\Value}} . \TaBranch}$}
 \end{prooftree}
 
 % (A_f)
 \begin{prooftree}
 \AxiomC{$\AcceptorProofTwo$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaBranch}$}
 \LeftLabel{$\AcceptorProofFalse =$}
 \RightLabel{$\RUsend$}
-\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{s}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack}.\PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\SendUnreliableL{\ProposerRole}{\LOneB}{\Promise{\Value}}.\TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack}.\PaTwo \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\SendUnreliableL{\ProposerRole}{\LOneB}{\Promise{\Value}}.\TaBranch}$}
 \end{prooftree}
 
 In both, $\AcceptorProofTrue$ and $\AcceptorProofFalse$, we apply $\RUsend$.
@@ -372,19 +511,19 @@ Now we can examine $\AcceptorProofTwo$, which is the proof tree for $\PaTwo$.
 \begin{prooftree}
 \AxiomC{$\AcceptorProofAccept$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \PaAccept \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaAccept}$}
+\UnaryInfC{$\GammaXN\vdash \PaAccept \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaAccept}$}
 
 \AxiomC{}
 \RightLabel{$\RVar$}
-\UnaryInfC{$\GammaXN\vdash \RecursionVariable \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\RecursionVariableType}$}
+\UnaryInfC{$\GammaXN\vdash \RecursionVariable \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\RecursionVariableType}$}
 
 \AxiomC{}
 \RightLabel{$\REnd$}
-\UnaryInfC{$\GammaXN\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\End}$}
+\UnaryInfC{$\GammaXN\vdash \End \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\End}$}
 
 \LeftLabel{$\AcceptorProofTwo =$}
 \RightLabel{$\RWbran$}
-\TrinaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\TaBranch}$}
+\TrinaryInfC{$\GammaXN\vdash \PaTwo \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaBranch}$}
 \end{prooftree}
 By applying $\RWbran$ we separate the three branches.
 From left to right we get an $\Accept$, a $\Restart$, and an $\Abort$ branch.
@@ -395,24 +534,24 @@ The $\Restart$ branch can be finished by applying $\RVar$ and the $\Abort$ branc
 \begin{prooftree}
 \AxiomC{}
 \RightLabel{$\REnd$}
-\UnaryInfC{$\GammaXNP\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\End}$}
+\UnaryInfC{$\GammaXNP\vdash \End \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\End}$}
 
 \AxiomC{$\AcceptorProof{update}$}
 \noLine
-\UnaryInfC{$\GammaXNP\vdash\update{\ProposalRegister}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\End}$}
+\UnaryInfC{$\GammaXNP\vdash\update{\ProposalRegister}{pr'}.\ldots \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\End}$}
 
 \AxiomC{}
 \RightLabel{$\REnd$}
-\UnaryInfC{$\GammaXNP\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\End}$}
+\UnaryInfC{$\GammaXNP\vdash \End \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\End}$}
 
 \RightLabel{$\RIf$}
-\BinaryInfC{$\GammaXNP\vdash \If{\greaterEqual{\nFromProposal{pr'}}{\NumberRegister}}\Then{\ldots}\Else{\End} \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\End}$}
+\BinaryInfC{$\GammaXNP\vdash \If{\greaterEqual{\nFromProposal{pr'}}{\NumberRegister}}\Then{\ldots}\Else{\End} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\End}$}
 
 \RightLabel{$\RIf$}
-\BinaryInfC{$\GammaXNP\vdash \If{pr'=\bot}\Then{\End}\Else{\ldots} \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\End}$}
+\BinaryInfC{$\GammaXNP\vdash \If{pr'=\bot}\Then{\End}\Else{\ldots} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\End}$}
 \LeftLabel{$\AcceptorProofAccept =$}
 \RightLabel{$\RUget$}
-\UnaryInfC{$\GammaXN\vdash \ReceiveUnreliableP{s}{\ProposerRole}{\AcceptorRole}{\LTwoA}{\bot}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\ReceiveUnreliableL{\ProposerRole}{\LTwoA}{\Proposal{\Value}}.\End}$}
+\UnaryInfC{$\GammaXN\vdash \ReceiveUnreliableP{\SessionChannel}{\ProposerRole}{\AcceptorRole}{\LTwoA}{\bot}{pr'}.\ldots \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\ReceiveUnreliableL{\ProposerRole}{\LTwoA}{\Proposal{\Value}}.\End}$}
 \end{prooftree}
 We apply $\RUget$ and expand the global session to $\GammaXNP$.
 The proof tree is split twice by applying $\RIf$ twice.
@@ -423,12 +562,12 @@ To keep this proof tree readable we continue the proof of the remaining branch i
 \begin{prooftree}
 \AxiomC{}
 \RightLabel{$\REnd$}
-\UnaryInfC{$\GammaXNP\vdash \End \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\End}$}
+\UnaryInfC{$\GammaXNP\vdash \End \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\End}$}
 \RightLabel{$\RSideEffect$}
-\UnaryInfC{$\GammaXNP\vdash \update{\NumberRegister}{\Just{\nFromProposal{pr'}}}.\End \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\End}$}
+\UnaryInfC{$\GammaXNP\vdash \update{\NumberRegister}{\Just{\nFromProposal{pr'}}}.\End \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\End}$}
 \LeftLabel{$\AcceptorProof{update} =$}
 \RightLabel{$\RSideEffect$}
-\UnaryInfC{$\GammaXNP\vdash\update{\ProposalRegister}{pr'}.\ldots \vartriangleright \SEnvEntry{s}{\AcceptorRole}{\End}$}
+\UnaryInfC{$\GammaXNP\vdash\update{\ProposalRegister}{pr'}.\ldots \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\End}$}
 \end{prooftree}
 Finally, we apply $\RSideEffect$ twice and $\REnd$ once.
 This concludes the type check and proves that the model is well-typed.
