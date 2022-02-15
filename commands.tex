@@ -46,7 +46,7 @@
 
 % MPST
 %% General
-\newcommand{\DotForall}[2]{\textstyle\left(\bigodot_{#1}\;#2\right)}
+\newcommand{\DotForall}[2]{\textstyle\left(\bigodot_{#1} #2\right)}
 \newcommand{\Mu}[1]{\left(\mu #1\right)}
 \newcommand{\AQ}[0]{\operatorname{Q}}
 \newcommand{\QRoles}[0]{\operatorname{R}}
@@ -90,6 +90,7 @@
 \newcommand{\SendUnreliableP}[5]{#1\left[#2, #3\right]!_u #4 \left\langle #5 \right\rangle}
 \newcommand{\ReceiveUnreliableP}[6]{#1\left[#2, #3\right]?_u #4 \left\langle #5 \right\rangle \left(#6\right)}
 \newcommand{\SendWeaklyP}[5]{#1\left[#2, #3\right]!_w #4.#5}
+\newcommand{\mSendWeaklyP}[4]{#1\left[#2, #3\right]!_w #4}
 \newcommand{\ReceiveWeaklyP}[4]{#1\left[#2, #3\right]?_w \big\{#4\big\}}
 \newcommand{\RecursionVariable}[0]{X}
 
@@ -114,6 +115,7 @@
 \newcommand{\Pp}[1]{\Process{P}{}\left(#1\right)}
 \newcommand{\PaOne}[0]{\Pa{1}}
 \newcommand{\PaTwo}[0]{\Pa{2}}
+\newcommand{\PaThree}[1]{\Pa{3}\left(#1\right)}
 \newcommand{\PaAccept}[0]{\Pa{acc}}
 \newcommand{\PpInitName}[0]{\Process{P}{init}}
 \newcommand{\PpInit}[1]{\textstyle\PpInitName\left(#1\right)}
@@ -128,16 +130,16 @@
 \newcommand{\Proposer}[1]{\ensuremath{\operatorname{P_{#1}}}}
 
 % Functions
-\newcommand{\proposalNumberName}[0]{\operatorname{proposalNumber}}
+\newcommand{\proposalNumberName}[0]{\operatorname{propNumber}}
 \newcommand{\proposalNumber}[2]{\proposalNumberName_#2\left( #1\right)}
 
-\newcommand{\promiseValueName}[0]{\operatorname{promiseValue}}
+\newcommand{\promiseValueName}[0]{\operatorname{promValue}}
 \newcommand{\promiseValue}[1]{\promiseValueName\left(#1\right)}
 
 \newcommand{\anyNackName}[0]{\operatorname{anyNack}}
 \newcommand{\anyNack}[1]{\anyNackName\left(#1\right)}
 
-\newcommand{\promiseCountName}[0]{\operatorname{promiseCount}}
+\newcommand{\promiseCountName}[0]{\operatorname{promCount}}
 \newcommand{\promiseCount}[1]{\promiseCountName\left(#1\right)}
 
 \newcommand{\greaterThanName}[0]{\operatorname{gt}}
@@ -146,13 +148,13 @@
 \newcommand{\greaterEqualName}[0]{\operatorname{ge}}
 \newcommand{\greaterEqual}[2]{\greaterEqualName\left(#1, #2\right)}
 
-\newcommand{\nFromProposalName}[0]{\operatorname{nFromProposal}}
+\newcommand{\nFromProposalName}[0]{\operatorname{nFromProp}}
 \newcommand{\nFromProposal}[1]{\nFromProposalName\left(#1 \right)}
 
 \newcommand{\genAqName}[0]{\operatorname{gen\AQ}}
 \newcommand{\genAq}[3]{\genAqName\left(#1, #2, #3\right)}
 
-\newcommand{\positionHelperName}[0]{\operatorname{positionHelper}}
+\newcommand{\positionHelperName}[0]{\operatorname{posRec}}
 \newcommand{\positionHelper}[3]{\positionHelperName\left(#1, #2, #3\right)}
 
 \newcommand{\positionName}[0]{\operatorname{pos}}
@@ -166,7 +168,13 @@
 \newcommand{\If}[1]{\operatorname{if}\xspace #1}
 \newcommand{\Then}[1]{\operatorname{then}\xspace #1}
 \newcommand{\Else}[1]{\operatorname{else}\xspace #1}
-\newcommand{\tOr}[0]{\text{ } or \text{ }}
+\newcommand{\IfName}[0]{\mathtt{if}}
+\newcommand{\mIf}[0]{\IfName\;}
+\newcommand{\ThenName}[0]{\mathtt{then}}
+\newcommand{\mThen}[0]{\ThenName\;}
+\newcommand{\ElseName}[0]{\mathtt{else}}
+\newcommand{\mElse}[0]{\ElseName\;}
+\newcommand{\tOr}[0]{\; \mathtt{or} \;}
 \newcommand{\mapstostar}[0]{\longmapsto^*}
 \newcommand{\Wildcard}[0]{\mathtt{\_}}
 \newcommand{\EmptyList}[0]{\mathtt{[]}}
@@ -194,7 +202,7 @@
 \newcommand{\OuterSessionQueues}[0]{\ParallelFor{1 \le k,l \le 2, k \neq l} \OuterSessionChannel_{k\to l}:[]}
 \newcommand{\InnerSessionQueues}[1]{\ParallelFor{1 \le k,l \le 3, k \neq l} #1_{k\to l}:[]}
 \newcommand{\NuChannels}[0]{\Nu{\OuterSessionChannel}\Nu{s}\Nu{r}}
-\newcommand{\BeginPaCont}[0]{\Accept \ldots \oplus \Restart .X \oplus \Abort . \End}
+\newcommand{\BeginPaCont}[0]{\Accept \ldots \oplus \Restart. \RecursionVariable \oplus \Abort . \End}
 \newcommand{\ABC}[0]{\operatorname{abc}}
 \newcommand{\RegisterContent}[8]{
 \begin{center}
