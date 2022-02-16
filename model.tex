@@ -51,31 +51,33 @@ In the first case the acceptor's response optionally includes the last proposal 
 In the second case it is of the form $\Nack$.
 
 \section{Global Type}
-Since each proposer initiates its own session the global type can be defined for one proposer $\ProposerRole$ and a corresponding quorum $\AQ$.
-Let $\ProposerSessionRole = |\AQ| + 1$ and $\QRoles = \Curly{1,\ldots,|\AQ|}$.
+Since each proposer initiates its own session the global type can be defined for one proposer $\ProcessIndexK$ and a corresponding quorum $\AQ_{\ProcessIndexK}$.
+Let $\ProposerRole = |\AQ_{\ProcessIndexK}| + 1$ and $\QRoles = \Curly{1,\ldots,|\AQ_{\ProcessIndexK}|}$.
 
 The last phase of Paxos contains no inter-process communication, so it is not modeled in the global type.
 
+We observe that the proposer of a session always uses the highest role $\ProposerRole$ in its session and communicates with all roles from $1$ to $\ProposerRole - 1$.
+
 \begin{align*}
-    \GlobalType =&
+    \IndexedGlobalType{\ProcessIndexK} =&
         \Mu{\RecursionVariableType}
         \DotForall{
             \AcceptorRole \in \QRoles
         }{
-            \SendUnreliableG{\ProposerSessionRole}{\AcceptorRole}{\LOneA}{\mathbb{N}}
+            \SendUnreliableG{\ProposerRole}{\AcceptorRole}{\LOneA}{\mathbb{N}}
         } .
         \DotForall{
             \AcceptorRole \in \QRoles
         }{
-            \SendUnreliableG{\AcceptorRole}{\ProposerSessionRole}{\LOneB}{\Promise{\Value}}
+            \SendUnreliableG{\AcceptorRole}{\ProposerRole}{\LOneB}{\Promise{\Value}}
         } .\\
     &
-        \SendWeaklyG{\ProposerSessionRole}{\QRoles}{
+        \SendWeaklyG{\ProposerRole}{\QRoles}{
             \Accept.
                 \DotForall{
                     \AcceptorRole \in \QRoles
                 }{
-                    \SendUnreliableG{\ProposerSessionRole}{\AcceptorRole}{\LTwoA}{\Proposal{\Value}}
+                    \SendUnreliableG{\ProposerRole}{\AcceptorRole}{\LTwoA}{\Proposal{\Value}}
                 }.
                 \End
             \oplus \Restart.
@@ -87,9 +89,9 @@ The last phase of Paxos contains no inter-process communication, so it is not mo
 
 We can distinguish the individual phases of the Paxos algorithm by the labels $\LOneA$, $\LOneB$, and $\LTwoA$.
 
-In the first two steps, $\POneA$ and $\POneB$, the proposer sends its proposal number to each acceptor in $\AQ$ and listens for their responses.
+In the first two steps, $\POneA$ and $\POneB$, the proposer sends its proposal number to each acceptor in $\AQ_{\ProposerRole}$ and listens for their responses.
 In step $\PTwoA$ the proposer decides whether to send an $\Accept$ or $\Restart$ message to restart the algorithm.
-This decision is broadcast to all acceptors in $\AQ$.
+This decision is broadcast to all acceptors in $\AQ_{\ProposerRole}$.
 Should the proposer crash the algorithm ends for this particular proposer and the subprocesses of the acceptors in its quorum.
 
 \section{Functions}
