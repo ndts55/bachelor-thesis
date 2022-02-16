@@ -109,17 +109,16 @@
 \newcommand{\Restart}[0]{\mathnormal{Restart}}
 \newcommand{\Abort}[0]{\mathnormal{Abort}}
 \newcommand{\Sys}[2]{\operatorname{Sys}\left(#1, #2\right)}
-\newcommand{\Process}[2]{\operatorname{P^{#1}_{#2}}}
-\newcommand{\Pa}[1]{\Process{A}{#1}}
-\newcommand{\Pp}[1]{\Process{P}{}\left(#1\right)}
-\newcommand{\PaOne}[0]{\Pa{1}}
-\newcommand{\PaTwo}[0]{\Pa{2}}
-\newcommand{\PaThree}[1]{\Pa{3}\left(#1\right)}
-\newcommand{\PaAccept}[0]{\Pa{acc}}
-\newcommand{\PpInitName}[0]{\Process{P}{init}}
-\newcommand{\PpInit}[1]{\textstyle\PpInitName\left(#1\right)}
-\newcommand{\PaInitName}[0]{\Pa{init}}
-\newcommand{\PaInit}[1]{\PaInitName\left(#1\right)}
+\newcommand{\Process}[3]{\textstyle\operatorname{P^{#1}_{#2}}\left(#3\right)}
+\newcommand{\Pp}[2]{\Process{P}{#1}{#2}}
+\newcommand{\Pa}[2]{\Process{A}{#1}{#2}}
+\newcommand{\PpOne}[1]{\Pp{}{#1}}
+\newcommand{\PaOne}[1]{\Pa{1}{#1}}
+\newcommand{\PaTwo}[1]{\Pa{2}{#1}}
+\newcommand{\PaThree}[1]{\Pa{3}{#1}}
+\newcommand{\PaAccept}[1]{\Pa{acc}{#1}}
+\newcommand{\PpInit}[1]{\Pp{init}{#1}}
+\newcommand{\PaInit}[1]{\Pa{init}{#1}}
 \newcommand{\SessionRequest}[3]{\overline{#1}\left[#2\right]\left(#3\right)}
 \newcommand{\SessionAccept}[3]{#1\left[#2\right]\left(#3\right)}
 \newcommand{\ParallelFor}[1]{\Pi_{#1}\;}

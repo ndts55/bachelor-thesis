@@ -128,7 +128,7 @@ We apply $\RPar$ twice and split off into the proof trees $\SysProof{1}$, $\SysP
     \noLine
     \UnaryInfC{$\Gamma\vdash
     \SessionRequest{\SharedPoint{\AcceptorCount+\ProposerCount}}{\ProposerRole}{\SessionChannel}.
-    \Pp{
+    \PpOne{
         \SessionChannel,
         \ProcessIndexK,
         \ProposerRole,
@@ -160,13 +160,13 @@ This is relevant later when continuing $\ProposerProof{}$.
 \begin{prooftree}
     \AxiomC{$\ProposerProof{}$}
     \noLine
-    \UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\AcceptorCount+1}}{\ProposerRole}{\SessionChannel}.\Pp{\ldots} \vartriangleright \emptyset$}
+    \UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\AcceptorCount+1}}{\ProposerRole}{\SessionChannel}.\PpOne{\ldots} \vartriangleright \emptyset$}
 
     \AxiomC{$\ldots$}
 
     \AxiomC{$\ProposerProof{}$}
     \noLine
-    \UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\AcceptorCount+\ProposerCount-1}}{\ProposerRole}{\SessionChannel}.\Pp{\ldots} \vartriangleright \emptyset$}
+    \UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\AcceptorCount+\ProposerCount-1}}{\ProposerRole}{\SessionChannel}.\PpOne{\ldots} \vartriangleright \emptyset$}
 
     \RightLabel{$\RPar^{\ProposerCount - 1}$}
     \TrinaryInfC{$\Gamma\vdash
@@ -207,7 +207,7 @@ The session environment $\Delta$ in $\ProposerProof{}$ is empty for every propos
     \UnaryInfC{$
     \Gamma\vdash
         \SessionAccept{\SharedPoint{\ProcessIndexK}}{\position{\ProcessIndexJ}{\AQ_{\ProcessIndexK}}}{\SessionChannel}.
-        \Call{\PaOne}{\ldots}
+        \PaOne{\ldots}
         \vartriangleright\emptyset
     $}
 
@@ -215,7 +215,7 @@ The session environment $\Delta$ in $\ProposerProof{}$ is empty for every propos
     \BinaryInfC{$
         \If{\ProcessIndexJ\notin\AQ_{\ProcessIndexK}}
         \Then{\End}
-        \Else{\SessionAccept{\SharedPoint{\ProcessIndexK}}{\position{\ProcessIndexJ}{\AQ_{\ProcessIndexK}}}{\SessionChannel} . \Call{\PaOne}{
+        \Else{\SessionAccept{\SharedPoint{\ProcessIndexK}}{\position{\ProcessIndexJ}{\AQ_{\ProcessIndexK}}}{\SessionChannel} . \PaOne{
             \ldots
         }}
     $}
@@ -230,7 +230,7 @@ The session environment $\Delta$ in $\ProposerProof{}$ is empty for every propos
         \Paren{
             \If{\ProcessIndexJ\notin\AQ_{\ProcessIndexK}}
             \Then{\End}
-            \Else{\SessionAccept{\SharedPoint{\ProcessIndexK}}{\position{\ProcessIndexJ}{\AQ_{\ProcessIndexK}}}{\SessionChannel} . \Call{\PaOne}{
+            \Else{\SessionAccept{\SharedPoint{\ProcessIndexK}}{\position{\ProcessIndexJ}{\AQ_{\ProcessIndexK}}}{\SessionChannel} . \PaOne{
                 \ldots
             }}
         }
@@ -263,7 +263,7 @@ Note that $\AcceptorRole\in\Curly{1,\ldots,|\AQ_{\ProcessIndexK}|}$ because $\Pr
     \AxiomC{$\AcceptorProofOne$}
     \noLine
     \UnaryInfC{$\Gamma\vdash
-    \Call{\PaOne}{
+    \PaOne{
             \SessionChannel,
             \AcceptorRole,
             |\AQ_{\ProcessIndexK}| + 1,
@@ -279,7 +279,7 @@ Note that $\AcceptorRole\in\Curly{1,\ldots,|\AQ_{\ProcessIndexK}|}$ because $\Pr
     \UnaryInfC{$
     \Gamma\vdash
         \SessionAccept{\SharedPoint{\ProcessIndexK}}{\AcceptorRole}{\SessionChannel}.
-        \Call{\PaOne}{
+        \PaOne{
             \SessionChannel,
             \AcceptorRole,
             |\AQ_{\ProcessIndexK}| + 1,
@@ -371,7 +371,7 @@ These are added to the global environment when applying $\RUget$ in phase $\POne
 
 \LeftLabel{$\ProposerProof{} = $}
 \RightLabel{$\RReq$}
-\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\ProcessIndexK}}{\ProposerRole}{\SessionChannel}.\Pp{
+\UnaryInfC{$\Gamma\vdash \SessionRequest{\SharedPoint{\ProcessIndexK}}{\ProposerRole}{\SessionChannel}.\PpOne{
     \SessionChannel,
     \ProcessIndexK,
     \ProposerRole,
@@ -425,14 +425,14 @@ Finally, we can finish $\ProposerProofFalse$ — and with it $\ProposerProof{}$ 
 To improve readability of the proof trees we break down the acceptor's process and local type.
 
 \begin{align*}
-\Call{\Pa{t}}{
+\Pa{t}{
     \SessionChannel,
     \AcceptorRole,
     \ProposerRole,
     \NumberRegister_{\ProcessIndexJ},
     \ProposalRegister_{\ProcessIndexJ}
 } =
-& \update{\NumberRegister_{\ProcessIndexK}}{n'}.\SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Promise{\ProposalRegister_{\ProcessIndexK}}}.\Call{\PaTwo}{
+& \update{\NumberRegister_{\ProcessIndexK}}{n'}.\SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Promise{\ProposalRegister_{\ProcessIndexK}}}.\PaTwo{
     \SessionChannel,
     \AcceptorRole,
     \ProposerRole,
@@ -440,7 +440,7 @@ To improve readability of the proof trees we break down the acceptor's process a
     \ProposalRegister_{\ProcessIndexJ}
 }
 \\
-\Call{\Pa{f}}{
+\Pa{f}{
     \SessionChannel,
     \AcceptorRole,
     \ProposerRole,
@@ -449,7 +449,7 @@ To improve readability of the proof trees we break down the acceptor's process a
 } =
 &
     \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack}.
-    \Call{\PaTwo}{
+    \PaTwo{
         \SessionChannel,
         \AcceptorRole,
         \ProposerRole,
@@ -457,7 +457,7 @@ To improve readability of the proof trees we break down the acceptor's process a
         \ProposalRegister_{\ProcessIndexJ}
     }
     \\
-\Call{\Pa{gt}}{
+\Pa{gt}{
     \SessionChannel,
     \AcceptorRole,
     \ProposerRole,
@@ -466,14 +466,14 @@ To improve readability of the proof trees we break down the acceptor's process a
 } =
 &
     \mIf \greaterThan{n'}{\NumberRegister}
-    \;\mThen \Call{\Pa{t}}{
+    \;\mThen \Pa{t}{
         \SessionChannel,
         \AcceptorRole,
         \ProposerRole,
         \NumberRegister_{\ProcessIndexJ},
         \ProposalRegister_{\ProcessIndexJ}
     }
-    \;\mElse \Call{\Pa{f}}{
+    \;\mElse \Pa{f}{
         \SessionChannel,
         \AcceptorRole,
         \ProposerRole,
@@ -481,13 +481,13 @@ To improve readability of the proof trees we break down the acceptor's process a
         \ProposalRegister_{\ProcessIndexJ}
     }
 \end{align*}
-With $\Call{\Pa{gt}}{
+With $\Pa{gt}{
     \SessionChannel,
     \AcceptorRole,
     \ProposerRole,
     \NumberRegister_{\ProcessIndexJ},
     \ProposalRegister_{\ProcessIndexJ}
-}$, $\Call{\PaOne}{
+}$, $\PaOne{
     \SessionChannel,
     \AcceptorRole,
     \ProposerRole,
@@ -496,7 +496,7 @@ With $\Call{\Pa{gt}}{
 }$ can be rewritten.
 
 \begin{align*}
-\Call{\PaOne}{
+\PaOne{
 \SessionChannel,
 \AcceptorRole,
 \ProposerRole,
@@ -511,7 +511,7 @@ With $\Call{\Pa{gt}}{
 &
     \mThen
         \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.
-        \Call{\PaTwo}{
+        \PaTwo{
             \SessionChannel,
             \AcceptorRole,
             \ProposerRole,
@@ -520,7 +520,7 @@ With $\Call{\Pa{gt}}{
         }\\
 &
     \mElse
-        \Call{\Pa{gt}}{
+        \Pa{gt}{
             \SessionChannel,
             \AcceptorRole,
             \ProposerRole,
@@ -555,18 +555,18 @@ $\GammaXNP$ adds type $\Proposal{\Value}$ for $pr'$.
 \begin{prooftree}
 \AxiomC{$\AcceptorProofTwo$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \Call{\PaTwo}{\ldots} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \PaTwo{\ldots} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaBranch}$}
 \RightLabel{$\RUsend$}
-\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.\Call{\PaTwo}{\ldots} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaOneB}$}
+\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.\PaTwo{\ldots} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaOneB}$}
 
 \AxiomC{$\AcceptorProof{gt}$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \Call{\Pa{gt}}{\ldots} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaOneB}$}
+\UnaryInfC{$\GammaXN\vdash \Pa{gt}{\ldots} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaOneB}$}
 
 \RightLabel{$\RIf$}
 \BinaryInfC{$\GammaXN\vdash
     \mIf n'=\bot
-    \;\mThen \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.\Call{\PaTwo}{\ldots}
+    \;\mThen \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.\PaTwo{\ldots}
     \;\mElse \mIf \greaterThan{n'}{\NumberRegister_{\ProcessIndexJ}} \ldots
     \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaOneB}$}
 
@@ -589,18 +589,18 @@ We examine $\AcceptorProof{gt}$ first, because it contains the proof tree of the
 \begin{prooftree}
 \AxiomC{$\AcceptorProofTrue$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \Call{\Pa{t}}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister_{\ProcessIndexJ}, \ProposalRegister_{\ProcessIndexJ}} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaOneB}$}
+\UnaryInfC{$\GammaXN\vdash \Pa{t}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister_{\ProcessIndexJ}, \ProposalRegister_{\ProcessIndexJ}} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaOneB}$}
 
 \AxiomC{$\AcceptorProofFalse$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \Call{\Pa{f}}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister_{\ProcessIndexJ}, \ProposalRegister_{\ProcessIndexJ}} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaOneB}$}
+\UnaryInfC{$\GammaXN\vdash \Pa{f}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister_{\ProcessIndexJ}, \ProposalRegister_{\ProcessIndexJ}} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaOneB}$}
 
 \LeftLabel{$\AcceptorProof{gt} =$}
 \RightLabel{$\RIf$}
 \BinaryInfC{$\GammaXN\vdash
     \mIf \greaterThan{n'}{\NumberRegister_{\ProcessIndexJ}}
-    \;\mThen \Call{\Pa{t}}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister_{\ProcessIndexJ}, \ProposalRegister_{\ProcessIndexJ}}
-    \;\mElse \Call{\Pa{f}}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister_{\ProcessIndexJ}, \ProposalRegister_{\ProcessIndexJ}}
+    \;\mThen \Pa{t}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister_{\ProcessIndexJ}, \ProposalRegister_{\ProcessIndexJ}}
+    \;\mElse \Pa{f}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister_{\ProcessIndexJ}, \ProposalRegister_{\ProcessIndexJ}}
     \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaOneB}$}
 \end{prooftree}
 First, we split the proof tree with $\RIf$.
@@ -610,30 +610,30 @@ We continue the resulting branches in separate proof trees $\AcceptorProofTrue$ 
 \begin{prooftree}
 \AxiomC{$\AcceptorProofTwo$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \Call{\PaTwo}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister_{\ProcessIndexJ}, \ProposalRegister_{\ProcessIndexJ}} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \PaTwo{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister_{\ProcessIndexJ}, \ProposalRegister_{\ProcessIndexJ}} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaBranch}$}
 \LeftLabel{$\AcceptorProofTrue =$}
 \RightLabel{$\RUsend$}
-\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack}.\Call{\PaTwo}{\ldots} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\SendUnreliableL{\ProposerRole}{\LOneB}{\Promise{\Value}} . \TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack}.\PaTwo{\ldots} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\SendUnreliableL{\ProposerRole}{\LOneB}{\Promise{\Value}} . \TaBranch}$}
 \end{prooftree}
 
 % (A_f)
 \begin{prooftree}
 \AxiomC{$\AcceptorProofTwo$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \Call{\PaTwo}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister_{\ProcessIndexJ}, \ProposalRegister_{\ProcessIndexJ}} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \PaTwo{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister_{\ProcessIndexJ}, \ProposalRegister_{\ProcessIndexJ}} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaBranch}$}
 \LeftLabel{$\AcceptorProofFalse =$}
 \RightLabel{$\RUsend$}
-\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack}.\Call{\PaTwo}{\ldots} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\SendUnreliableL{\ProposerRole}{\LOneB}{\Promise{\Value}}.\TaBranch}$}
+\UnaryInfC{$\GammaXN\vdash \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack}.\PaTwo{\ldots} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\SendUnreliableL{\ProposerRole}{\LOneB}{\Promise{\Value}}.\TaBranch}$}
 \end{prooftree}
 
 In both, $\AcceptorProofTrue$ and $\AcceptorProofFalse$, we apply $\RUsend$.
-We continue with $\AcceptorProofTwo$, which is the proof tree for $\Call{\PaTwo}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister_{\ProcessIndexJ}, \ProposalRegister_{\ProcessIndexJ}}$.
+We continue with $\AcceptorProofTwo$, which is the proof tree for $\PaTwo{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister_{\ProcessIndexJ}, \ProposalRegister_{\ProcessIndexJ}}$.
 
 % (A_2)
 \begin{prooftree}
 \AxiomC{$\AcceptorProofAccept$}
 \noLine
-\UnaryInfC{$\GammaXN\vdash \Call{\PaAccept}{\ldots} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaAccept}$}
+\UnaryInfC{$\GammaXN\vdash \PaAccept{\ldots} \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaAccept}$}
 
 \AxiomC{}
 \RightLabel{$\RVar$}
