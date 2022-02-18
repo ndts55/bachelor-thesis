@@ -213,11 +213,13 @@ The session environment $\Delta$ in $\ProposerProof{}$ is empty for every propos
 
     \RightLabel{$\RIf$}
     \BinaryInfC{$
-        \If{\ProcessIndexJ\notin\AQ_{\ProcessIndexK}}
-        \Then{\End}
-        \Else{\SessionAccept{\SharedPoint{\ProcessIndexK}}{\position{\ProcessIndexJ}{\AQ_{\ProcessIndexK}}}{\SessionChannel} . \PaOne{
-            \ldots
-        }}
+    \Gamma\vdash
+        \If \ProcessIndexJ\notin\AQ_{\ProcessIndexK}
+        \;\Then \End
+        \;\Else
+            \SessionAccept{\SharedPoint{\ProcessIndexK}}{\position{\ProcessIndexJ}{\AQ_{\ProcessIndexK}}}{\SessionChannel}.
+            \PaOne{\ldots}
+    \vartriangleright\emptyset
     $}
     
     \AxiomC{$\ldots$}
@@ -228,11 +230,11 @@ The session environment $\Delta$ in $\ProposerProof{}$ is empty for every propos
             \AcceptorCount + 1 \leq \ProcessIndexK \leq \AcceptorCount + \ProposerCount
         }
         \Paren{
-            \If{\ProcessIndexJ\notin\AQ_{\ProcessIndexK}}
-            \Then{\End}
-            \Else{\SessionAccept{\SharedPoint{\ProcessIndexK}}{\position{\ProcessIndexJ}{\AQ_{\ProcessIndexK}}}{\SessionChannel} . \PaOne{
-                \ldots
-            }}
+            \If \ProcessIndexJ\notin\AQ_{\ProcessIndexK}
+            \;\Then \End
+            \;\Else
+                \SessionAccept{\SharedPoint{\ProcessIndexK}}{\position{\ProcessIndexJ}{\AQ_{\ProcessIndexK}}}{\SessionChannel}.
+                \PaOne{\ldots}
         }
         \vartriangleright\emptyset$}
     \AxiomC{$\ldots$}
@@ -335,18 +337,18 @@ These are added to the global environment when applying $\RUget$ in phase $\POne
 \begin{prooftree}
 \AxiomC{$\ProposerProofTrue$}
 \noLine
-\UnaryInfC{$\GammaXV \vdash \mSendWeaklyP{\SessionChannel}{\ProposerRole}{\QRoles}{\Restart}. \RecursionVariable \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\TpBranch}$}
+\UnaryInfC{$\GammaXV \vdash \SendWeaklyP{\SessionChannel}{\ProposerRole}{\QRoles}{\Restart}. \RecursionVariable \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\TpBranch}$}
 
 \AxiomC{$\ProposerProofFalse$}
 \noLine
-\UnaryInfC{$\GammaXV \vdash \mSendWeaklyP{\SessionChannel}{\ProposerRole}{\QRoles}{\Accept} \ldots
+\UnaryInfC{$\GammaXV \vdash \SendWeaklyP{\SessionChannel}{\ProposerRole}{\QRoles}{\Accept} \ldots
 \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\TpBranch}$}
 
 \RightLabel{$\RIf$}
 \BinaryInfC{$\GammaXV \vdash
-    \mIf e
-    \;\mThen \mSendWeaklyP{\SessionChannel}{\ProposerRole}{\QRoles}{\Restart}. \RecursionVariable
-    \;\mElse \mSendWeaklyP{\SessionChannel}{\ProposerRole}{\QRoles}{\Accept} \ldots
+    \If e
+    \;\Then \SendWeaklyP{\SessionChannel}{\ProposerRole}{\QRoles}{\Restart}. \RecursionVariable
+    \;\Else \SendWeaklyP{\SessionChannel}{\ProposerRole}{\QRoles}{\Accept} \ldots
     \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\TpBranch}$}
 
 \RightLabel{$\RUget^{|\QRoles|}$}
@@ -397,7 +399,7 @@ $\RIf$ splits the proof tree into $\ProposerProofTrue$ and $\ProposerProofFalse$
 \UnaryInfC{$\GammaXV\vdash \RecursionVariable \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\RecursionVariableType}$}
 \LeftLabel{$\ProposerProofTrue =$}
 \RightLabel{$\RWsel$}
-\UnaryInfC{$\GammaXV\vdash \mSendWeaklyP{\SessionChannel}{\ProposerRole}{\QRoles}{\Restart}. \RecursionVariable \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\SendWeaklyL{\QRoles}{\Accept . \TpAccept \oplus \Restart . \RecursionVariableType \oplus \Abort .\End}}$}
+\UnaryInfC{$\GammaXV\vdash \SendWeaklyP{\SessionChannel}{\ProposerRole}{\QRoles}{\Restart}. \RecursionVariable \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\SendWeaklyL{\QRoles}{\Accept . \TpAccept \oplus \Restart . \RecursionVariableType \oplus \Abort .\End}}$}
 \end{prooftree}
 We apply $\RWsel$ and then $\RVar$ to finish $\ProposerProofTrue$.
 
@@ -416,7 +418,7 @@ We apply $\RWsel$ and then $\RVar$ to finish $\ProposerProofTrue$.
 
 \LeftLabel{$\ProposerProofFalse =$}
 \RightLabel{$\RWsel$}
-\UnaryInfC{$\GammaXV\vdash \SendWeaklyP{\SessionChannel}{\ProposerRole}{\AQ}{\Accept.\ldots} \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . \RecursionVariableType \oplus \Abort .\End}}$}
+\UnaryInfC{$\GammaXV\vdash \SendWeaklyP{\SessionChannel}{\ProposerRole}{\AQ}{\Accept}\ldots \vartriangleright \SEnvEntry{\SessionChannel}{\ProposerRole}{\SendWeaklyL{\AQ}{\Accept . \TpAccept \oplus \Restart . \RecursionVariableType \oplus \Abort .\End}}$}
 \end{prooftree}
 After applying $\RUsend$ we can apply $\RUsend$ once for every acceptor in $\AQ$.
 Finally, we can finish $\ProposerProofFalse$ — and with it $\ProposerProof{}$ — by applying $\REnd$.
@@ -465,15 +467,15 @@ To improve readability of the proof trees we break down the acceptor's process a
     \ProposalRegister_{\ProcessIndexJ}
 } =
 &
-    \mIf \greaterThan{n'}{\NumberRegister}
-    \;\mThen \Pa{t}{
+    \If \greaterThan{n'}{\NumberRegister}
+    \;\Then \Pa{t}{
         \SessionChannel,
         \AcceptorRole,
         \ProposerRole,
         \NumberRegister_{\ProcessIndexJ},
         \ProposalRegister_{\ProcessIndexJ}
     }
-    \;\mElse \Pa{f}{
+    \;\Else \Pa{f}{
         \SessionChannel,
         \AcceptorRole,
         \ProposerRole,
@@ -507,9 +509,9 @@ With $\Pa{gt}{
     \Mu{\RecursionVariable}
     \ReceiveUnreliableP{\SessionChannel}{\ProposerRole}{\AcceptorRole}{\LOneA}{\bot}{n'}.\\
 &
-    \mIf n'=\bot\\
+    \If n'=\bot\\
 &
-    \mThen
+    \Then
         \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.
         \PaTwo{
             \SessionChannel,
@@ -519,7 +521,7 @@ With $\Pa{gt}{
             \ProposalRegister_{\ProcessIndexJ}
         }\\
 &
-    \mElse
+    \Else
         \Pa{gt}{
             \SessionChannel,
             \AcceptorRole,
@@ -565,13 +567,16 @@ $\GammaXNP$ adds type $\Proposal{\Value}$ for $pr'$.
 
 \RightLabel{$\RIf$}
 \BinaryInfC{$\GammaXN\vdash
-    \mIf n'=\bot
-    \;\mThen \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.\PaTwo{\ldots}
-    \;\mElse \mIf \greaterThan{n'}{\NumberRegister_{\ProcessIndexJ}} \ldots
+    \If n'=\bot
+    \;\Then \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.\PaTwo{\ldots}
+    \;\Else \If \greaterThan{n'}{\NumberRegister_{\ProcessIndexJ}} \ldots
     \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaOneB}$}
 
 \RightLabel{$\RUget$}
-\UnaryInfC{$\GammaX \vdash \ReceiveUnreliableP{\SessionChannel}{\ProposerRole}{\AcceptorRole}{\LOneA}{\bot}{n'}.\If{n'=\bot}\ldots \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\ReceiveUnreliableL{\ProposerRole}{\LOneA}{\mathbb{N}}.\TaOneB}$}
+\UnaryInfC{$\GammaX \vdash
+    \ReceiveUnreliableP{\SessionChannel}{\ProposerRole}{\AcceptorRole}{\LOneA}{\bot}{n'}.
+    \If n'=\bot \ldots
+    \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\ReceiveUnreliableL{\ProposerRole}{\LOneA}{\mathbb{N}}.\TaOneB}$}
 
 \LeftLabel{$\AcceptorProofOne =$}
 \RightLabel{$\RRec$}
@@ -598,9 +603,9 @@ We examine $\AcceptorProof{gt}$ first, because it contains the proof tree of the
 \LeftLabel{$\AcceptorProof{gt} =$}
 \RightLabel{$\RIf$}
 \BinaryInfC{$\GammaXN\vdash
-    \mIf \greaterThan{n'}{\NumberRegister_{\ProcessIndexJ}}
-    \;\mThen \Pa{t}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister_{\ProcessIndexJ}, \ProposalRegister_{\ProcessIndexJ}}
-    \;\mElse \Pa{f}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister_{\ProcessIndexJ}, \ProposalRegister_{\ProcessIndexJ}}
+    \If \greaterThan{n'}{\NumberRegister_{\ProcessIndexJ}}
+    \;\Then \Pa{t}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister_{\ProcessIndexJ}, \ProposalRegister_{\ProcessIndexJ}}
+    \;\Else \Pa{f}{\SessionChannel, \AcceptorRole, \ProposerRole, \NumberRegister_{\ProcessIndexJ}, \ProposalRegister_{\ProcessIndexJ}}
     \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\TaOneB}$}
 \end{prooftree}
 First, we split the proof tree with $\RIf$.
@@ -679,16 +684,16 @@ The $\Restart$ branch can be finished by applying $\RVar$ and the $\Abort$ branc
 
 \RightLabel{$\RIf$}
 \BinaryInfC{$\GammaXNP\vdash
-    \mIf \greaterEqual{\nFromProposal{pr'}}{\NumberRegister_{\ProcessIndexJ}}
-    \;\mThen \ldots
-    \;\mElse \End
+    \If \greaterEqual{\nFromProposal{pr'}}{\NumberRegister_{\ProcessIndexJ}}
+    \;\Then \ldots
+    \;\Else \End
     \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\End}$}
 
 \RightLabel{$\RIf$}
 \BinaryInfC{$\GammaXNP\vdash
-    \mIf pr'=\bot
-    \;\mThen \End
-    \;\mElse \ldots
+    \If pr'=\bot
+    \;\Then \End
+    \;\Else \ldots
     \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\End}$}
 \LeftLabel{$\AcceptorProofAccept =$}
 \RightLabel{$\RUget$}
@@ -729,7 +734,7 @@ Finally, we can prove \textbf{Validity}: only a value that has been proposed may
 To prove that only a value that has been proposed may be chosen we examine the communication structure and the origins of the accepted values in our model.
 % global type + well-typedness = communication structure is as specfied
 Because the model is well-typed we know the communication structure is as specified in global type $\IndexedGlobalType{\ProcessIndexK}$.
-% Because of the global type and the communication protocol it ensures following session fidelity in Theorem 4—there are no communication mismatches and the received messages are of the expected sort—, then validity holds globally.
+Session fidelity ensures there are no communication mismatches \cite{PetersEtal21}.
 From \cite{PetersEtal21} we know that validity then holds globally if it holds for each local process.
 
 % labels over which values are sent: l1b, l2a
@@ -806,8 +811,9 @@ This way all correct acceptors accept the same value.
 
 We want to prove that if a value has been proposed and sufficient processes remain non-faulty, then eventually some value is chosen.
 
-The global type and well-typedness ensure the absence of deadlocks.
+Well-typedness ensures that the processes follow the communication structure in $\IndexedGlobalType{\ProcessIndexK}$ and session fidelity ensures the absence of deadlocks \cite{PetersEtal21}.
 Thus, processes either loop forever or terminate.
+We only need to prove that the implementation eventually exits the loop given our system requirements.
 Assuming a failure detector in $\FailureDetectorClass$, eventually any correct proposer is not suspected by any correct acceptor and does not suspect any correct acceptor.
 $\FPcrash$ guarantees that all correct proposers can communicate with a set of correct acceptors that forms a quorum.
 

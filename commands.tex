@@ -70,7 +70,6 @@
 \newcommand{\OuterSessionChannel}[0]{z}
 \newcommand{\SessionChannel}[0]{s}
 \newcommand{\OuterGlobalType}[0]{\operatorname{G}}
-\newcommand{\GlobalType}[0]{\operatorname{G_{\ProposerRole, \AQ}}}
 \newcommand{\IndexedGlobalType}[1]{\operatorname{G_{#1, \AQ_{#1}}}}
 \newcommand{\SendUnreliableG}[4]{#1 \to_u #2 : #3 \left\langle #4 \right\rangle}
 \newcommand{\SendWeaklyG}[3]{#1 \to_w #2 : \Curly{#3}}
@@ -82,14 +81,12 @@
 \newcommand{\SendWeaklyL}[2]{\left[#1\right]!_w \Curly{#2}}
 \newcommand{\ReceiveWeaklyL}[3]{\left[#1\right]?_w \Curly{#2}_{#3}}
 \newcommand{\OuterGlobalTypeProjection}[1]{\OuterGlobalType \upharpoonright_{#1}}
-\newcommand{\GlobalTypeProjection}[1]{\GlobalType \upharpoonright_{#1}}
 \newcommand{\IndexedGlobalTypeProjection}[2]{\IndexedGlobalType{#1} \upharpoonright_{#2}}
 
 %% Process
 \newcommand{\SendUnreliableP}[5]{#1\left[#2, #3\right]!_u #4 \left\langle #5 \right\rangle}
 \newcommand{\ReceiveUnreliableP}[6]{#1\left[#2, #3\right]?_u #4 \left\langle #5 \right\rangle \left(#6\right)}
-\newcommand{\SendWeaklyP}[5]{#1\left[#2, #3\right]!_w #4.#5}
-\newcommand{\mSendWeaklyP}[4]{#1\left[#2, #3\right]!_w #4}
+\newcommand{\SendWeaklyP}[4]{#1\left[#2, #3\right]!_w #4}
 \newcommand{\ReceiveWeaklyP}[4]{#1\left[#2, #3\right]?_w \big\{#4\big\}}
 \newcommand{\RecursionVariable}[0]{X}
 
@@ -102,7 +99,6 @@
 \newcommand{\FailureDetectorClass}[0]{\Diamond\mathscr{S}}
 
 % Paxos Process
-\newcommand{\Call}[2]{#1\left(#2\right)}
 \newcommand{\AcceptorCount}[0]{c_A}
 \newcommand{\ProposerCount}[0]{c_P}
 \newcommand{\Accept}[0]{\mathnormal{Accept}}
@@ -161,15 +157,12 @@
 % Math and Programming
 \newcommand{\ceil}[1]{\Big\lceil #1 \Big\rceil}
 \newcommand{\VectorV}[0]{\overrightarrow{V}}
-\newcommand{\If}[1]{\operatorname{if}\xspace #1}
-\newcommand{\Then}[1]{\operatorname{then}\xspace #1}
-\newcommand{\Else}[1]{\operatorname{else}\xspace #1}
 \newcommand{\IfName}[0]{\mathtt{if}}
-\newcommand{\mIf}[0]{\IfName\;}
+\newcommand{\If}[0]{\IfName\;}
 \newcommand{\ThenName}[0]{\mathtt{then}}
-\newcommand{\mThen}[0]{\ThenName\;}
+\newcommand{\Then}[0]{\ThenName\;}
 \newcommand{\ElseName}[0]{\mathtt{else}}
-\newcommand{\mElse}[0]{\ElseName\;}
+\newcommand{\Else}[0]{\ElseName\;}
 \newcommand{\tOr}[0]{\; \mathtt{or} \;}
 \newcommand{\mapstostar}[0]{\longmapsto^*}
 \newcommand{\Wildcard}[0]{\mathtt{\_}}

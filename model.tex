@@ -277,11 +277,11 @@ $\Proposer{5}$'s role is $|\AQ_5| + 1 = 2 + 1 = 3$.
 &
     \ParallelFor{\AcceptorCount + 1 \leq \ProcessIndexK \leq \AcceptorCount + \ProposerCount}\big(\\
 &
-    \mIf \ProcessIndexJ\notin\AQ_{\ProcessIndexK}\\
+    \If \ProcessIndexJ\notin\AQ_{\ProcessIndexK}\\
 &
-    \mThen \End\\
+    \Then \End\\
 &
-    \mElse
+    \Else
         \SessionAccept{\SharedPoint{\ProcessIndexK}}{\position{\ProcessIndexJ}{\AQ_{\ProcessIndexK}}}{\SessionChannel}.
         \PaOne{
             \SessionChannel,
@@ -390,18 +390,18 @@ We use this function to update the registers of the processes.
         \ReceiveUnreliableP{\SessionChannel}{\ProposerRole}{\AcceptorRole}{\LOneB}{\bot}{v_{\AcceptorRole}}
     } .\\
 &
-    \mIf 
+    \If 
         \anyNack{\VectorV}
         \tOr
         \Paren{\promiseCount{\VectorV} < \ceil{\frac{\AcceptorCount + 1}{2}}}
     \\
 &
-    \mThen \mSendWeaklyP{\SessionChannel}{\ProposerRole}{\QRoles}{\Restart}.
+    \Then \SendWeaklyP{\SessionChannel}{\ProposerRole}{\QRoles}{\Restart}.
     \RecursionVariable\\
 &
-    \mElse\\
+    \Else\\
 &\Indent{1}
-    \mSendWeaklyP{\SessionChannel}{\ProposerRole}{\QRoles}{\Accept}.\\
+    \SendWeaklyP{\SessionChannel}{\ProposerRole}{\QRoles}{\Accept}.\\
 &\Indent{1}
     \DotForall{\AcceptorRole \in \QRoles}{
         \SendUnreliableP{\SessionChannel}{\ProposerRole}{\AcceptorRole}{\LTwoA}{
@@ -435,10 +435,10 @@ Otherwise, the proposer sends its proposal to the acceptors and terminates.
     \ReceiveUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneA}{\bot}{n'}.
     \\
 &
-    \mIf n' = \bot
+    \If n' = \bot
     \\
 &
-    \mThen
+    \Then
         \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\bot}.
         \PaTwo{
             \SessionChannel,
@@ -449,12 +449,12 @@ Otherwise, the proposer sends its proposal to the acceptors and terminates.
         }
     \\
 &
-    \mElse \big(\\
+    \Else \big(\\
 &\Indent{1}
-    \mIf \greaterThan{n'}{\NumberRegister_{\ProcessIndexJ}}
+    \If \greaterThan{n'}{\NumberRegister_{\ProcessIndexJ}}
     \\
 &\Indent{1}
-    \mThen
+    \Then
         \update{\NumberRegister_{\ProcessIndexJ}}{\Just{n'}}.
         \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Promise{\ProposalRegister}}.
         \PaTwo{
@@ -466,7 +466,7 @@ Otherwise, the proposer sends its proposal to the acceptors and terminates.
         }
         \\
 &\Indent{1}
-    \mElse
+    \Else
         \SendUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneB}{\Nack}.
         \PaTwo{
             \SessionChannel,
@@ -511,20 +511,20 @@ Otherwise, the proposer sends its proposal to the acceptors and terminates.
 &
     \ReceiveUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LTwoA}{\bot}{pr'}.\\
 &
-    \mIf pr' = \bot \;\mThen \End\\
+    \If pr' = \bot \;\Then \End\\
 &
-    \mElse
+    \Else
 \big(
     \\
 &\Indent{1}
-    \mIf \greaterEqual{\nFromProposal{pr'}}{\NumberRegister_{\ProcessIndexJ}}\\
+    \If \greaterEqual{\nFromProposal{pr'}}{\NumberRegister_{\ProcessIndexJ}}\\
 &\Indent{1}
-    \mThen
+    \Then
         \update{\ProposalRegister_{\ProcessIndexJ}}{\Just{pr'}}.
         \update{\NumberRegister_{\ProcessIndexJ}}{\Just{\Paren{\nFromProposal{pr'}}}}.
         \End\\
 &\Indent{1}
-    \mElse \End
+    \Else \End
 \big)
 \end{align*}
 
@@ -716,31 +716,31 @@ After inserting $\AcceptorCount$ and $\ProposerCount$ and applying $\RInit$ once
 &\SessionRequest{\SharedPoint{5}}{3}{\ChannelR}.\PpOne{\ChannelR, 5, 3, \Curly{1, 2}, 3, \NumberRegister_5, \EmptyList} \comment{= \Proposer{5}}\\
 &\Or \SessionRequest{\SharedPoint{4}}{3}{\ChannelS}.\PpOne{\ChannelS, 4, 3, \Curly{1, 2}, 3, \NumberRegister_4, \EmptyList} \comment{= \Proposer{4}}\\
 &\Or \Paren{
-    \mIf 1 \notin \Curly{1, 2}
-    \;\mThen \End
-    \;\mElse \SessionAccept{\SharedPoint{4}}{1}{\ChannelS}\ldots
+    \If 1 \notin \Curly{1, 2}
+    \;\Then \End
+    \;\Else \SessionAccept{\SharedPoint{4}}{1}{\ChannelS}\ldots
     \Or
-    \mIf 1 \notin \Curly{2, 3}
-    \;\mThen \End
-    \mElse \ldots
+    \If 1 \notin \Curly{2, 3}
+    \;\Then \End
+    \Else \ldots
 } \comment{= \Acceptor{1}}\\
 &\Or \Paren{
-    \mIf 2 \notin \Curly{1, 2}
-    \;\mThen \End
-    \;\mElse \SessionAccept{\SharedPoint{4}}{2}{\ChannelS}\ldots
+    \If 2 \notin \Curly{1, 2}
+    \;\Then \End
+    \;\Else \SessionAccept{\SharedPoint{4}}{2}{\ChannelS}\ldots
     \Or
-    \mIf 2 \notin \Curly{2, 3}
-    \;\mThen \End
-    \;\mElse \SessionAccept{\SharedPoint{5}}{1}{\ChannelR}\ldots
+    \If 2 \notin \Curly{2, 3}
+    \;\Then \End
+    \;\Else \SessionAccept{\SharedPoint{5}}{1}{\ChannelR}\ldots
 } \comment{= \Acceptor{2}}\\
 &\Or \Paren{
-    \mIf 3 \notin \Curly{1, 2}
-    \;\mThen \End
-    \;\mElse \ldots
+    \If 3 \notin \Curly{1, 2}
+    \;\Then \End
+    \;\Else \ldots
     \Or
-    \mIf 3 \notin \Curly{2, 3}
-    \;\mThen \End
-    \;\mElse \SessionAccept{\SharedPoint{5}}{2}{\ChannelR}\ldots
+    \If 3 \notin \Curly{2, 3}
+    \;\Then \End
+    \;\Else \SessionAccept{\SharedPoint{5}}{2}{\ChannelR}\ldots
 } \comment{= \Acceptor{3}}\\
 &\Or \OuterSessionQueues
 \big )
@@ -774,12 +774,12 @@ We apply $\RInit$ for each shared channel $\SharedPoint{4}$ and $\SharedPoint{5}
 &\Or
     \Mu{\RecursionVariable}
     \ReceiveUnreliableP{\ChannelS}{1}{3}{\LOneA}{\bot}{n'}.
-    \mIf \ldots \comment{= \Acceptor{1}}\\
+    \If \ldots \comment{= \Acceptor{1}}\\
 &\Or \Paren{
-    \Mu{\RecursionVariable} \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.\mIf \ldots
-    \Or \Mu{\RecursionVariable} \ReceiveUnreliableP{\ChannelR}{1}{3}{\LOneA}{\bot}{n'}.\mIf \ldots
+    \Mu{\RecursionVariable} \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.\If \ldots
+    \Or \Mu{\RecursionVariable} \ReceiveUnreliableP{\ChannelR}{1}{3}{\LOneA}{\bot}{n'}.\If \ldots
 } \comment{= \Acceptor{2}}\\
-&\Or \Mu{\RecursionVariable} \ReceiveUnreliableP{\ChannelR}{2}{3}{\LOneA}{\bot}{n'}.\mIf \ldots \comment{= \Acceptor{3}}\\
+&\Or \Mu{\RecursionVariable} \ReceiveUnreliableP{\ChannelR}{2}{3}{\LOneA}{\bot}{n'}.\If \ldots \comment{= \Acceptor{3}}\\
 &\Or \InnerSessionQueues{\ChannelS}
 \Or \InnerSessionQueues{\ChannelR}
 \Or \OuterSessionQueues
@@ -798,23 +798,23 @@ We apply $\RUsend$ and $\RUget$ twice to send $\proposalNumber{1}{5} = 10$ to $\
 \NuChannels \big (\\
 &\ReceiveUnreliableP{\ChannelR}{3}{1}{\LOneB}{\bot}{v_1}.\ReceiveUnreliableP{\ChannelR}{3}{2}{\LOneB}{\bot}{v_2}\ldots \comment{= \Proposer{5}}\\
 &\Or  \SendUnreliableP{\ChannelS}{3}{1}{\LOneA}{\proposalNumber{1}{4}}.\SendUnreliableP{\ChannelS}{3}{2}{\LOneA}{\proposalNumber{1}{4}}\ldots \comment{= \Proposer{4}}\\
-&\Or  \ReceiveUnreliableP{\ChannelS}{1}{3}{\LOneA}{\bot}{n'}.\mIf \ldots \comment{=\Acceptor{1}}\\
+&\Or  \ReceiveUnreliableP{\ChannelS}{1}{3}{\LOneA}{\bot}{n'}.\If \ldots \comment{=\Acceptor{1}}\\
 &\Or
     \Paren{
-        \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.\mIf \ldots
+        \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.\If \ldots
         \Or
-            \mIf 10 = \bot
-            \;\mThen \ldots
-            \;\mElse \Paren{
-                \mIf \greaterThan{10}{\NumberRegister_2} \ldots
+            \If 10 = \bot
+            \;\Then \ldots
+            \;\Else \Paren{
+                \If \greaterThan{10}{\NumberRegister_2} \ldots
                 }
     } \comment{=\Acceptor{2}}\\
-&\Or \mIf 10 = \bot
-        \;\mThen \ldots
-        \;\mElse \Paren{
-            \mIf \greaterThan{n'}{\NumberRegister_3}
-            \;\mThen \update{\NumberRegister_3}{n'}\ldots
-            \;\mElse \ldots
+&\Or \If 10 = \bot
+        \;\Then \ldots
+        \;\Else \Paren{
+            \If \greaterThan{n'}{\NumberRegister_3}
+            \;\Then \update{\NumberRegister_3}{n'}\ldots
+            \;\Else \ldots
         } \comment{=\Acceptor{3}}\\
 &\Or \InnerSessionQueues{\ChannelS}
 \Or \InnerSessionQueues{\ChannelR}
@@ -822,26 +822,26 @@ We apply $\RUsend$ and $\RUget$ twice to send $\proposalNumber{1}{5} = 10$ to $\
 \big )
 \end{align*}
 
-Since $10 \neq \bot$ both $\Acceptor{2}$ and $\Acceptor{3}$ move into their respective $\Else$ branches by applying $\RIfF$.
+Since $10 \neq \bot$ both $\Acceptor{2}$ and $\Acceptor{3}$ move into their respective $\ElseName$ branches by applying $\RIfF$.
 
 \begin{align*}
 \mapstostar& \NuChannels \big (\\
 &\ReceiveUnreliableP{\ChannelR}{3}{1}{\LOneB}{\bot}{v_1}.\ReceiveUnreliableP{\ChannelR}{3}{2}{\LOneB}{\bot}{v_2}\ldots \comment{= \Proposer{5}}\\
 &\Or \SendUnreliableP{\ChannelS}{3}{1}{\LOneA}{\proposalNumber{1}{4}}.\SendUnreliableP{\ChannelS}{3}{2}{\LOneA}{\proposalNumber{1}{4}}\ldots \comment{= \Proposer{4}}\\
-&\Or \ReceiveUnreliableP{\ChannelS}{1}{3}{\LOneA}{\bot}{n'}.\mIf \ldots \comment{=\Acceptor{1}}\\
+&\Or \ReceiveUnreliableP{\ChannelS}{1}{3}{\LOneA}{\bot}{n'}.\If \ldots \comment{=\Acceptor{1}}\\
 &\Or \Paren{
-    \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.\mIf \ldots
+    \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.\If \ldots
     \Or
-    \mIf \greaterThan{10}{\Nothing}
-    \;\mThen \ldots
-    \;\mElse \ldots
+    \If \greaterThan{10}{\Nothing}
+    \;\Then \ldots
+    \;\Else \ldots
 } \comment{=\Acceptor{2}}\\
 &\Or
-    \mIf \greaterThan{10}{\Nothing}
-    \;\mThen
+    \If \greaterThan{10}{\Nothing}
+    \;\Then
         \update{\NumberRegister_3}{\Just{n'}}.
         \SendUnreliableP{\ChannelR}{2}{3}{\LOneB}{\Promise{\ProposalRegister_3}}\ldots
-    \;\mElse \ldots
+    \;\Else \ldots
     \comment{=\Acceptor{3}}\\
 &\Or \InnerSessionQueues{\ChannelS}
 \Or \InnerSessionQueues{\ChannelR}
@@ -849,7 +849,7 @@ Since $10 \neq \bot$ both $\Acceptor{2}$ and $\Acceptor{3}$ move into their resp
 \big )
 \end{align*}
 
-Because $\greaterThan{10}{\Nothing}$ returns $\True$, $\Acceptor{2}$ and $\Acceptor{3}$ move into their respective $\Then$ branches by applying $\RIfT$.
+Because $\greaterThan{10}{\Nothing}$ returns $\True$, $\Acceptor{2}$ and $\Acceptor{3}$ move into their respective $\ThenName$ branches by applying $\RIfT$.
 After executing $\update{\NumberRegister_2}{\Just{10}}$ and $\update{\NumberRegister_3}{\Just{10}}$ with $\RSideEffect$, $\Acceptor{2}$ and $\Acceptor{3}$ are ready to send their responses to $\Proposer{5}$.
 
 % A1: n=Nothing, pr=Nothing
@@ -861,12 +861,12 @@ After executing $\update{\NumberRegister_2}{\Just{10}}$ and $\update{\NumberRegi
 &
     \ReceiveUnreliableP{\ChannelR}{3}{1}{\LOneB}{\bot}{v_1}.
     \ReceiveUnreliableP{\ChannelR}{3}{2}{\LOneB}{\bot}{v_2}.
-    \mIf \anyNack{\VectorV} \tOr \promiseCount{\VectorV} < 2\ldots
+    \If \anyNack{\VectorV} \tOr \promiseCount{\VectorV} < 2\ldots
     \comment{= \Proposer{5}}\\
 &\Or \SendUnreliableP{\ChannelS}{3}{1}{\LOneA}{\proposalNumber{1}{4}}.\SendUnreliableP{\ChannelS}{3}{2}{\LOneA}{\proposalNumber{1}{4}}\ldots \comment{= \Proposer{4}}\\
-&\Or \ReceiveUnreliableP{\ChannelS}{1}{3}{\LOneA}{\bot}{n'}.\mIf \ldots \comment{= \Acceptor{1}}\\
+&\Or \ReceiveUnreliableP{\ChannelS}{1}{3}{\LOneA}{\bot}{n'}.\If \ldots \comment{= \Acceptor{1}}\\
 &\Or \Paren{
-    \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.\mIf \ldots
+    \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.\If \ldots
     \Or \SendUnreliableP{\ChannelR}{1}{3}{\LOneB}{\Promise{\Nothing}}.
         \PaTwo{\ChannelR, 1, 3, \NumberRegister_2, \ProposalRegister_2}
 } \comment{= \Acceptor{2}}\\
@@ -892,13 +892,13 @@ By applying $\RIfF$ $\Proposer{5}$ advances to its $\ElseName$ branch.
 \begin{align*}
 \mapstostar& \NuChannels \big (\\
 &
-    \mSendWeaklyP{\ChannelR}{3}{\Curly{1, 2}}{\Accept}.
+    \SendWeaklyP{\ChannelR}{3}{\Curly{1, 2}}{\Accept}.
     \SendUnreliableP{\ChannelR}{3}{1}{\LTwoA}{\ProposalC{10}{\ABC}}\ldots
     \comment{= \Proposer{5}}\\
 &\Or \SendUnreliableP{\ChannelS}{3}{1}{\LOneA}{\proposalNumber{1}{4}}.\SendUnreliableP{\ChannelS}{3}{2}{\LOneA}{\proposalNumber{1}{4}}\ldots \comment{= \Proposer{4}}\\
-&\Or \ReceiveUnreliableP{\ChannelS}{1}{3}{\LOneA}{\bot}{n'}.\mIf \ldots \comment{= \Acceptor{1}}\\
+&\Or \ReceiveUnreliableP{\ChannelS}{1}{3}{\LOneA}{\bot}{n'}.\If \ldots \comment{= \Acceptor{1}}\\
 &\Or \Paren{
-    \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.\mIf \ldots
+    \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.\If \ldots
     \Or \ReceiveWeaklyP{\ChannelR}{1}{3}{\BeginPaCont}
 } \comment{= \Acceptor{2}}\\
 &\Or
@@ -927,16 +927,16 @@ By applying $\RWsel$ once, $\RWbran$ twice we obtain:
     \SendUnreliableP{\ChannelS}{3}{1}{\LOneA}{\proposalNumber{1}{4}}.
     \SendUnreliableP{\ChannelS}{3}{2}{\LOneA}{\proposalNumber{1}{4}}\ldots
     \comment{= \Proposer{4}}\\
-&\Or \ReceiveUnreliableP{\ChannelS}{1}{3}{\LOneA}{\bot}{n'}.\mIf \ldots \comment{= \Acceptor{1}}\\
+&\Or \ReceiveUnreliableP{\ChannelS}{1}{3}{\LOneA}{\bot}{n'}.\If \ldots \comment{= \Acceptor{1}}\\
 &\Or \Paren{
-    \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.\mIf \ldots
-    \Or \ReceiveUnreliableP{\ChannelR}{1}{3}{\LTwoA}{\bot}{pr'}.\mIf \ldots
+    \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.\If \ldots
+    \Or \ReceiveUnreliableP{\ChannelR}{1}{3}{\LTwoA}{\bot}{pr'}.\If \ldots
 } \comment{= \Acceptor{2}}\\
 &\Or
     \ReceiveUnreliableP{\ChannelR}{2}{3}{\LTwoA}{\bot}{pr'}.
-    \mIf pr' = \bot
-    \;\mThen \End
-    \;\mElse \Paren{\mIf \ldots}
+    \If pr' = \bot
+    \;\Then \End
+    \;\Else \Paren{\If \ldots}
     \comment{= \Acceptor{3}}\\
 &\Or \InnerSessionQueues{\ChannelS}
 \Or \InnerSessionQueues{\ChannelR}
@@ -953,24 +953,22 @@ To do so we apply $\RUsend$ and $\RUget$ twice.
 \SendUnreliableP{\ChannelS}{3}{1}{\LOneA}{\proposalNumber{1}{4}}.
 \SendUnreliableP{\ChannelS}{3}{2}{\LOneA}{\proposalNumber{1}{4}}\ldots
 \comment{= \Proposer{4}}\\
-&\Or \ReceiveUnreliableP{\ChannelS}{1}{3}{\LOneA}{\bot}{n'}.\mIf \ldots \comment{= \Acceptor{1}}\\
+&\Or \ReceiveUnreliableP{\ChannelS}{1}{3}{\LOneA}{\bot}{n'}.\If \ldots \comment{= \Acceptor{1}}\\
 &\Or
     \Paren{
-        \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.\mIf \ldots
+        \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.\If \ldots
         \Or
-        \mIf \Paren{\ProposalC{10}{\ABC}} = \bot
-        \;\mThen \End
-        \Else{\Paren{
-            \mIf \ldots
-        }}
+        \If \Paren{\ProposalC{10}{\ABC}} = \bot
+        \;\Then \End
+        \;\Else \Paren{\If \ldots}
     } \comment{= \Acceptor{2}}\\
 &\Or
-    \mIf \Paren{\ProposalC{10}{\ABC}} = \bot
-    \;\mThen \End
-    \;\mElse \Paren{
-        \mIf \greaterEqual{10}{\NumberRegister_3}
-        \;\mThen \update{\ProposalRegister_3}{\Just{pr'}}\ldots
-        \;\mElse \End
+    \If \Paren{\ProposalC{10}{\ABC}} = \bot
+    \;\Then \End
+    \;\Else \Paren{
+        \If \greaterEqual{10}{\NumberRegister_3}
+        \;\Then \update{\ProposalRegister_3}{\Just{pr'}}\ldots
+        \;\Else \End
     }
     \comment{= \Acceptor{3}}\\
 &\Or \InnerSessionQueues{\ChannelS}
@@ -988,10 +986,10 @@ Then, we can apply $\RIfT$ to $\Acceptor{2}$ and $\Acceptor{3}$ because $\greate
 \SendUnreliableP{\ChannelS}{3}{1}{\LOneA}{\proposalNumber{1}{4}}.
 \SendUnreliableP{\ChannelS}{3}{2}{\LOneA}{\proposalNumber{1}{4}}\ldots
 \comment{= \Proposer{4}}\\
-&\Or \ReceiveUnreliableP{\ChannelS}{1}{3}{\LOneA}{\bot}{n'}.\mIf \ldots \comment{= \Acceptor{1}}\\
+&\Or \ReceiveUnreliableP{\ChannelS}{1}{3}{\LOneA}{\bot}{n'}.\If \ldots \comment{= \Acceptor{1}}\\
 &\Or
     \Paren{
-        \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.\mIf \ldots
+        \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.\If \ldots
         \Or
             \update{\ProposalRegister_2}{\Just{\Paren{\ProposalC{10}{\ABC}}}}.
             \update{\NumberRegister_2}{\Just{10}}.
@@ -1021,19 +1019,19 @@ $\Proposer{4}$ is the new leader.
 \comment{= \Proposer{4}}\\
 &\Or
     \ReceiveUnreliableP{\ChannelS}{1}{3}{\LOneA}{\bot}{n'}.
-    \mIf n' = \bot
-    \;\mThen \ldots
-    \;\mElse \Paren{
-        \mIf \greaterThan{n'}{\NumberRegister_1}
+    \If n' = \bot
+    \;\Then \ldots
+    \;\Else \Paren{
+        \If \greaterThan{n'}{\NumberRegister_1}
         \ldots
     }
     \comment{= \Acceptor{1}}\\
 &\Or
     \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.
-    \mIf n' = \bot
-    \;\mThen \ldots
-    \;\mElse \Paren{
-        \mIf \greaterThan{n'}{\NumberRegister_2}
+    \If n' = \bot
+    \;\Then \ldots
+    \;\Else \Paren{
+        \If \greaterThan{n'}{\NumberRegister_2}
         \ldots
     }
     \comment{= \Acceptor{2}}\\
@@ -1059,21 +1057,21 @@ We apply $\RUsend$ and $\RUget$ twice.
     \ldots
     \comment{= \Proposer{4}}\\
 &\Or
-    \mIf 5 = \bot
-    \;\mThen \ldots
-    \;\mElse \Paren{
-        \mIf \greaterThan{5}{\NumberRegister_1}
-        \;\mThen \update{\NumberRegister_1}{\Just{5}}\ldots
-        \;\mElse \ldots
+    \If 5 = \bot
+    \;\Then \ldots
+    \;\Else \Paren{
+        \If \greaterThan{5}{\NumberRegister_1}
+        \;\Then \update{\NumberRegister_1}{\Just{5}}\ldots
+        \;\Else \ldots
     }
     \comment{= \Acceptor{1}}\\
 &\Or
-    \mIf 5 = \bot
-    \;\mThen \ldots
-    \;\mElse \Paren{
-        \mIf \greaterThan{5}{\NumberRegister_2}
-        \;\mThen \ldots
-        \;\mElse
+    \If 5 = \bot
+    \;\Then \ldots
+    \;\Else \Paren{
+        \If \greaterThan{5}{\NumberRegister_2}
+        \;\Then \ldots
+        \;\Else
             \SendUnreliableP{\ChannelS}{2}{3}{\LOneB}{\Nack}.
             \PaTwo{\ChannelS, 2, 3, \NumberRegister_2, \ProposalRegister_2}
     }
@@ -1114,9 +1112,9 @@ Applying $\RUsend$ and $\RUget$ twice then yields:
 \begin{align*}
 &\mapstostar\NuChannels\big (\\
 &\Or
-    \mIf \anyNack{\VectorV} \tOr \promiseCount{\VectorV} < 2
-    \;\mThen \mSendWeaklyP{\ChannelS}{3}{\Curly{1, 2}}{\Restart}. \RecursionVariable
-    \;\mElse \ldots
+    \If \anyNack{\VectorV} \tOr \promiseCount{\VectorV} < 2
+    \;\Then \SendWeaklyP{\ChannelS}{3}{\Curly{1, 2}}{\Restart}. \RecursionVariable
+    \;\Else \ldots
     \comment{= \Proposer{4}}\\
 &\Or
     \ReceiveWeaklyP{\ChannelS}{1}{3}{
@@ -1141,7 +1139,7 @@ We apply $\RIfT$ to $\Proposer{4}$.
 \begin{align*}
 \mapstostar& \NuChannels \big (\\
 &
-    \mSendWeaklyP{\ChannelS}{3}{\Curly{1,2}}{\Restart}.
+    \SendWeaklyP{\ChannelS}{3}{\Curly{1,2}}{\Restart}.
     \Mu{\RecursionVariable}
     \update{\NumberRegister_4}{\NumberRegister_4 + 1}.
     \SendUnreliableP{\ChannelS}{3}{1}{\LOneA}{\proposalNumber{\NumberRegister_4}{4}}\ldots
@@ -1181,22 +1179,22 @@ $\Proposer{4}$ sends its decision to restart the algorithm to $\Acceptor{1}$ and
 &\Or
     \Mu{\RecursionVariable}
     \ReceiveUnreliableP{\ChannelS}{1}{3}{\LOneA}{\bot}{n'}.
-    \mIf n' = \bot
-    \;\mThen \ldots
-    \;\mElse
+    \If n' = \bot
+    \;\Then \ldots
+    \;\Else
         \Paren{
-            \mIf \greaterThan{n'}{\NumberRegister_1}
+            \If \greaterThan{n'}{\NumberRegister_1}
             \ldots
         }
     \comment{= \Acceptor{1}}\\
 &\Or
     \Mu{\RecursionVariable}
     \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.
-    \mIf n' = \bot
-    \;\mThen \ldots
-    \;\mElse
+    \If n' = \bot
+    \;\Then \ldots
+    \;\Else
         \Paren{
-            \mIf \greaterThan{n'}{\NumberRegister_2}
+            \If \greaterThan{n'}{\NumberRegister_2}
             \ldots
         }
     \comment{= \Acceptor{2}}\\
@@ -1222,19 +1220,19 @@ First, we apply $\RRec$ to each process and then $\RSideEffect$ to $\Proposer{4}
     \comment{= \Proposer{4}}\\
 &\Or
     \ReceiveUnreliableP{\ChannelS}{1}{3}{\LOneA}{\bot}{n'}.
-    \mIf n' = \bot
-    \;\mThen \ldots
-    \;\mElse \Paren{
-            \mIf \greaterThan{n'}{\NumberRegister_1}
+    \If n' = \bot
+    \;\Then \ldots
+    \;\Else \Paren{
+            \If \greaterThan{n'}{\NumberRegister_1}
             \ldots
         }
     \comment{= \Acceptor{1}}\\
 &\Or
     \ReceiveUnreliableP{\ChannelS}{2}{3}{\LOneA}{\bot}{n'}.
-    \mIf n' = \bot
-    \;\mThen \ldots
-    \;\mElse \Paren{
-        \mIf \greaterThan{n'}{\NumberRegister_2}
+    \If n' = \bot
+    \;\Then \ldots
+    \;\Else \Paren{
+        \If \greaterThan{n'}{\NumberRegister_2}
         \ldots
     }
     \comment{= \Acceptor{2}}\\
@@ -1255,7 +1253,7 @@ By applying $\RUsend$ twice in the remaining proposer and $\RUget$, $\RIfF$, and
 &
     \ReceiveUnreliableP{\ChannelS}{3}{1}{\LOneB}{\bot}{v_1}.
     \ReceiveUnreliableP{\ChannelS}{3}{2}{\LOneB}{\bot}{v_2}.
-    \mIf \ldots
+    \If \ldots
     \comment{= \Proposer{4}}\\
 &\Or
     \update{\NumberRegister_1}{\Just{15}}.
@@ -1281,10 +1279,10 @@ Twice more we apply $\RUsend$ and $\RUget$ to obtain:
 \begin{align*}
 \mapstostar& \NuChannels \big (\\
 &
-    \mIf \anyNack{\VectorV} \tOr \promiseCount{\VectorV} < 2
-    \;\mThen \ldots
-    \;\mElse
-        \mSendWeaklyP{\ChannelS}{3}{\Curly{1,2}}{\Accept}
+    \If \anyNack{\VectorV} \tOr \promiseCount{\VectorV} < 2
+    \;\Then \ldots
+    \;\Else
+        \SendWeaklyP{\ChannelS}{3}{\Curly{1,2}}{\Accept}
         \ldots
     \comment{= \Proposer{4}}\\
 &\Or
@@ -1312,7 +1310,7 @@ $\anyNack{\VectorV} \tOr \promiseCount{\VectorV} < 2$ evaluates to $\False$ and 
 \begin{align*}
 \mapstostar& \NuChannels \big (\\
 &
-    \mSendWeaklyP{\ChannelS}{3}{\Curly{1,2}}{\Accept}.
+    \SendWeaklyP{\ChannelS}{3}{\Curly{1,2}}{\Accept}.
     \SendUnreliableP{\ChannelS}{3}{1}{\LTwoA}{\ProposalC{15}{\ABC}}.
     \SendUnreliableP{\ChannelS}{3}{2}{\LTwoA}{\ProposalC{15}{\ABC}}.
     \End
@@ -1352,19 +1350,19 @@ First, we apply $\RWsel$ and $\RWbran$.
     \comment{= \Proposer{4}}\\
 &\Or
     \ReceiveUnreliableP{\ChannelS}{1}{3}{\LTwoA}{\bot}{pr'}.
-    \mIf pr' = \bot
-    \;\mThen \End
-    \;\mElse \Paren{
-        \mIf \greaterEqual{\nFromProposal{pr'}}{\NumberRegister_1}
+    \If pr' = \bot
+    \;\Then \End
+    \;\Else \Paren{
+        \If \greaterEqual{\nFromProposal{pr'}}{\NumberRegister_1}
         \ldots
     }
     \comment{= \Acceptor{1}}\\
 &\Or
     \ReceiveUnreliableP{\ChannelS}{2}{3}{\LTwoA}{\bot}{pr'}.
-    \mIf pr' = \bot
-    \;\mThen \End
-    \;\mElse \Paren{
-        \mIf \greaterEqual{\nFromProposal{pr'}}{\NumberRegister_2}
+    \If pr' = \bot
+    \;\Then \End
+    \;\Else \Paren{
+        \If \greaterEqual{\nFromProposal{pr'}}{\NumberRegister_2}
         \ldots
     }
     \comment{= \Acceptor{2}}\\
@@ -1379,21 +1377,21 @@ $\Proposer{4}$ terminates.
 \begin{align*}
 \mapstostar& \NuChannels \big (\\
 &
-    \mIf \Paren{\ProposalC{15}{\ABC}} = \bot
-    \;\mThen \End
-    \;\mElse \Paren{
-        \mIf \greaterEqual{15}{\NumberRegister_1}
-        \;\mThen \update{\ProposalRegister_1}{\Just{pr'}}\ldots
-        \;\mElse \End
+    \If \Paren{\ProposalC{15}{\ABC}} = \bot
+    \;\Then \End
+    \;\Else \Paren{
+        \If \greaterEqual{15}{\NumberRegister_1}
+        \;\Then \update{\ProposalRegister_1}{\Just{pr'}}\ldots
+        \;\Else \End
     }
     \comment{= \Acceptor{1}}\\
 &\Or
-    \mIf \Paren{\ProposalC{15}{\ABC}} = \bot
-    \;\mThen \End
-    \;\mElse \Paren{
-        \mIf \greaterEqual{15}{\NumberRegister_2}
-        \;\mThen \update{\ProposalRegister_2}{\Just{pr'}}\ldots
-        \;\mElse \End
+    \If \Paren{\ProposalC{15}{\ABC}} = \bot
+    \;\Then \End
+    \;\Else \Paren{
+        \If \greaterEqual{15}{\NumberRegister_2}
+        \;\Then \update{\ProposalRegister_2}{\Just{pr'}}\ldots
+        \;\Else \End
     }
     \comment{= \Acceptor{2}}\\
 &\Or \InnerSessionQueues{\ChannelS}
