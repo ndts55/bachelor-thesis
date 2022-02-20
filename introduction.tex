@@ -1,25 +1,58 @@
 \chapter{Introduction}
-In distributed systems components on different computers coordinate and communicate via message passing to achieve a common goal.
-Sometimes, to achieve this goal, the individual components need to reach consensus, \ie agree on the value of some data using a consensus algorithm.
-For example in state machine replication or when deciding which database transactions should be committed in what order.
-For such a distributed system to behave correctly the consensus algorithm needs to be correct.
-Thus, analyzing consensus algorithms is important.
+% - what the topic is: using ftmpst to analize Paxos (this one last leads to the next point)
+In this work we will use Fault-Tolerant Multiparty Session Types (\FTMPST) to model and analyze the Paxos consensus algorithm.
 
-To achieve consensus, consensus algorithms must satisfy the following properties: validity, agreement, and termination \cite{CoulourisEtal01}.
+% Topic and Context; What information should a reader have to grasp the thesis?
+% - quick explanation of what a distributed system is
+In distributed systems components on different computers coordinate and communicate via message passing to achieve a common goal.
+Sometimes, to achieve this goal, the individual components need to reach consensus, \ie agree on the value of some data.
+For example, in state machine replication or when deciding which database transactions should be committed in what order.
+
+% - quick explanation of consensus algorithms (mention validity, agreement, termination)
+Consensus algorithms solve this consensus problem.
+These algorithms must satisfy validity, agreement, and termination to achieve consensus among multiple agents \cite{CoulourisEtal01}.
+
+% - quick explanation of FTMPST (mention state-space explosion problem with model checking)
 Proving these properties can be complicated.
 Model checking tools lead to big state-spaces so static analysis is preferable.
 For static analysis Multiparty Session Types are particularly interesting because session typing can ensure protocol conformance and the absence of communication errors and deadlocks \cite{ScalasEtal18}.
 
-Due to the presence of faulty processes and unreliable communication consensus algorithms are designed to be fault-tolerant.
-% to better analyze we can't disregard fault-tolerance
-% so we need a fault-tolerant extension to MPST
-Modelling fault-tolerance is not possible using Multiparty Session Types, thus a fault-tolerant extension is necessary.
-\citeauthor{PetersEtal21} developed such an extension called Fault-Tolerant Multiparty Session Types (\FTMPST).
+Since agents and communication between agents may fail, consensus algorithms are designed to be fault-tolerant, but modelling fault-tolerance is not possible with Multiparty Session Types.
+\citeauthor{PetersEtal21} extended Multiparty Session Types with fault-tolerance to create \FTMPST.
 
-In this work we will use \FTMPST to analyze the consensus algorithm Paxos, as described in \cite{Lamport01}.
+% Scope and Focus; Which elements of the topic will be covered? It might be research gaps, queries, or issues.
+% Importance and Relevance; How your research work will contribute to the existing work on the same topic?
+% - practical application of FTMPST to a widely known consensus algorithm
+Our goal is to provide an example for a practical application of \FTMPST.
+% - we will model Paxos (as defined in Lamport01) using FTMPST (as defined in PetersEtAl21)
+Specifically, we will use \FTMPST to construct a model of Paxos as described by \citeauthor{Lamport01} in \cite{Lamport01}.
+% - we will prove validity, agreement, and termination for our model
+%   - we will partly achieve this with a type check of the model
+Then, we analyze our model and prove that it satisfies validity, agreement, and termination.
 
-% TODO talk about Paxos, overview of what it is and what it does
-% TODO give outline of the following chapters
+% Structure Overview; How will each chapter of the thesis contribute to the overarching goals?
+% - technical preliminaries
+%   - contain the material we need to understand later chapters
+First, we cover the technical preliminaries which consist of introductions to the Paxos algorithm, \FTMPST, and additions to the syntax and semantics of \FTMPST.
+
+% - model
+%   - contains the global type and processes, which model Paxos
+%   - to analyze a model we need to build one first
+Second, we introduce the model, including a global type, processes that execute the Paxos algorithm, and our system requirements.
+We also examine an example run of the model.
+
+% - analysis
+%   - type check
+%   - proofs for validity, agreement, termination
+Then, we analyze our model by type-checking it.
+This ensures the model is well-typed.
+We utilize well-typedness of our model to prove that it satisfies validity, agreement, and termination.
+
+% - conclusion
+%   - some insights into the disparities between our model and Paxos from Lamport01
+%   - maybe some critiques of the model?
+% TODO What do we conclude?
+Finally, we discuss <findings, something>.
 
 % \section{Task}
 % \IMRADlabel{methods}
