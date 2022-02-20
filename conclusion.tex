@@ -1,9 +1,22 @@
 \chapter{Conclusion}
-% Nochmal zusammenfassen was ich gemacht habe.
+% TODO Write conclusion.
+% Clearly state the answer to the main research question
+% Summarize and reflect on the research
+% Make recommendations for future work on the topic
+% Show what new knowledge you have contributed
 
-% Was fand ich bei der Modellierung schwierig?
-% einfach auflisten
+% summarize what we did in this thesis.
+% - presented Paxos (why Paxos? because it is basic Paxos. it is quintessential Paxos), FTMPST, additional syntax+semantics for FTMPST (which specifically? introduced "function calls as prefixes" to manipulate registers )
+% - constructed global type and processes
+% - presented an example run
+% - proven that processes fulfill the global type via type check
+% - proofs for validity, agreement, and termination for the model
 
-% Wie nah repräsentiert das Model den tatsächlichen Algorithmus? Welche Unterschiede gibt es zwischen dem Model und dem Algorithmus
-% - Vorschlag für further work
-% - vielleicht noch mehr Vorschläge für further work
+% what difficulties did we encounter when creating the model?
+% - working around the concept of a quorum made the model more complex
+% - without quorums (if every proposer just communicated with every acceptor) the processes (specifically system initialization) would be simpler
+
+% what could be future work?
+% - analyse how close the model is to the actual algorithm
+% - comparison with other models for the same algorithm
+% - extension of the model to include learners
