@@ -188,6 +188,7 @@ $\positionHelper{n}{c}{xs}$ and thus $\position{n}{xs}$ return $0$ in cases wher
 We observe that $1 \leq \position{n}{xs} \leq |xs|$ for every list $xs$ and $n \in xs$.
 
 \section{Processes}
+% TODO Summarize this section.
 \subsection{System Initialization}
 Let $\AcceptorCount$ and $\ProposerCount$ be the number of acceptors and proposers respectively.
 We require that $\AcceptorCount > 0$ and $\ProposerCount > 0$.
@@ -476,16 +477,14 @@ Otherwise, the proposer sends its proposal to the acceptors and terminates.
             \ProposalRegister_{\ProcessIndexJ}
         }
 \big )
-\end{align*}
-
-\begin{align*}
+\\\\
 \PaTwo{
     \SessionChannel,
     \AcceptorRole,
     \ProposerRole,
     \NumberRegister_{\ProcessIndexJ},
     \ProposalRegister_{\ProcessIndexJ}
-} =
+} =&
     \ReceiveWeaklyP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{
     \Accept.
         \PaThree{
@@ -499,7 +498,7 @@ Otherwise, the proposer sends its proposal to the acceptors and terminates.
     \oplus \Abort.\End
 }
 \end{align*}
-% TODO Convert this into just one align* to align on =? Only if PaTwo and PaThree are on one page.
+
 \begin{align*}
 \PaThree{
     \SessionChannel,
@@ -794,7 +793,7 @@ We apply $\RUsend$ and $\RUget$ twice to send $\proposalNumber{1}{5} = 10$ to $\
 % corresponds to (1)
 
 \begin{align*}
-&\mapstostar
+\mapstostar&
 \NuChannels \big (\\
 &\ReceiveUnreliableP{\ChannelR}{3}{1}{\LOneB}{\bot}{v_1}.\ReceiveUnreliableP{\ChannelR}{3}{2}{\LOneB}{\bot}{v_2}\ldots \comment{= \Proposer{5}}\\
 &\Or  \SendUnreliableP{\ChannelS}{3}{1}{\LOneA}{\proposalNumber{1}{4}}.\SendUnreliableP{\ChannelS}{3}{2}{\LOneA}{\proposalNumber{1}{4}}\ldots \comment{= \Proposer{4}}\\
@@ -948,7 +947,7 @@ Now $\Proposer{5}$ can send its proposal to $\Acceptor{2}$ and $\Acceptor{3}$ an
 To do so we apply $\RUsend$ and $\RUget$ twice.
 
 \begin{align*}
-&\mapstostar\NuChannels\big (\\
+\mapstostar&\NuChannels\big (\\
 &\Or
 \SendUnreliableP{\ChannelS}{3}{1}{\LOneA}{\proposalNumber{1}{4}}.
 \SendUnreliableP{\ChannelS}{3}{2}{\LOneA}{\proposalNumber{1}{4}}\ldots
@@ -981,7 +980,7 @@ Because $\Paren{\ProposalC{10}{\ABC}} = \bot$ evaluates to $\False$ we can apply
 Then, we can apply $\RIfT$ to $\Acceptor{2}$ and $\Acceptor{3}$ because $\greaterEqual{10}{\Just{10}}$ returns $\True$.
 
 \begin{align*}
-&\mapstostar\NuChannels\big (\\
+\mapstostar&\NuChannels\big (\\
 &\Or
 \SendUnreliableP{\ChannelS}{3}{1}{\LOneA}{\proposalNumber{1}{4}}.
 \SendUnreliableP{\ChannelS}{3}{2}{\LOneA}{\proposalNumber{1}{4}}\ldots
@@ -1012,7 +1011,7 @@ $\Proposer{4}$ is the new leader.
 % corresponds to (5)
 
 \begin{align*}
-&\mapstostar\NuChannels\big (\\
+\mapstostar&\NuChannels\big (\\
 &\Or
 \SendUnreliableP{\ChannelS}{3}{1}{\LOneA}{5}.
 \SendUnreliableP{\ChannelS}{3}{2}{\LOneA}{5}\ldots
@@ -1044,13 +1043,13 @@ At this point the registers hold the following values.
 
 \RegisterContent{$\Nothing$}{$\Just{10}$}{$\Just{10}$}{$1$}{$1$}{$\Nothing$}{$\Just{\Paren{\ProposalC{10}{\ABC}}}$}{$\Just{\Paren{\ProposalC{10}{\ABC}}}$}
 
-\subsubsection{Restarting The Algorithm}
+\subsubsection{Restarting the Algorithm}
 Next, $\Proposer{4}$ sends prepare requests with a proposal number less than $10$, which $\Acceptor{2}$ rejects.
 $\Proposer{4}$ then decides to restart the algorithm.
 We apply $\RUsend$ and $\RUget$ twice.
 
 \begin{align*}
-&\mapstostar\NuChannels\big (\\
+\mapstostar&\NuChannels\big (\\
 &\Or
     \ReceiveUnreliableP{\ChannelS}{3}{1}{\LOneB}{\bot}{v_1}.
     \ReceiveUnreliableP{\ChannelS}{3}{2}{\LOneB}{\bot}{v_2}.
@@ -1086,7 +1085,7 @@ We apply $\RIfF$ to $\Acceptor{2}$ again because $\greaterThan{5}{\Just{10}}$ re
 $\greaterThan{5}{\Nothing}$ returns $\True$, so we advance $\Acceptor{1}$ to its $\ThenName$ branch by applying $\RIfT$.
 
 \begin{align*}
-&\mapstostar\NuChannels\big (\\
+\mapstostar&\NuChannels\big (\\
 &\Or
     \ReceiveUnreliableP{\ChannelS}{3}{1}{\LOneB}{\bot}{v_1}.
     \ReceiveUnreliableP{\ChannelS}{3}{2}{\LOneB}{\bot}{v_2}.
@@ -1110,7 +1109,7 @@ We apply $\RSideEffect$ to $\Acceptor{1}$ to update its register $\NumberRegiste
 Applying $\RUsend$ and $\RUget$ twice then yields:
 
 \begin{align*}
-&\mapstostar\NuChannels\big (\\
+\mapstostar&\NuChannels\big (\\
 &\Or
     \If \anyNack{\VectorV} \tOr \promiseCount{\VectorV} < 2
     \;\Then \SendWeaklyP{\ChannelS}{3}{\Curly{1, 2}}{\Restart}. \RecursionVariable
@@ -1429,6 +1428,6 @@ With that, \Acceptor{1} and \Acceptor{2} have accepted \Proposer{4}'s proposal.
 
 The final values the registers contain are as follows.
 
-\RegisterContent{$\Just{15}$}{$\Just{15}$}{$\Just{10}$}{$2$}{$2$}{$\Just{\Paren{\ProposalC{15}{\ABC}}}$}{$\Just{\Paren{\ProposalC{15}{\ABC}}}$}{$\Just{\Paren{\ProposalC{10}{\ABC}}}$}
+\RegisterContent{$\Just{15}$}{$\Just{15}$}{$\Just{10}$}{$2$}{$1$}{$\Just{\Paren{\ProposalC{15}{\ABC}}}$}{$\Just{\Paren{\ProposalC{15}{\ABC}}}$}{$\Just{\Paren{\ProposalC{10}{\ABC}}}$}
 
 All acceptors have accepted the value $\ABC$.
