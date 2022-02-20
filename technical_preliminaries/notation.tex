@@ -1,12 +1,12 @@
 \section{Additional Notation}
-\subsection{Prefixes And Branches}
+\subsection{Prefixes and Branches}
 In \cite{PetersEtal21} the authors introduced notation for the construction of global types and processes.
 
 Let $ {\left( \bigodot_{1 \leq i \leq n} \pi_i \right)}.\GT $ abbreviate the sequence $ \pi_1.\ldots.\pi_n.\GT $ to simplify the presentation, where $ \GT \in \globalTypes $ is a global type and $ \pi_1, \ldots, \pi_n $ are sequences of prefixes. More precisely, each $ \pi_i $ is of the form $ \pi_{i, 1}.\ldots.\pi_{i, m} $ and each $ \pi_{i, j} $ is a type prefix of the form $ \GComUS{\Role_1}{\Role_2}{\Label}{\Sort} $ or $ \GBranW{\Role}{\Role[R]}{\Label_1.\LT_1 \oplus \ldots \oplus \Label_n.\LT_n \oplus \LabelD} $, where the latter case represents a \weakR branching prefix with the branches $ \Label_1, \ldots, \Label_n, \LabelD $, the default branch $ \LabelD $, and where the next global type provides the missing specification for the default case.
 
 Let $ \left( \bigodot_{1 \leq i \leq n} \pi_i \right).\PT $ abbreviate the sequence $ \pi_1.\ldots.\pi_n.\PT $, where $ \PT \in \processes $ is a process and $ \pi_1, \ldots, \pi_n $ are sequences of prefixes.
 
-\subsection{Function Calls As Prefixes}
+\subsection{Function Calls as Prefixes}
 % We extend ftmpst prefixes by function calls
 We extend \FTMPST by adding function calls as prefixes.
 These functions allow us to add side effects to our model.
