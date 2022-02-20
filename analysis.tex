@@ -1,5 +1,5 @@
 \chapter{Analysis}
-We take the model from the previous chapter, type check it, and discuss how we use the type check to prove agreement, validity, and termination for our model of the Paxos algorithm.
+We take the model from the previous chapter, type check it, and use the type check to prove agreement, validity, and termination for our model of the Paxos algorithm.
 To execute the type check we project the global type to local types and use the typing rules given in \cite{PetersEtal21}.
 
 \section{Local Types}
@@ -778,7 +778,7 @@ Since label $\LOneA$ is not used to transmit values that can be accepted, we con
 % all correct acceptors accept the same value
 We examine the flow of accepted values through the network to prove that only a single value is chosen.
 $\FPcrash$ guarantees that the set of correct acceptors in the quorum of any correct proposer $\ProcessIndexK$ is itself a quorum, \ie an accepting set that can choose a value \cite{Lamport06}.
-Should message loss occur in labels $\LOneA$ or $\LOneB$, $\ProcessIndexK$ restarts the algorithm.
+Should message loss occur in labels $\LOneA$ or $\LOneB$, $\ProcessIndexK$ broadcasts its decision to restart the algorithm.
 This broadcast is weakly reliable and thus only fails if $\ProcessIndexK$ crashes because $\FPwskip$ disallows suspicion of correct proposers by acceptors.
 Given the definition of $\promiseValueName$, $\ProcessIndexK$ will only propose a fresh value if it has not received any accepted proposals from an acceptor.
 
@@ -830,3 +830,10 @@ The proposal is accepted by a majority of acceptors and thus, a value is chosen.
 The distinguished proposer and the corresponding subprocesses of the acceptors in its quorum terminate.
 The process repeats with the next distinguished proposer, if any.
 Every subprocess of an acceptor corresponding to a crashed proposer can skip the weakly reliable broadcast and terminate.
+
+\subsection{Result}
+The preceding proofs show that our model satisfies validity, agreement, and termination.
+Regarding validity and termination, the type check assures the absence of communication mismatches.
+To prove validity, we only need to examine the data flow of the accepted values to finish the proof.
+For termination, we show that the implementation eventually exits the loop, given our system requirements, \ie the failure detectors and implementations of the failure patterns.
+Agreement follows from the data flow of accepted values, overlapping quorums, and the way a proposer chooses a proposal value.

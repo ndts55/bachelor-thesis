@@ -4,10 +4,21 @@
 % Summarize and reflect on the research
 % Make recommendations for future work on the topic
 % Show what new knowledge you have contributed
+In this work we have provided a practical example of a static analysis of Paxos using \FTMPST.
+
+% Was habe ich gemacht? Wieso habe ich das gemacht? Was hat mir das gebracht?
 
 % summarize what we did in this thesis.
-% - presented Paxos (why Paxos? because it is basic Paxos. it is quintessential Paxos), FTMPST, additional syntax+semantics for FTMPST (which specifically? introduced "function calls as prefixes" to manipulate registers )
-% - constructed global type and processes
+% - presented Paxos (why Paxos? because it is basic Paxos. it is quintessential Paxos), FTMPST, additional syntax+semantics for FTMPST (which specifically? introduced "function calls as prefixes" to manipulate registers)
+First, we introduced Paxos and \FTMPST.
+For the specification of Paxos we chose \cite{Lamport01} because in it \citeauthor{Lamport01} describes the most basic form of the Paxos algorithm.
+Paxos is designed to solve the consensus problem in a network where processes or their communications may experience failures.
+To model the fault-tolerance of Paxos we used \FTMPST.
+Multiparty Session Types extended to include fault-tolerance.
+
+We extended \FTMPST with function calls as prefixes to model side effects, \eg updating a register.
+
+% - defined: sorts, global type, functions, processes, failure patterns
 % - presented an example run
 % - proven that processes fulfill the global type via type check
 % - proofs for validity, agreement, and termination for the model

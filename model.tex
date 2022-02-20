@@ -188,7 +188,10 @@ $\positionHelper{n}{c}{xs}$ and thus $\position{n}{xs}$ return $0$ in cases wher
 We observe that $1 \leq \position{n}{xs} \leq |xs|$ for every list $xs$ and $n \in xs$.
 
 \section{Processes}
-% TODO Summarize this section.
+In this section we define the processes to model Paxos.
+We start with the system initialization, which contains the session initialization and starts the proposers and acceptors with the correct arguments.
+Next, we define the proposer and acceptor processes, which model the Paxos algorithm itself.
+
 \subsection{System Initialization}
 Let $\AcceptorCount$ and $\ProposerCount$ be the number of acceptors and proposers respectively.
 We require that $\AcceptorCount > 0$ and $\ProposerCount > 0$.
