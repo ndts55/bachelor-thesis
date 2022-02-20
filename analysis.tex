@@ -50,7 +50,7 @@ We can see that the proposer communicates with all acceptors in its quorum in ev
     \Mu{\RecursionVariableType}
     \ReceiveUnreliableL{\ProposerRole}{\LOneA}{\mathbb{N}} .
     \SendUnreliableL{\ProposerRole}{\LOneB}{\Promise{\Value}} .
-&\IndexedGlobalTypeProjection{\ProcessIndexK}{\UnusedRole} = \End\\
+    \\
 &
     \ReceiveWeaklyL{\ProposerRole}{
         \Accept .
@@ -60,7 +60,8 @@ We can see that the proposer communicates with all acceptors in its quorum in ev
             \RecursionVariableType
         ,\Abort .
             \End
-    }{\Abort}
+    }{\Abort}\\\\
+\IndexedGlobalTypeProjection{\ProcessIndexK}{\UnusedRole} =&\; \End
 \end{align*}
 
 $\IndexedGlobalTypeProjection{\ProcessIndexK}{\AcceptorRole}$ defines the local type for acceptors contained in the proposer's quorum $\AQ_{\ProposerRole}$.
@@ -718,14 +719,14 @@ To keep this proof tree readable we continue the proof of the remaining branch i
 Finally, we apply $\RSideEffect$ twice and $\REnd$ once.
 This concludes the type check and proves that the model is well-typed.
 
-\section{Validity, Agreement, Termination}
+\section{Validity, Agreement, and Termination}
 % Validity
 %% Only a value that has been proposed may be chosen,
 % Agreement
 %% Only a single value is chosen, and
 % Termination
 %% If a value has been proposed and sufficient processes remain non-faulty, then eventually some value is chosen (compare to \cite{Lamport05}).
-Finally, we can prove \textbf{Validity}: only a value that has been proposed may be chosen \cite{Lamport01}, \textbf{Agreement}: only a single value is chosen \cite{Lamport01}, and \textbf{Termination}: if a value has been proposed and sufficient processes remain non-faulty, then eventually some value is chosen (compare to \cite{Lamport06}).
+Finally, we can prove \textbf{Validity}: only a value that has been proposed may be chosen \cite{Lamport01}, \textbf{Agreement}: only a single value is chosen \cite{Lamport01}, and \textbf{Termination}: if a value has been proposed and sufficient processes remain non-faulty, then eventually some value is chosen (compare to \cite{Lamport05}).
 
 \subsection{Validity}
 %%%%%
@@ -827,6 +828,5 @@ The decision to send a proposal as well as the proposal itself are received by e
 These messages can not be lost due to the weakly reliable branching and our implementation of $\FPml$ for label $\LTwoA$.
 The proposal is accepted by a majority of acceptors and thus, a value is chosen.
 The distinguished proposer and the corresponding subprocesses of the acceptors in its quorum terminate.
-
 The process repeats with the next distinguished proposer, if any.
 Every subprocess of an acceptor corresponding to a crashed proposer can skip the weakly reliable broadcast and terminate.
