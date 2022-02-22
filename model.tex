@@ -1,5 +1,5 @@
 \chapter{Model}
-First, we specify some sorts with which we can then define the global type.
+First, we specify some sorts that are used to define the global type.
 Afterwards, we define the processes for the proposer and the acceptor.
 Finally, we will study an example run of the model.
 
@@ -54,7 +54,7 @@ In the second case it is of the form $\Nack$.
 Since each proposer initiates its own session the global type can be defined for one proposer $\ProcessIndexK$ and a corresponding quorum $\AQ_{\ProcessIndexK}$.
 Let $\ProposerRole = |\AQ_{\ProcessIndexK}| + 1$ and $\QRoles = \Curly{1,\ldots,|\AQ_{\ProcessIndexK}|}$.
 
-The last phase of Paxos contains no inter-process communication, so it is not modeled in the global type.
+The last phase of Paxos contains no inter-process communication, so it is not modelled in the global type.
 
 We observe that the proposer of a session always uses the highest role $\ProposerRole$ in its session and communicates with all roles from $1$ to $\ProposerRole - 1$.
 
@@ -167,8 +167,9 @@ $\nFromProposal{p}$, $\greaterThan{a}{ma}$, and $\greaterEqual{a}{ma}$ are used 
 
 $\genAq{\ProposerRole}{\AcceptorCount}{\ProposerCount}$ returns a randomly selected set $\AQ$ with $\AQ \subseteq A = \Curly{1, \ldots, \AcceptorCount}$ and $|\AQ| > \frac{|A|}{2}$ as a sorted list.
 $\AQ$ consists of any majority of acceptors.
-In Paxos a majority of acceptors forms a quorum, \ie an accepting set with which a value can be chosen \cite{Lamport06}.
-We use this function when initiating the proposers to give them a quorum with which they communicate.
+In Paxos a majority of acceptors forms a quorum, \ie an accepting set that can choose a value \cite{Lamport06}.
+We use this function to define a quorum corresponding to a proposer.
+The proposer then communicates with the acceptors in its quorum.
 
 \begin{align*}
 &\positionHelperName : \mathbb{N} \times \mathbb{N} \times \List{\mathbb{N}} \to \mathbb{N}\\
@@ -500,9 +501,7 @@ Otherwise, the proposer sends its proposal to the acceptors and terminates.
     \oplus \Restart.\RecursionVariable
     \oplus \Abort.\End
 }
-\end{align*}
-
-\begin{align*}
+\\\\
 \PaThree{
     \SessionChannel,
     \AcceptorRole,
