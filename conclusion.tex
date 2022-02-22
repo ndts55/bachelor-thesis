@@ -1,33 +1,92 @@
 \chapter{Conclusion}
-% TODO Write conclusion.
 % Clearly state the answer to the main research question
 % Summarize and reflect on the research
 % Make recommendations for future work on the topic
 % Show what new knowledge you have contributed
 In this work we have provided a practical example of a static analysis of Paxos using \FTMPST.
-
 % Was habe ich gemacht? Wieso habe ich das gemacht? Was hat mir das gebracht?
 
+\section{Summary}
 % summarize what we did in this thesis.
 % - presented Paxos (why Paxos? because it is basic Paxos. it is quintessential Paxos), FTMPST, additional syntax+semantics for FTMPST (which specifically? introduced "function calls as prefixes" to manipulate registers)
 First, we introduced Paxos and \FTMPST.
 For the specification of Paxos we chose \cite{Lamport01} because in it \citeauthor{Lamport01} describes the most basic form of the Paxos algorithm.
 Paxos is designed to solve the consensus problem in a network where processes or their communications may experience failures.
-To model the fault-tolerance of Paxos we used \FTMPST.
-Multiparty Session Types extended to include fault-tolerance.
+To model the fault-tolerance of Paxos we used \FTMPST, which are Multiparty Session Types extended with fault-tolerance.
 
-We extended \FTMPST with function calls as prefixes to model side effects, \eg updating a register.
+We extended \FTMPST with function calls as prefixes to model side effects, \eg updating a register and introduced notation to abbreviate sequences of prefixes and weakly reliable branches.
+Additionally, we specified a notation for defining sorts with type parameters.
 
-% - defined: sorts, global type, functions, processes, failure patterns
-% - presented an example run
-% - proven that processes fulfill the global type via type check
-% - proofs for validity, agreement, and termination for the model
+% - model: sorts, global type, functions, processes, failure patterns
+%   - sorts: defined data types (sorts). explicit data types for the concepts used in Paxos. used in definition of global type. Bool, Maybe, Proposal, Promise (defined above)
+The sorts $\Bool$, $\Maybe{\TypeParamA}$, $\Proposal{\TypeParamA}$, and $\Promise{\TypeParamA}$ are introduced.
+These represent data types used in the global type and processes.
 
-% what difficulties did we encounter when creating the model?
-% - working around the concept of a quorum made the model more complex
-% - without quorums (if every proposer just communicated with every acceptor) the processes (specifically system initialization) would be simpler
+%   - global type: defined global type for session with one proposer and a quorum of acceptors. considers more precisely what Lamport described in Lamport01 (one proposer + n acceptors). global type required for local types (required for type check).
+Next, we specified the global type for a session with one proposer and a quorum.
+This mirrors the phases $\POneA$, $\POneB$ and $\PTwoA$ described in \cite{Lamport01}.
+Phase $\PTwoB$ is not modelled in the global type because it contains no inter-process communication.
+The global type can be projected to local types, which are needed for the type check.
 
-% what could be future work?
+%   - functions: defined functions.
+To construct the processes some functions are introduced.
+%       - model some aspect of Paxos, specifically aspects that were assumed in Lamport01
+%       - propNumber: models disjoint sets of proposal numbers for proposers
+%       - promValue: models picking the proposal with the highest proposal number
+%       - anyNack, promCount: model evaluation of the gathered responses from phase 1b
+%       - genQ: models construction of random quorums from the set of acceptors
+Some model various aspects of the algorithm, \eg picking proposal numbers from disjoint sets of numbers, picking a proposal value from a list of promises, evaluating lists of promises, and generating sets of acceptors that constitute a quorum.
+%       - gt, ge: variants of > and >= where one argument is of type Maybe a
+%       - nFromProp: allows access to the proposal number of a proposal
+Others allowed us to simplify working with the specified structure of the sorts in the processes, \ie accessing internal values and comparing values of different sorts.
+%       - pos, posRec: models the role selection of an acceptor within a quorum
+One more function was introduced to correctly assign roles to processes within a session.
+
+%   - processes: defined processes for system init, proposer, acceptor. execute the Paxos algorithm. type check requires something to type check, this is it.
+With these functions we defined processes for system initialization, proposers, and acceptors.
+
+Each process is assigned a process index.
+An acceptor subprocess only accepts a proposer's session request if its process index is in that proposer's quorum.
+However, the process index is not the role the acceptor subprocess has in that session.
+So, we mapped the process index of each acceptor subprocess to its position within the corresponding proposer's quorum to obtain its role.
+This way proposers only communicate with acceptors inside their quorum, and we avoid communication mismatches.
+
+Including quorums in our model raised the complexity of the system initialization specifically.
+Otherwise, if all proposers communicated with all acceptors the process index would equal that process' role in a session.
+
+The processes for proposers and acceptors followed directly from the description of the Paxos algorithm and the global type.
+
+%   - failure patterns: implemented failure patterns. model system requirements. proof for termination requires these system requirements.
+The system requirements were modelled in \FTMPST using failure patterns.
+We used the failure patterns to prove termination for our model.
+
+%   - presented an example run: show how the model works. presentation of how the model works.
+In order to demonstrate how the model works we examined an example run with three acceptors and two proposers.
+We described a scenario where one proposer completes the algorithm and another tries to run the algorithm and fails but retries and succeeds.
+Then, we applied the appropriate reduction rules to the formulae.
+
+% - analysis: projected global types to local types, type check, proofs for validity, agreement, termination
+Finally, After defining and studying an example run of our model, we analyze it with the goal of proving validity, agreement, and termination.
+%   - projected global types to local types. local types required for type check. enables us to do type check.
+%   - executed type check. checks that the communication structure of our process follows the communication structure in the global type. type check ensures absence of communication mismatches.
+To prove these properties we ensured our model is well-typed by type checking it.
+To execute the type check we projected the global type to local types first.
+%   - proofs for validity, agreement, termination. satisfaciton of our goal
+Using well-typedness of our model we proved validity, agreement, and termination.
+This satisfies our goal of analyzing Paxos with \FTMPST.
+
+\section{Future Work}
 % - analyse how close the model is to the actual algorithm
-% - comparison with other models for the same algorithm
-% - extension of the model to include learners
+% disparities between Paxos phases and global type:
+There are two notable differences between the global type and Paxos.
+% - l1b: an acceptor that never received a message from the proposer would not send a message to the proposer
+First, in phase $\POneB$ of Paxos only acceptors that received a prepare request send a message to the proposer, whereas in the global type all acceptors in the session send a message to the proposer.
+% - l2a: split into two messages (branching and if Accept the proposal) where in Paxos it would just be one (but that wouldn't allow us to terminate a process because we would always have to restart the algorithm)
+Second, the global type splits phase $\PTwoA$ into two messages.
+A weakly reliable branching to broadcast the proposers decision about whether to restart the algorithm or send an accept request and the accept request itself.
+In Paxos the proposer does not inform the acceptors of its decision to restart or send an accept request.
+Future research is needed to assess how close the model is to the Paxos algorithm and how it could be improved.
+
+Another question for future work would be how our model compares to a different model of the same algorithm.
+We chose to define the global type for a single proposer and its quorum.
+An alternative solution might define the global type for all proposers and acceptors and have them participate in the same session.
