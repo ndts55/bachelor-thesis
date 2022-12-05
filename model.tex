@@ -1,4 +1,5 @@
 \chapter{Model}
+\label{chapter:model}
 First, we specify some sorts that are used to define the global type.
 Afterwards, we define the processes for the proposer and the acceptor.
 Finally, we will study an example run of the model.
@@ -90,9 +91,11 @@ We observe that the proposer of a session always uses the highest role $\Propose
 We can distinguish the individual phases of the Paxos algorithm by the labels $\LOneA$, $\LOneB$, and $\LTwoA$.
 
 In the first two steps, $\POneA$ and $\POneB$, the proposer sends its proposal number to each acceptor in $\AQ_{\ProposerRole}$ and listens for their responses.
-In step $\PTwoA$ the proposer decides whether to send an $\Accept$ or $\Restart$ message to restart the algorithm.
-This decision is broadcast to all acceptors in $\AQ_{\ProposerRole}$.
-Should the proposer crash the algorithm ends for this particular proposer and the subprocesses of the acceptors in its quorum.
+In step $\PTwoA$ the proposer decides whether to send an $\Accept$ or $\Restart$ message.
+This decision is broadcast to all roles in $\QRoles$.
+After sending an $\Accept$ message the proposer sends its proposal to all roles in $\QRoles$ and terminates.
+By sending a $\Restart$ message the proposer restarts the algorithm.
+Should the proposer crash, the algorithm ends for this particular proposer and the subprocesses of the acceptors in its quorum.
 
 \section{Functions}
 We define some functions which we use in the next section to define the processes.
@@ -101,18 +104,37 @@ We define some functions which we use in the next section to define the processe
 
 $\proposalNumber{\NumberRegister}{p}$ returns a proposal number for proposer $p$ when given a natural number $n$.
 It is used to pick a number for the prepare request in phase $\POneA$, which is also used in phase $\PTwoA$ in the actual proposal.
-We have two requirements for this function.
+We have two requirements for this function:
 
 Let $\SetOfProposers$ be the set of proposers.
 
-\[\forall p,q \in \SetOfProposers . \forall n,m \in \mathbb{N}: p \neq q \to \proposalNumber{\NumberRegister}{p} \neq \proposalNumber{m}{q}\]
-
-Different proposers pick their proposal numbers from disjoint sets of numbers.
+\begin{enumerate}
+    \item $\forall p,q \in \SetOfProposers . \forall n,m \in \mathbb{N}: p \neq q \to \proposalNumber{n}{p} \neq \proposalNumber{m}{q}$
+    
+    Different proposers pick their proposal numbers from disjoint sets of numbers.
 This way different proposers never issue a proposal with the same proposal number.
+\\
+    \item $\forall p \in \SetOfProposers . \forall n,m \in \mathbb{N}: n > m \to \proposalNumber{n}{p} > \proposalNumber{m}{p}$
+    
+    We require $\proposalNumber{n}{p}$ to be strictly increasing for each proposer $p$ so every proposer uses a higher proposal number than any it has already used.
+\end{enumerate}
 
-\[\forall p \in \SetOfProposers . \forall n,m \in \mathbb{N}: n > m \to \proposalNumber{\NumberRegister}{p} > \proposalNumber{m}{p}\]
+% % \[\forall p,q \in \SetOfProposers . \forall n,m \in \mathbb{N}: p \neq q \to \proposalNumber{\NumberRegister}{p} \neq \proposalNumber{m}{q}\]
 
-We require $\proposalNumber{\NumberRegister}{p}$ to be strictly increasing for each proposer $p$ so every proposer uses a higher proposal number than any it has already used.
+% \begin{equation}
+%     \forall p,q \in \SetOfProposers . \forall n,m \in \mathbb{N}: p \neq q \to \proposalNumber{n}{p} \neq \proposalNumber{m}{q}
+% \end{equation}
+
+% Different proposers pick their proposal numbers from disjoint sets of numbers.
+% This way different proposers never issue a proposal with the same proposal number.
+
+% % \[\forall p \in \SetOfProposers . \forall n,m \in \mathbb{N}: n > m \to \proposalNumber{n}{p} > \proposalNumber{m}{p}\]
+
+% \begin{equation}
+%     \forall p \in \SetOfProposers . \forall n,m \in \mathbb{N}: n > m \to \proposalNumber{n}{p} > \proposalNumber{m}{p}
+% \end{equation}
+
+% We require $\proposalNumber{n}{p}$ to be strictly increasing for each proposer $p$ so every proposer uses a higher proposal number than any it has already used.
 
 \[\promiseValueName : \List{\Promise{a}} \to a\]
 
@@ -689,7 +711,7 @@ $\NumberRegister_4$ and $\NumberRegister_5$ hold a value of type $\mathbb{N}$.
 $\ProposalRegister_1$, $\ProposalRegister_2$, and $\ProposalRegister_3$ hold a value of type $\Maybe{\Paren{\Proposal{\Value}}}$.
 $\NumberRegister_{\ProcessIndexJ}$ and $\ProposalRegister_{\ProcessIndexJ}$ correspond to acceptor $\Acceptor{\ProcessIndexJ}$ for $\ProcessIndexJ \in \Curly{1, 2, 3}$.
 $\NumberRegister_{\ProcessIndexK}$ corresponds to proposer $\Proposer{\ProcessIndexK}$ for $\ProcessIndexK \in \Curly{4, 5}$.
-We set the following initial values.
+We set the following initial values:
 
 \RegisterContent{$\Nothing$}{$\Nothing$}{$\Nothing$}{$0$}{$0$}{$\Nothing$}{$\Nothing$}{$\Nothing$}
 
@@ -723,7 +745,7 @@ After inserting $\AcceptorCount$ and $\ProposerCount$ and applying $\RInit$ once
     \Or
     \If 1 \notin \Curly{2, 3}
     \;\Then \End
-    \Else \ldots
+    \;\Else \ldots
 } \comment{= \Acceptor{1}}\\
 &\Or \Paren{
     \If 2 \notin \Curly{1, 2}
@@ -1041,7 +1063,7 @@ $\Proposer{4}$ is the new leader.
 \big )
 \end{align*}
 
-At this point the registers hold the following values.
+At this point the registers hold the following values:
 
 \RegisterContent{$\Nothing$}{$\Just{10}$}{$\Just{10}$}{$1$}{$1$}{$\Nothing$}{$\Just{\Paren{\ProposalC{10}{\ABC}}}$}{$\Just{\Paren{\ProposalC{10}{\ABC}}}$}
 
@@ -1204,7 +1226,7 @@ $\Proposer{4}$ sends its decision to restart the algorithm to $\Acceptor{1}$ and
 \big )
 \end{align*}
 
-At this point the registers hold the following values.
+At this point the registers hold the following values:
 
 \RegisterContent{$\Just{5}$}{$\Just{10}$}{$\Just{10}$}{$1$}{$1$}{$\Nothing$}{$\Just{\Paren{\ProposalC{10}{\ABC}}}$}{$\Just{\Paren{\ProposalC{10}{\ABC}}}$}
 
@@ -1428,7 +1450,7 @@ With that, \Acceptor{1} and \Acceptor{2} have accepted \Proposer{4}'s proposal.
 % A3: n=10, pr=Proposal 10 abc
 \[\mapstostar \NuChannels \End\]
 
-The final values the registers contain are as follows.
+The final values the registers contain are as follows:
 
 \RegisterContent{$\Just{15}$}{$\Just{15}$}{$\Just{10}$}{$2$}{$1$}{$\Just{\Paren{\ProposalC{15}{\ABC}}}$}{$\Just{\Paren{\ProposalC{15}{\ABC}}}$}{$\Just{\Paren{\ProposalC{10}{\ABC}}}$}
 

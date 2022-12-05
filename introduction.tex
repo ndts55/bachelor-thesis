@@ -1,7 +1,4 @@
 \chapter{Introduction}
-% - what the topic is: using ftmpst to analize Paxos (this one last leads to the next point)
-In this work we use Fault-Tolerant Multiparty Session Types (\FTMPST) to model and analyze the Paxos consensus algorithm.
-
 % Topic and Context; What information should a reader have to grasp the thesis?
 % - quick explanation of what a distributed system is
 In distributed systems components on different computers coordinate and communicate via message passing to achieve a common goal.
@@ -18,8 +15,9 @@ Model checking tools lead to big state-spaces so static analysis is preferable.
 For static analysis Multiparty Session Types are particularly interesting because session typing can ensure protocol conformance and the absence of communication errors and deadlocks \cite{ScalasEtal18}.
 
 Since agents and communication between agents may fail, consensus algorithms are designed to be fault-tolerant, but modelling fault-tolerance is not possible with Multiparty Session Types.
-\citeauthor{PetersEtal21} extended Multiparty Session Types with fault-tolerance to create \FTMPST.
+\citeauthor{PetersEtal21} extended Multiparty Session Types with fault-tolerance to create Fault-Tolerant Multiparty Session Types (\FTMPST) \cite{PetersEtal21}.
 
+% - what the topic is: using ftmpst to analize Paxos (this one last leads to the next point)
 % Scope and Focus; Which elements of the topic will be covered? It might be research gaps, queries, or issues.
 % Importance and Relevance; How your research work will contribute to the existing work on the same topic?
 % - practical application of FTMPST to a widely known consensus algorithm
@@ -33,35 +31,20 @@ Then, we analyze our model and prove that it satisfies validity, agreement, and 
 % Structure Overview; How will each chapter of the thesis contribute to the overarching goals?
 % - technical preliminaries
 %   - contain the material we need to understand later chapters
-First, we cover the technical preliminaries which consist of introductions to the Paxos algorithm, \FTMPST, and additions to the syntax and semantics of \FTMPST.
+First, we cover the technical preliminaries in \autoref{chapter:technicalpreliminaries} which consist of introductions to the Paxos algorithm, \FTMPST, and additions to the syntax and semantics of \FTMPST.
 
 % - model
 %   - contains the global type and processes, which model Paxos
 %   - to analyze a model we need to build one first
-Second, we introduce the model, including a global type, processes that execute the Paxos algorithm, and our system requirements.
+Second, we introduce the model in \autoref{chapter:model}, including a global type, processes that execute the Paxos algorithm, and our system requirements.
 We also examine an example run of the model.
 
 % - analysis
 %   - type check
 %   - proofs for validity, agreement, termination
-Then, we analyze our model by type checking it.
+Then, we analyze our model in \autoref{chapter:analysis} by type checking it.
 This ensures the model is well-typed.
 We utilize well-typedness of our model to prove that it satisfies validity, agreement, and termination.
 
 % - conclusion
-Finally, we summarize our work, reason about the choices we made, and present possible topics for future research.
-
-% \section{Task}
-% \IMRADlabel{methods}
-% The task for the upcoming work can be split into two subtasks.
-% First, fault-tolerant Multiparty Session Types\cite{PetersEtal21} are used for the analysis of Paxos\cite{Lamport01}.
-% Second, the applicability of fault-tolerant Multiparty Session Types to such analyses is evaluated.
-
-% For the first subtask a model of the Paxos algorithm will be constructed.
-% This model will be manually verified using the reduction rules for (fault-tolerant) Multiparty Session Types\cite{HondaYoshidaCarbone08,PetersEtal21}.
-
-% The second part will be an evaluation of the applicability of fault-tolerant Multiparty Session Types to such analyses.
-% Both the model and its verification from the previous part are evaluated to determine how well fault-tolerant Multiparty Session Types are suited to real-world analyses.
-
-% \section{Possible difficulties}
-% \IMRADlabel{results}
+Finally, we summarize our work in \autoref{chapter:conclusion}, reason about the choices we made, and present possible topics for future research.

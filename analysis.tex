@@ -1,4 +1,5 @@
 \chapter{Analysis}
+\label{chapter:analysis}
 We take the model from the previous chapter, type check it, and use the type check to prove agreement, validity, and termination for our model of the Paxos algorithm.
 To execute the type check we project the global type to local types and use the typing rules given in \cite{PetersEtal21}.
 
@@ -98,7 +99,7 @@ Note that $0 < \ProposerCount < \AcceptorCount + \ProposerCount$ because $\Accep
 Thus, $\GEnvEntry{\ProposerCount}{\mathbb{N}}\in\Gamma$.
 
 We start the type check with the global environment $\Gamma$ and the entry point of the model $\Sys{\AcceptorCount}{\ProposerCount}$.
-Then, we apply the typing rules in \cite{PetersEtal21} in a proof tree and show that the model can be derived from the axioms $\RVar$ and $\REnd$.
+Then, we apply the typing rules in \cite{PetersEtal21} in a proof tree and show that the processes can be derived from the axioms $\RVar$ and $\REnd$.
 
 \subsection{System Initialization}
 % (S0)
@@ -318,7 +319,7 @@ In order to shorten the proposer's process we define some variables.
 \begin{align*}
 &e = \anyNack{\VectorV} \tOr \Paren{\promiseCount{\VectorV} < \ceil{\frac{\AcceptorCount + 1}{2}}}\\
 &pn = \proposalNumber{\NumberRegister_{\ProcessIndexK}}{\ProcessIndexK}\\
-&prop = \ProposalC{\Big ( \proposalNumber{\NumberRegister_{\ProcessIndexK}}{\ProcessIndexK} \Big )}{\Paren{\promiseValue{\VectorV}}}
+&prop = \ProposalC{\Big ( pn \Big )}{\Paren{\promiseValue{\VectorV}}}
 \end{align*}
 
 We observe that $\GammaSatisfiesType{e}{\Bool}$, $\GammaSatisfiesType{pn}{\mathbb{N}}$, and $\GammaSatisfiesType{prop}{\Proposal{\Value}}$.
@@ -508,7 +509,7 @@ With $\Pa{gt}{
 } =
 &
     \Mu{\RecursionVariable}
-    \ReceiveUnreliableP{\SessionChannel}{\ProposerRole}{\AcceptorRole}{\LOneA}{\bot}{n'}.\\
+    \ReceiveUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneA}{\bot}{n'}.\\
 &
     \If n'=\bot\\
 &
@@ -575,13 +576,13 @@ $\GammaXNP$ adds type $\Proposal{\Value}$ for $pr'$.
 
 \RightLabel{$\RUget$}
 \UnaryInfC{$\GammaX \vdash
-    \ReceiveUnreliableP{\SessionChannel}{\ProposerRole}{\AcceptorRole}{\LOneA}{\bot}{n'}.
+    \ReceiveUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneA}{\bot}{n'}.
     \If n'=\bot \ldots
     \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\ReceiveUnreliableL{\ProposerRole}{\LOneA}{\mathbb{N}}.\TaOneB}$}
 
 \LeftLabel{$\AcceptorProofOne =$}
 \RightLabel{$\RRec$}
-\UnaryInfC{$\Gamma\vdash \Mu{\RecursionVariable} \ReceiveUnreliableP{\SessionChannel}{\ProposerRole}{\AcceptorRole}{\LOneA}{\bot}{n'}.\ldots \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\Mu{\RecursionVariableType}\ReceiveUnreliableL{\ProposerRole}{\LOneA}{\mathbb{N}}.\ldots}$}
+\UnaryInfC{$\Gamma\vdash \Mu{\RecursionVariable} \ReceiveUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LOneA}{\bot}{n'}.\ldots \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\Mu{\RecursionVariableType}\ReceiveUnreliableL{\ProposerRole}{\LOneA}{\mathbb{N}}.\ldots}$}
 \end{prooftree}
 After applying $\RAcc$ in $\SysProof{3}$ the session environment contains the acceptor's local type $\IndexedGlobalTypeProjection{\ProcessIndexK}{\AcceptorRole}$.
 We apply $\RRec$ and $\RUget$ and the split the proof tree with $\RIf$.
@@ -698,7 +699,12 @@ The $\Restart$ branch can be finished by applying $\RVar$ and the $\Abort$ branc
     \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\End}$}
 \LeftLabel{$\AcceptorProofAccept =$}
 \RightLabel{$\RUget$}
-\UnaryInfC{$\GammaXN\vdash \ReceiveUnreliableP{\SessionChannel}{\ProposerRole}{\AcceptorRole}{\LTwoA}{\bot}{pr'}.\ldots \vartriangleright \SEnvEntry{\SessionChannel}{\AcceptorRole}{\ReceiveUnreliableL{\ProposerRole}{\LTwoA}{\Proposal{\Value}}.\End}$}
+\UnaryInfC{$\GammaXN\vdash
+    \ReceiveUnreliableP{\SessionChannel}{\AcceptorRole}{\ProposerRole}{\LTwoA}{\bot}{pr'}.
+    \ldots
+    \vartriangleright
+    \SEnvEntry{\SessionChannel}{\AcceptorRole}{\ReceiveUnreliableL{\ProposerRole}{\LTwoA}{\Proposal{\Value}}.
+    \End}$}
 \end{prooftree}
 We apply $\RUget$ and expand the global session to $\GammaXNP$.
 The proof tree is split twice by applying $\RIf$ twice.
@@ -718,6 +724,7 @@ To keep this proof tree readable we continue the proof of the remaining branch i
 \end{prooftree}
 Finally, we apply $\RSideEffect$ twice and $\REnd$ once.
 This concludes the type check and proves that the model is well-typed.
+\qed
 
 \section{Validity, Agreement, and Termination}
 % Validity
@@ -786,7 +793,7 @@ In Paxos a quorum is a majority of acceptors.
 For any two majorities of acceptors there exists at least one that is contained in both majorities.
 So, at least one acceptor in every other proposer's quorum is contained in $\ProcessIndexK$'s quorum.
 Thus, if a majority of acceptors accept $\ProcessIndexK$'s proposal it is sent to every other proposer when they reach phase $\POneB$.
-These proposers then propagate the accepted value by proposing it again but with a higher proposal number.
+These proposers then propagate the accepted value by proposing it again, but with a higher proposal number.
 This way all correct acceptors accept the same value.
 
 \subsection{Termination}
@@ -818,7 +825,7 @@ We only need to prove that the implementation eventually exits the loop given ou
 Assuming a failure detector in $\FailureDetectorClass$, eventually any correct proposer is not suspected by any correct acceptor and does not suspect any correct acceptor.
 $\FPcrash$ guarantees that all correct proposers can communicate with a set of correct acceptors that forms a quorum.
 
-If all proposers crashed then no value can be proposed and no value will be chosen.
+If all proposers crashed, then no value can be proposed and no value will be chosen.
 Termination as defined above is satisfied in this case.
 
 If at least one proposer is correct, there exists a distinguished proposer because our model assumes a mechanism for electing such a proposer.

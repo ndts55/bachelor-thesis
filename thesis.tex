@@ -3,18 +3,19 @@
     ruledheaders=section,
     class=report,
     thesis={type=bachelor},
-    accentcolor=2d,
+    accentcolor=2c,
     custommargins=false,
     marginpar=false,
     parskip=half-,
     fontsize=11pt,
-    pdfa=false,
+    IMRAD=false,
+    bibliography=totoc,
 ]{tudapub}
 
 \usepackage[main=english]{babel}
 \usepackage{biblatex}
-\usepackage{csquotes}
 \addbibresource{thesis.bib}
+\usepackage{csquotes}
 \usepackage{stmaryrd, amsmath, amssymb, amsfonts, amsthm}
 \usepackage{multicol}
 \usepackage{mathtools}
@@ -25,6 +26,7 @@
 \usepackage{paralist}
 \usepackage{nicefrac}
 \usepackage{multirow}
+\usepackage{hyperref}
 \usepackage{tikz}
 \usetikzlibrary{calc,trees,decorations,arrows,automata,positioning,plotmarks, shapes,shapes.geometric,backgrounds}
 \input{commands.tex}
@@ -36,19 +38,23 @@
 \reviewer{Prof. Dr. Kirstin Peters \and M.Sc. Anna Schmitt}
 \submissiondate{\today}
 \maketitle
+\affidavit[signature-image={\includegraphics[width=\width,height=2cm]{Unterschrift.png}}, affidavit=digital]
+
+\include{abstract.tex}
+
 \tableofcontents
 
-\IMRADlabel{introduction}
+% \IMRADlabel{introduction}
 \include{introduction.tex}
 
-\IMRADlabel{methods}
+% \IMRADlabel{methods}
 \include{technical_preliminaries.tex}
 \include{model.tex}
 
-\IMRADlabel{results}
+% \IMRADlabel{results}
 \include{analysis.tex}
 
-\IMRADlabel{discussion}
+% \IMRADlabel{discussion}
 \include{conclusion.tex}
 
 \printbibliography
